@@ -27,8 +27,8 @@ export default function DataDeletionPage() {
           <ol className="mt-4 list-decimal space-y-3 pl-5 leading-7 text-on-surface-variant">
             <li>
               Envoyez un e-mail à{" "}
-              <a className="text-primary underline underline-offset-2" href="mailto:support@incacook.app?subject=Demande%20de%20suppression%20de%20donn%C3%A9es%20IncaCook">
-                support@incacook.app
+              <a className="text-primary underline underline-offset-2" href="mailto:tasseltess@gmail.com?subject=Demande%20de%20suppression%20de%20donn%C3%A9es%20IncaCook">
+                tasseltess@gmail.com
               </a>
               .
             </li>
