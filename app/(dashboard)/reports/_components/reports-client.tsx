@@ -19,6 +19,7 @@ import {
   REPORT_STATUS_VARIANT,
   REPORT_TYPE_LABEL,
   STATUS_FILTERS,
+  TARGET_TYPE_LABEL,
   TYPE_FILTERS,
   type ReportListItem,
   type ReportReason,
@@ -87,10 +88,16 @@ export function ReportsClient() {
       cell: (r) => (
         <div className="min-w-0">
           <div className="truncate text-[13px] font-medium text-on-surface">
-            {r.listing?.name ?? r.seller?.name ?? r.targetId}
+            {r.listing?.name ??
+              r.seller?.name ??
+              r.reportedUser?.name ??
+              r.reportedUser?.email ??
+              (r.targetType === "MESSAGE" && r.message?.content
+                ? r.message.content
+                : r.targetId)}
           </div>
           <div className="text-[10.5px] uppercase tracking-wider text-on-surface-variant">
-            {r.targetType === "LISTING" ? "Annonce" : "Vendeur"}
+            {TARGET_TYPE_LABEL[r.targetType] ?? r.targetType}
           </div>
         </div>
       ),

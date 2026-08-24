@@ -13,6 +13,7 @@ import {
   REPORT_STATUS_LABEL,
   REPORT_STATUS_VARIANT,
   REPORT_TYPE_LABEL,
+  TARGET_TYPE_LABEL,
   type ReportActionStatus,
   type ReportListItem,
   type ReportStatus,
@@ -63,7 +64,12 @@ export function ReportDrawer({ report, onClose, onUpdated }: Props) {
   // A report is only actionable while PENDING — RESOLVED/REJECTED are terminal
   // and DISMISSED is legacy. Anything else is read-only.
   const isPending = report?.status === "PENDING";
-  const entityName = report?.listing?.name ?? report?.seller?.name ?? report?.targetId;
+  const entityName =
+    report?.listing?.name ??
+    report?.seller?.name ??
+    report?.reportedUser?.name ??
+    report?.reportedUser?.email ??
+    report?.targetId;
 
   return (
     <Drawer open={open} onOpenChange={(o) => !o && onClose()}>
@@ -106,10 +112,43 @@ export function ReportDrawer({ report, onClose, onUpdated }: Props) {
                 {entityName || "—"}
               </p>
               <p className="text-[11.5px] text-on-surface-variant">
-                {report.targetType === "LISTING" ? "Annonce" : "Vendeur"}
+                {TARGET_TYPE_LABEL[report.targetType] ?? report.targetType}
                 {report.seller?.email ? ` · ${report.seller.email}` : ""}
+                {report.reportedUser?.email && report.reportedUser?.name
+                  ? ` · ${report.reportedUser.email}`
+                  : ""}
               </p>
             </div>
+
+            {report.targetType === "MESSAGE" && (
+              <div>
+                <h4 className="mb-2 text-[10.5px] font-semibold uppercase tracking-wider text-on-surface-variant">
+                  Message signalé
+                </h4>
+                {report.message?.content ? (
+                  <p className="rounded-md bg-surface-container-low p-3 text-[13px] text-on-surface-variant">
+                    {report.message.content}
+                  </p>
+                ) : (
+                  // TODO(#54): the admin reports list/detail endpoint doesn't
+                  // yet return message content or a conversationId for
+                  // MESSAGE-type reports — only `targetId` (the Message.id).
+                  // Once it does, render the preview above and a link to the
+                  // conversation here.
+                  <p className="rounded-md border border-dashed border-outline-variant p-3 text-[12px] text-on-surface-variant">
+                    Aperçu indisponible — identifiant du message : {report.targetId}
+                  </p>
+                )}
+                {report.message?.conversationId && (
+                  // TODO(#54): there is no `(dashboard)/messages` review
+                  // surface in this admin yet, so this is a reference, not a
+                  // clickable link, until that page exists.
+                  <p className="mt-2 font-mono text-[11px] text-on-surface-variant">
+                    Conversation : {report.message.conversationId}
+                  </p>
+                )}
+              </div>
+            )}
 
             {report.description && (
               <div>

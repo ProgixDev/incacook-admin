@@ -27,8 +27,13 @@ export type ReportReason =
   | "MAUVAISE_HYGIENE"
   | "OTHER";
 
-/** Polymorphic target discriminator (`targetType`). */
-export type ReportTargetType = "LISTING" | "SELLER";
+/**
+ * Polymorphic target discriminator (`targetType`). `MESSAGE` and `USER` are
+ * new values added alongside the existing `LISTING`/`SELLER` targets — the
+ * backend field is a plain string (not a strict enum), so unknown future
+ * values should still render gracefully rather than throw.
+ */
+export type ReportTargetType = "LISTING" | "SELLER" | "MESSAGE" | "USER";
 
 /** Row in `GET /v1/admin/reports` (`EnrichedReport`, newest first). */
 export interface ReportListItem {
@@ -43,6 +48,14 @@ export interface ReportListItem {
   reporter: { id: string; email: string; name: string } | null;
   listing: { id: string; name: string; category: string } | null;
   seller: { id: string; email: string; name: string } | null;
+  // TODO(#54): the list/detail endpoint doesn't yet enrich MESSAGE/USER
+  // targets the way it does `listing`/`seller`. Once the backend adds these,
+  // wire them in here instead of falling back to `targetId`:
+  // - for a MESSAGE report: message content preview + conversationId (so the
+  //   drawer can link to the conversation)
+  // - for a USER report: the reported user's name/email
+  message?: { id: string; content: string; conversationId: string } | null;
+  reportedUser?: { id: string; email: string; name: string } | null;
 }
 
 /** Return of `PATCH /v1/admin/reports/:id/status` (`{ id, status }`). */
@@ -60,6 +73,13 @@ export const REPORT_TYPE_LABEL: Record<ReportReason, string> = {
   NON_FAIT_MAISON: "Non fait maison",
   MAUVAISE_HYGIENE: "Mauvaise hygiène",
   OTHER: "Autre",
+};
+
+export const TARGET_TYPE_LABEL: Record<ReportTargetType, string> = {
+  LISTING: "Annonce",
+  SELLER: "Vendeur",
+  MESSAGE: "Message",
+  USER: "Utilisateur",
 };
 
 export const REPORT_STATUS_LABEL: Record<ReportStatus, string> = {
