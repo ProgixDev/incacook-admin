@@ -35,6 +35,11 @@ export interface KycDocumentListItem {
     firstName: string;
     lastName: string;
   };
+  // TODO(#55): the backend doesn't return this yet — the biometric-consent
+  // ledger step (recorded via `UserCharter` per the #55 solution notes) needs
+  // to be surfaced on the response DTO before this can be populated for real.
+  // Wired here under a reasonably-named field so the UI is ready once it is.
+  consentRecordedAt?: string | null;
 }
 
 /** `GET /v1/admin/kyc/documents/:id` (AdminKycDocumentResponseDto). */
@@ -58,6 +63,9 @@ export interface KycDocumentDetail {
     siret?: string | null;
     businessName?: string | null;
   };
+  // TODO(#55): same gap as `KycDocumentListItem.consentRecordedAt` — needs to
+  // be added to `AdminKycDocumentResponseDto` on the backend.
+  consentRecordedAt?: string | null;
 }
 
 /** Return of approve/reject (`{ id, reviewState }`). */

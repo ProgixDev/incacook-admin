@@ -110,6 +110,23 @@ export function KycClient() {
         </span>
       ),
     },
+    {
+      key: "consent",
+      header: "Consentement",
+      width: "170px",
+      // TODO(#55): backend doesn't populate `consentRecordedAt` yet — see
+      // types.ts. Shows a dash until the field is added to the response DTO.
+      cell: (d) =>
+        d.type === "SELFIE" ? (
+          <span className="text-[11.5px] text-on-surface-variant">
+            {d.consentRecordedAt
+              ? `Enregistré le ${formatDateTimeFr(d.consentRecordedAt)}`
+              : "—"}
+          </span>
+        ) : (
+          <span className="text-[11.5px] text-on-surface-variant">—</span>
+        ),
+    },
   ];
 
   return (

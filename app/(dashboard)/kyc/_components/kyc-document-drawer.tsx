@@ -181,6 +181,20 @@ export function KycDocumentDrawer({ documentId, onClose, onReviewed }: Props) {
                   value={`Revu le ${formatDateTimeFr(data.reviewedAt)}`}
                 />
               )}
+              {data.type === "SELFIE" && (
+                // TODO(#55): `consentRecordedAt` isn't returned by
+                // `AdminKycDocumentResponseDto` yet — the biometric consent
+                // step (recorded via `UserCharter`) needs to be added to the
+                // backend DTO. Wired here so the UI lights up once it lands.
+                <InfoRow
+                  icon={ShieldAlert}
+                  value={
+                    data.consentRecordedAt
+                      ? `Consentement enregistré le ${formatDateTimeFr(data.consentRecordedAt)}`
+                      : "Consentement : non renseigné par l'API"
+                  }
+                />
+              )}
             </div>
 
             {data.rejectionReason && (
