@@ -62,20 +62,61 @@ export default function DataDeletionPage() {
           </ol>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Ce qui se passe ensuite</h2>
-          <p className="leading-7 text-on-surface-variant">
-            Pour une demande par e-mail, nous pouvons vous demander des informations complémentaires
-            afin de vérifier que vous êtes bien titulaire du compte. Une fois la demande vérifiée
-            (ou immédiatement dans le cas d&apos;une suppression via l&apos;application), nous traiterons la
-            suppression ou l&apos;anonymisation des données personnelles concernées. Certaines
-            informations peuvent être conservées lorsque la loi l&apos;exige, notamment pour les
-            obligations comptables, fiscales, la prévention de la fraude ou le règlement de litiges.
-            Consultez notre{" "}
+        <section className="rounded-2xl border border-outline-variant bg-surface p-5 sm:p-7">
+          <h2 className="text-xl font-semibold">Données supprimées immédiatement</h2>
+          <ul className="mt-4 list-disc space-y-2 pl-5 leading-7 text-on-surface-variant">
+            <li>Votre photo de profil et vos documents KYC (pièce d&apos;identité, selfie de vérification).</li>
+            <li>Vos jetons de notification push (l&apos;application cesse de vous envoyer des notifications).</li>
+            <li>Votre profil acheteur (préférences alimentaires, allergènes).</li>
+            <li>
+              Votre accès de connexion : votre compte d&apos;authentification est supprimé et vous ne
+              pouvez plus vous reconnecter avec les mêmes identifiants.
+            </li>
+          </ul>
+
+          <h2 className="mt-6 text-xl font-semibold">Données anonymisées et conservées</h2>
+          <p className="mt-2 leading-7 text-on-surface-variant">
+            Certaines données ne sont pas effacées mais rendues anonymes : votre nom, e-mail et
+            numéro de téléphone sont remplacés par des valeurs non identifiantes et ne peuvent plus
+            être reliés à vous. Sont concernés :
+          </p>
+          <ul className="mt-4 list-disc space-y-2 pl-5 leading-7 text-on-surface-variant">
+            <li>
+              Votre historique de commandes, avis laissés ou reçus, et mouvements de portefeuille
+              (gains, retraits) — conservés pour nos obligations comptables et fiscales, et pour la
+              cohérence des commandes des autres utilisateurs (ex. un acheteur doit pouvoir revoir
+              l&apos;historique d&apos;une commande passée).
+            </li>
+            <li>
+              Votre profil vendeur ou livreur (si applicable), pour la même raison.
+            </li>
+            <li>Le journal d&apos;audit de votre compte, à des fins de sécurité et de prévention de la fraude.</li>
+          </ul>
+          <p className="mt-4 leading-7 text-on-surface-variant">
+            Ces données anonymisées sont conservées indéfiniment, sans limite de durée fixe, car
+            elles ne permettent plus de vous identifier. Aucune donnée personnelle identifiable
+            n&apos;est conservée au-delà de la suppression du compte, en dehors des obligations légales
+            de conservation ci-dessous.
+          </p>
+
+          <h2 className="mt-6 text-xl font-semibold">Conservation légale (obligations comptables et fiscales)</h2>
+          <p className="mt-2 leading-7 text-on-surface-variant">
+            Lorsque la loi l&apos;exige — notamment les obligations comptables et fiscales françaises, la
+            prévention de la fraude, ou un litige en cours — certaines informations liées à une
+            transaction peuvent être conservées au-delà de la suppression du compte, pour la durée
+            requise par la réglementation applicable. Pour le détail complet de nos traitements de
+            données, consultez notre{" "}
             <a className="text-primary underline underline-offset-2" href="/privacy">
               politique de confidentialité
-            </a>{" "}
-            pour le détail des données concernées et des durées de conservation.
+            </a>
+            .
+          </p>
+
+          <h2 className="mt-6 text-xl font-semibold">Abonnement</h2>
+          <p className="mt-2 leading-7 text-on-surface-variant">
+            La suppression du compte n&apos;annule pas un abonnement vendeur actif auprès d&apos;Apple ou de
+            Google — gérez-le séparément depuis les réglages d&apos;abonnement de votre magasin
+            d&apos;applications avant ou après la suppression de votre compte.
           </p>
         </section>
 
