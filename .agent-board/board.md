@@ -44,7 +44,7 @@ Updated: 2026-09-11
 | TASK-024 | Wallet/payout oversight → /v1/admin/wallets + /withdrawals | Done | Agent | P2 |
 | TASK-025 | Free / for the public surface + landing shell | Review | Agent | P0 |
 | TASK-026 | Art direction: three hero directions + display face | Done | Human + Agent | P0 |
-| TASK-027 | Build the landing page sections | Backlog | Agent | P0 |
+| TASK-027 | Build the landing page sections | Review | Agent | P0 |
 | TASK-028 | Real assets, store links, and French copy sign-off | Backlog | Human + Agent | P0 |
 | TASK-029 | Launch pass: SEO, responsive, a11y, performance | Backlog | Agent | P0 |
 

@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { StoreCta } from "./store-cta";
+
 const LEGAL_LINKS = [
   { href: "/privacy", label: "Confidentialité" },
   { href: "/terms", label: "Conditions" },
@@ -19,7 +21,7 @@ export function SiteFooter() {
             ))}
           </nav>
 
-          {/* Store badges (App Store / Google Play) land in a later task. */}
+          <StoreCta variant="compact" />
         </div>
 
         <p>

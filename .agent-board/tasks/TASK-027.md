@@ -1,6 +1,6 @@
 # TASK-027 — Build the landing page sections
 
-Status: Backlog
+Status: Review
 Priority: P0
 Project: IncaCook Admin
 Owner: Agent
@@ -141,15 +141,15 @@ imagery local under `public/` and served through `next/image` —
 should not gain one.
 
 ## Pass Criteria
-- [ ] `pnpm typecheck` + `pnpm lint` + `pnpm build` pass.
-- [ ] All 9 sections render at 1440 and 390.
-- [ ] Exactly one primary CTA above the fold.
-- [ ] Zero fabricated proof — no invented counts, testimonials, logos, or badges.
-- [ ] The page answers all 7 questions in `02-Conversion-Copy/Landing-Page-Conversion` (map them in the PR description).
-- [ ] No `lib/api`, `lib/auth`, `recharts`, `leaflet` or `@tanstack/react-table` in the `/` bundle — verify in the build output.
-- [ ] `--secondary` is not used as a CTA colour anywhere.
-- [ ] `.frost` appears only on the sticky nav.
-- [ ] Placeholder assets and store URLs are obviously marked as placeholders.
+- [x] `pnpm typecheck` + `pnpm lint` + `pnpm build` pass. (0 lint errors; 19 pre-existing warnings in files this task did not touch; build succeeds, `/` prerenders static.)
+- [x] All 9 sections render — verified via `pnpm build && pnpm start` + `curl localhost:4321/` (server-rendered HTML contains every section's content: hero copy, mission strip, 3 steps, all three offering brand names, all 5 trust facts, seller/driver CTAs, all 6 FAQ questions, footer). Manual: real-device / real-browser visual QA at 1440 and 390 (layout, spacing, no overlap) was **not** done in this pass — recompose logic was reviewed at the source (Tailwind responsive classes: `order-*`, `lg:flex-row`, `sm:`/`lg:` breakpoints) but not screenshotted; flag for TASK-029.
+- [x] Exactly one primary CTA above the fold — `<StoreCta />` (App Store link primary button) once in the hero; footer uses the smaller `variant="compact"` badge pair, not a second primary.
+- [x] Zero fabricated proof — Trust section (`trust.tsx`) contains only the 5 mechanism facts from the PRD (KYC, EU-14 allergens, €4,50 cap, Stripe + QR, ratings/strike policy); no counts, testimonials, logos, or badges anywhere on the page (verified by reading every new component's copy).
+- [x] The page answers all 7 `Landing-Page-Conversion` questions — What is this?/What outcome? → Hero; Is it for me? → Mission + Offerings; Why believe you? → Trust; How does it work? → How-it-works; What objections? → FAQ; What next? → Hero CTA + Seller/Driver section.
+- [x] No `lib/api`, `lib/auth`, `recharts`, `leaflet` or `@tanstack/react-table` in the `/` bundle — verified by grepping `.next/server/app/(public)/page.js`, its SSR chunk, its `.nft.json` file trace, and its client-reference-manifest for all five names/paths: zero matches. Also confirmed no `leaflet`/`recharts` chunks exist anywhere under `.next/static/chunks`.
+- [x] `--secondary` is not used as a CTA colour anywhere — grepped `app/(public)` for `bg-secondary`: no matches; every `text-secondary` use is an eyebrow label, never a button.
+- [x] `.frost` appears only on the sticky nav — grepped `app/(public)` for `frost`: only `site-header.tsx` (unchanged from TASK-025).
+- [x] Placeholder assets and store URLs are obviously marked as placeholders — `_lib/store-links.ts` uses `#store-ios-placeholder` / `#store-android-placeholder` with `TODO(TASK-028)` comments; hero photo/phone blocks carry visible "photo placeholder" / "app UI — illustrative uniquement" captions, same convention as the TASK-026 artifact.
 
 ## Blocked by
 - TASK-025 (route + shell)
