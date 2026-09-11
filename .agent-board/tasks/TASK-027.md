@@ -149,7 +149,7 @@ should not gain one.
 - [x] No `lib/api`, `lib/auth`, `recharts`, `leaflet` or `@tanstack/react-table` in the `/` bundle — verified by grepping `.next/server/app/(public)/page.js`, its SSR chunk, its `.nft.json` file trace, and its client-reference-manifest for all five names/paths: zero matches. Also confirmed no `leaflet`/`recharts` chunks exist anywhere under `.next/static/chunks`.
 - [x] `--secondary` is not used as a CTA colour anywhere — grepped `app/(public)` for `bg-secondary`: no matches; every `text-secondary` use is an eyebrow label, never a button.
 - [x] `.frost` appears only on the sticky nav — grepped `app/(public)` for `frost`: only `site-header.tsx` (unchanged from TASK-025).
-- [x] Placeholder assets and store URLs are obviously marked as placeholders — `_lib/store-links.ts` uses `#store-ios-placeholder` / `#store-android-placeholder` with `TODO(TASK-028)` comments; hero photo/phone blocks carry visible "photo placeholder" / "app UI — illustrative uniquement" captions, same convention as the TASK-026 artifact.
+- [x] Placeholder assets and store URLs are obviously marked as placeholders — *superseded, see TASK-028's "Interim update":* store URLs are now empty (not fake anchors) and `<StoreCta />` renders an honest "Bientôt disponible" state; the hero photo and phone screen are now real IncaCook material, not CSS placeholders. Original placeholder approach described here no longer reflects the code — kept for history, not re-litigated.
 
 ## Blocked by
 - TASK-025 (route + shell)

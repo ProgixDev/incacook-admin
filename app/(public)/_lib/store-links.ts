@@ -1,12 +1,14 @@
 /**
  * App store destination URLs for the landing page's `<StoreCta />`.
  *
- * **PLACEHOLDER VALUES.** Neither listing is live yet — TASK-028 swaps these
- * for the real App Store / Google Play URLs once both listings are
- * published. Do not ship a real launch with these still in place (see
- * TASK-027's CTA policy: a badge must never link nowhere).
+ * **DELIBERATELY EMPTY.** The app isn't accepted on either store yet — there
+ * is nothing to link to. `<StoreCta />` treats an empty string as "not live"
+ * and renders an honest "coming soon" state instead of a link, per the
+ * plan's rule that a badge must never link nowhere. TASK-028 fills each one
+ * in as its listing goes live — the two platforms don't have to land
+ * together.
  */
 export const STORE_LINKS = {
-  ios: "#store-ios-placeholder", // TODO(TASK-028): replace with the real App Store listing URL.
-  android: "#store-android-placeholder", // TODO(TASK-028): replace with the real Google Play listing URL.
+  ios: "",
+  android: "",
 } as const;
