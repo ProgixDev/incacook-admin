@@ -1,9 +1,9 @@
 # IncaCook Admin Agent Board
 
 Project: IncaCook Admin
-Current focus: Replace mock data with the real IncaCook backend admin surface (/v1/admin/*), behind admin/moderator auth
-Current milestone: Phase 1 — Wire admin panel to /v1/admin backend
-Updated: 2026-07-08
+Current focus: Public marketing landing page at / (docs/plans/landing-page.md)
+Current milestone: Phase 2 — IncaCook landing page
+Updated: 2026-09-11
 
 ## Columns
 
@@ -42,6 +42,11 @@ Updated: 2026-07-08
 | TASK-022 | Drivers oversight → /v1/admin/drivers | Done | Agent | P2 |
 | TASK-023 | Seller subscriptions oversight → /v1/admin/subscriptions | Done | Agent | P2 |
 | TASK-024 | Wallet/payout oversight → /v1/admin/wallets + /withdrawals | Done | Agent | P2 |
+| TASK-025 | Free / for the public surface + landing shell | Ready | Agent | P0 |
+| TASK-026 | Art direction: three hero directions + display face | Ready | Human + Agent | P0 |
+| TASK-027 | Build the landing page sections | Backlog | Agent | P0 |
+| TASK-028 | Real assets, store links, and French copy sign-off | Backlog | Human + Agent | P0 |
+| TASK-029 | Launch pass: SEO, responsive, a11y, performance | Backlog | Agent | P0 |
 
 ## Recommended Start
 

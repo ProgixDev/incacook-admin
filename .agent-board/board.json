@@ -1,9 +1,9 @@
 {
   "project": "IncaCook Admin",
-  "currentFocus": "Replace mock data with the real IncaCook backend admin surface (/v1/admin/*), behind admin/moderator auth",
-  "currentMilestone": "Phase 1 — Wire admin panel to /v1/admin backend",
-  "updated": "2026-07-08",
-  "recommendedStart": "TASK-001",
+  "currentFocus": "Public marketing landing page at / (docs/plans/landing-page.md)",
+  "currentMilestone": "Phase 2 — IncaCook landing page",
+  "updated": "2026-09-11",
+  "recommendedStart": "TASK-025",
   "columns": [
     "Backlog",
     "Ready",
@@ -293,6 +293,59 @@
       "blockedBy": [
         "TASK-002",
         "TASK-003"
+      ]
+    },
+    {
+      "id": "TASK-025",
+      "title": "Free / for the public surface + landing shell",
+      "status": "Ready",
+      "priority": "P0",
+      "owner": "Agent",
+      "path": ".agent-board/tasks/TASK-025.md",
+      "blockedBy": []
+    },
+    {
+      "id": "TASK-026",
+      "title": "Art direction: three hero directions + display face",
+      "status": "Ready",
+      "priority": "P0",
+      "owner": "Human + Agent",
+      "path": ".agent-board/tasks/TASK-026.md",
+      "blockedBy": []
+    },
+    {
+      "id": "TASK-027",
+      "title": "Build the landing page sections",
+      "status": "Backlog",
+      "priority": "P0",
+      "owner": "Agent",
+      "path": ".agent-board/tasks/TASK-027.md",
+      "blockedBy": [
+        "TASK-025",
+        "TASK-026"
+      ]
+    },
+    {
+      "id": "TASK-028",
+      "title": "Real assets, store links, and French copy sign-off",
+      "status": "Backlog",
+      "priority": "P0",
+      "owner": "Human + Agent",
+      "path": ".agent-board/tasks/TASK-028.md",
+      "blockedBy": [
+        "TASK-027"
+      ]
+    },
+    {
+      "id": "TASK-029",
+      "title": "Launch pass: SEO, responsive, a11y, performance",
+      "status": "Backlog",
+      "priority": "P0",
+      "owner": "Agent",
+      "path": ".agent-board/tasks/TASK-029.md",
+      "blockedBy": [
+        "TASK-027",
+        "TASK-028"
       ]
     }
   ]
