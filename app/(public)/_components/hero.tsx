@@ -12,6 +12,13 @@ const TRUST_BULLETS = ["Vérification KYC", "Allergènes déclarés", "Paiement 
  * Mobile: recomposed (not shrunk) — the photo/phone block leads, copy
  * follows below it — matching the reviewed artifact's `.a-m` behaviour.
  *
+ * The background photo is one source file with a deliberate, per-breakpoint
+ * crop anchor (`object-[…]`), not a second commissioned mobile photo: the
+ * food in `hero-food.jpg` clusters top-left with empty tablecloth
+ * bottom-right, so the anchor shifts per container aspect ratio to keep food
+ * (not empty table) in frame at every size — a real, if lighter-weight,
+ * answer to `01-Design/Responsive-Mobile`'s "recompose, don't just shrink."
+ *
  * Both images are real IncaCook material sourced from the app repo
  * (`assets/images/welcome.jpg`, and a raw onboarding-screen capture) — not
  * stock or fabricated mockups. The onboarding screen is what a buyer
@@ -55,7 +62,7 @@ export function Hero() {
             fill
             priority
             sizes="(min-width: 1024px) 54vw, 100vw"
-            className="object-cover"
+            className="object-cover object-[22%_18%] sm:object-[28%_20%] lg:object-[32%_22%]"
           />
 
           {/* Real onboarding screen from the app — see file header for why this
