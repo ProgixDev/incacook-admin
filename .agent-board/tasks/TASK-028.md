@@ -37,11 +37,15 @@ directly on the `landing-page` branch (not a separate PR):
   - `app-screen-onboarding.jpg` ← a real raw signup/login screen capture — used in the hero's phone frame in place of the fabricated dish-detail mockup, since no real dish-detail screenshot exists yet (see below).
   - `seller-devenir-vendeur.png` / `driver-devenir-livreur.png` ← the finished App Store screenshots from `docs/store_submission/ios/screenshots_6.9in/` (`02_seller_dashboard.png`, `03_driver_map.png`) — each already carries its own French marketing headline, used directly in the Vendre/Livrer section.
 
+**Decided, not open:**
+- ~~No real dish-detail screenshot exists~~ — **waived by decision (2026-09-11):
+  skipped, not required.** The onboarding/signup screen is a real, single,
+  legible screen (satisfies `10-Industry-Patterns/Mobile-App`'s actual rule);
+  "dish-detail specifically" was the original Direction A brief's illustrative
+  idea, not a pass criterion. Stays as-is unless someone captures a better
+  one later — no action item, no debt.
+
 **Still genuinely open, not resolved by the above:**
-- No real **dish-detail** screenshot exists anywhere in the app repo — the
-  hero uses the real onboarding/signup screen instead, which is honest but
-  not the ideal "product-first" asset TASK-026 pictured. Capturing one (or
-  deciding the onboarding screen is fine long-term) is still open.
 - No **distinct mobile crop** of the hero photo was made — same image via
   `object-cover` at both sizes, not a deliberate re-crop per
   `01-Design/Responsive-Mobile`.
