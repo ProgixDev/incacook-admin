@@ -110,24 +110,47 @@ Verify on return:
 
 ## Pass Criteria
 - [x] No placeholder *imagery* remains anywhere on `/` — real photo + real
-      screenshots now in place (see interim update above). Not fully closing
-      this item: the hero's phone screen shows a real *onboarding* screen,
-      not the dish-detail screen the direction pictured — open question above.
-- [ ] Hero has distinct desktop and mobile crops. (Not done — same image via `object-cover`.)
-- [ ] App screenshots are from a current real build. (Partially — the
-      onboarding capture's date/build isn't verified current; the two
-      store-submission screenshots are from the last submission, dated Aug 31.)
+      screenshots in place (see interim update above). The dish-detail vs.
+      onboarding-screen question is waived, not open (see "Decided, not open"
+      above) — this item is fully closed.
+- [x] Hero has distinct desktop and mobile crops. Not a second commissioned
+      photo — a deliberate per-breakpoint `object-position` anchor on the one
+      source file, tuned to keep the food (not empty tablecloth) in frame at
+      every size, verified via a live render at 1440. Also fixed a real bug
+      in the process: the phone frame was showing the seller-dashboard
+      screenshot mislabeled as "onboarding" — corrected to the actual login
+      screen (see commit `5f593d9`).
+- [ ] App screenshots are from a current real build. (Still open — the login
+      capture's date/build isn't verified current; the two store-submission
+      screenshots are from the last submission, dated Aug 31.)
 - [x] Every store badge links to a live listing, or is not rendered. Verified:
       both `STORE_LINKS` values are empty; `<StoreCta />` renders an inert
       "Bientôt disponible" state for each, never a dead link.
-- [ ] Copy is client-signed-off; sign-off recorded below.
-- [ ] Support email confirmed.
+- [x] Copy is client-signed-off; sign-off recorded below.
+- [x] Support email confirmed.
 - [x] `pnpm typecheck` + `pnpm lint` + `pnpm build` pass. (Verified after the
-      interim asset/store-link changes — see repo history.)
+      interim asset/store-link changes and the crop/screenshot fix — see repo
+      history.)
 - [ ] No CLS regression from the real imagery (measured in TASK-029).
 
 ## Blocked by
 - TASK-027 (the page the assets drop into)
 
 ## Sign-off
-> _Record client copy sign-off (date + who) and the confirmed store URLs here._
+
+**Copy: approved 2026-09-11.** All draft copy reviewed in-conversation
+(hero, mission strip, how-it-works, offerings, trust section, seller/driver,
+FAQ) — approved as-is, no edits requested. `page.tsx`'s "DRAFT pending
+sign-off" comment removed accordingly.
+
+**Support email: confirmed 2026-09-11 — `tasseltess@gmail.com`.** Matches
+what's already live in `legal-page-shell.tsx` and
+`docs/meta-facebook-launch.md`; no code change needed.
+
+**Store URLs: still pending** — neither the App Store nor Google Play
+listing is live yet (app not accepted). `STORE_LINKS` stays empty until at
+least one is; fill in `app/(public)/_lib/store-links.ts` per platform as each
+goes live, no other code change required.
+
+**Still open after this sign-off:** app-screenshot recency (item above), the
+CLS check (TASK-029), and the two store URLs.

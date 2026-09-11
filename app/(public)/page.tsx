@@ -19,12 +19,12 @@ export const metadata: Metadata = {
 /**
  * IncaCook landing page (TASK-027).
  *
- * NOTE — all copy on this page is a DRAFT pending client sign-off
- * (TASK-028). Brand names (Le Bon Fait Maison / L'Atelier Traiteur / Sauve
- * Ton Panier), the €4,50 fait-maison cap and every compliance fact are drawn
- * from the PRD, but wording is not final. Store URLs and imagery are
- * clearly-labelled placeholders — see `_lib/store-links.ts` and the
- * placeholder blocks in `_components/hero.tsx`.
+ * Copy signed off 2026-09-11 (TASK-028) — no longer draft. Brand names (Le
+ * Bon Fait Maison / L'Atelier Traiteur / Sauve Ton Panier), the €4,50
+ * fait-maison cap and every compliance fact are drawn from the PRD. Store
+ * links are intentionally empty (app not yet accepted on either store —
+ * see `_lib/store-links.ts`); hero/seller/driver imagery is real IncaCook
+ * material, not placeholders.
  *
  * Every section below is a server component; `Faq` uses native
  * `<details>`/`<summary>` so it needs no client JS either.
