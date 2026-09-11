@@ -44,7 +44,7 @@ setup("authenticate admin", async ({ page }) => {
       { token, ACCESS_KEY, REFRESH_KEY, EXPIRES_KEY },
     );
     // Confirm the injected session resolves to an admin (dashboard renders).
-    await page.goto("/");
+    await page.goto("/dashboard");
     await expect(page.getByRole("link", { name: /utilisateurs/i })).toBeVisible({
       timeout: 30_000,
     });
@@ -61,7 +61,7 @@ setup("authenticate admin", async ({ page }) => {
     expect(await submit.isEnabled()).toBe(true);
   }).toPass({ timeout: 20_000 });
   await submit.click();
-  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
   await expect(page.getByRole("link", { name: /utilisateurs/i })).toBeVisible({
     timeout: 30_000,
   });
