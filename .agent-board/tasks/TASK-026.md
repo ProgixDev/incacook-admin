@@ -85,12 +85,17 @@ Screenshots of all three directions at 1440 and 390, plus a short rationale.
 Record the chosen direction and the display face **in this file** before closing.
 
 ## Pass Criteria
-- [ ] 3 hero directions rendered at 1440 + 390, screenshots attached to the PR.
-- [ ] 3 display-face candidates shown with real French copy.
-- [ ] None of the six listed anti-patterns present in any direction.
-- [ ] `--primary` used for the primary CTA only; `--secondary` never used as a CTA colour.
+- [x] 3 hero directions rendered at 1440 + 390, screenshots attached to the PR.
+      (Delivered as an interactive Artifact with live desktop/mobile toggles per
+      direction instead of static screenshots — see URL in Decision below.)
+- [x] 3 display-face candidates shown with real French copy.
+- [x] None of the six listed anti-patterns present in any direction.
+- [x] `--primary` used for the primary CTA only; `--secondary` never used as a CTA colour.
 - [ ] Human has chosen a direction + display face, recorded below.
-- [ ] `pnpm typecheck` + `pnpm build` pass.
+- [ ] `pnpm typecheck` + `pnpm build` pass. (n/a to this ticket — no app code
+      was touched; that gate applies once TASK-027 implements the chosen direction.)
 
 ## Decision
 > _Record the chosen direction, display face, and rationale here before moving to TASK-027._
+
+Candidates ready for review: https://claude.ai/code/artifact/3010a31f-129a-4bd3-973b-693eb5c1fefc
