@@ -28,7 +28,16 @@ const config: Config = {
         "outline-variant": "var(--outline-variant)",
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+        // Marketing-only display face (landing page h1/h2 — TASK-026/027). Not
+        // used anywhere in the admin `(dashboard)` tree.
+        display: ["var(--font-fraunces)", "ui-serif", "serif"],
+      },
+      spacing: {
+        // Marketing-only section-rhythm helpers (landing page only) — additive,
+        // the existing admin spacing scale is untouched.
+        "section-y": "6rem",
+        "section-y-sm": "3.5rem",
       },
       fontVariantNumeric: {
         tabular: "tabular-nums",

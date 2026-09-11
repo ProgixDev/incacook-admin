@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test";
  * gracefully (inline error, no crash).
  */
 
-const PROTECTED_ROUTES = ["/", "/users", "/sellers", "/orders", "/listings", "/reports", "/geography", "/kyc", "/disputes"];
+const PROTECTED_ROUTES = ["/dashboard", "/users", "/sellers", "/orders", "/listings", "/reports", "/geography", "/kyc", "/disputes"];
 
 test.describe("auth gate (no backend)", () => {
   for (const route of PROTECTED_ROUTES) {
