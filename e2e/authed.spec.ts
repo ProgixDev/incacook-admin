@@ -19,7 +19,7 @@ test.describe("authenticated admin flows", () => {
   test.use({ storageState: path.join(__dirname, ".auth", "admin.json") });
 
   test("overview loads real KPIs (no perpetual skeleton, no error)", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/dashboard");
     await expect(page.getByRole("link", { name: /utilisateurs/i })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(/^chargement…?$/i)).toHaveCount(0, { timeout: 30_000 });
   });

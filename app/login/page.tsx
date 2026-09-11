@@ -3,7 +3,7 @@
 /**
  * Admin login. Renders OUTSIDE the `(dashboard)` route group, so it is not
  * gated by `AuthGuard`. Posts to `POST /v1/auth/signin`, enforces the
- * Admin/Moderator gate, and routes to `/` on success.
+ * Admin/Moderator gate, and routes to `/dashboard` on success.
  */
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -33,7 +33,7 @@ export default function LoginPage() {
   // Already signed in as an admin? Skip the form.
   useEffect(() => {
     if (status === "authenticated" && user && isAdminRole(user.role)) {
-      router.replace("/");
+      router.replace("/dashboard");
     }
   }, [status, user, router]);
 
@@ -51,7 +51,7 @@ export default function LoginPage() {
         );
         return;
       }
-      router.replace("/");
+      router.replace("/dashboard");
     } catch (err) {
       setError(
         err instanceof ApiError

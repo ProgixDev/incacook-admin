@@ -32,7 +32,7 @@ import { useAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 
 const NAV = [
-  { href: "/", label: "Vue d'ensemble", icon: LayoutGrid },
+  { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutGrid },
   { href: "/users", label: "Utilisateurs", icon: Users },
   { href: "/orders", label: "Commandes", icon: ShoppingBag },
   { href: "/sellers", label: "Vendeurs", icon: Store },
@@ -76,7 +76,7 @@ export function Sidebar() {
   return (
     <aside className="frost fixed inset-y-0 left-0 z-40 flex w-64 flex-col gap-1.5 border-r border-outline-variant/40 p-3">
       <Link
-        href="/"
+        href="/dashboard"
         title="Retour à l'accueil"
         className="flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-surface-container-high"
       >
@@ -94,10 +94,7 @@ export function Sidebar() {
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
         {NAV.map((item) => {
           const Icon = item.icon;
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <Link
               key={item.href}
