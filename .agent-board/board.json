@@ -307,7 +307,7 @@
     {
       "id": "TASK-026",
       "title": "Art direction: three hero directions + display face",
-      "status": "Ready",
+      "status": "Done",
       "priority": "P0",
       "owner": "Human + Agent",
       "path": ".agent-board/tasks/TASK-026.md",

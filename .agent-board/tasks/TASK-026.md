@@ -1,6 +1,6 @@
 # TASK-026 — Art direction: three hero directions + display face
 
-Status: Ready
+Status: Done
 Priority: P0
 Project: IncaCook Admin
 Owner: Human + Agent
@@ -91,11 +91,33 @@ Record the chosen direction and the display face **in this file** before closing
 - [x] 3 display-face candidates shown with real French copy.
 - [x] None of the six listed anti-patterns present in any direction.
 - [x] `--primary` used for the primary CTA only; `--secondary` never used as a CTA colour.
-- [ ] Human has chosen a direction + display face, recorded below.
+      (Note: the artifact also colors the small trust-row bullet dots with
+      `--primary` — a decorative accent, not a second CTA, so it doesn't
+      violate the one-primary-CTA rule, but it's broader than strictly
+      "button only." Carried forward as a conscious choice, not re-litigated
+      here.)
+- [x] Human has chosen a direction + display face, recorded below.
 - [ ] `pnpm typecheck` + `pnpm build` pass. (n/a to this ticket — no app code
       was touched; that gate applies once TASK-027 implements the chosen direction.)
 
 ## Decision
-> _Record the chosen direction, display face, and rationale here before moving to TASK-027._
 
-Candidates ready for review: https://claude.ai/code/artifact/3010a31f-129a-4bd3-973b-693eb5c1fefc
+**Direction: A — Product-first** (closest to wolt.com). Headline + CTA left,
+real app dish-detail screen dominant right. Chosen for lowest ambiguity about
+"what is this" in the first second — the product itself does the persuading.
+
+**Display face: Fraunces.** Chosen as the shipped decision, not just the
+review's placeholder pairing — soft, buttery serif that reads hand-made and
+appetizing without going precious (vs. Libre Caslon Display's more corporate
+authority) or generic (vs. Bricolage Grotesque's safer-but-forgettable
+grotesque). Pairs cleanly with the Inter body face already used across the
+admin panel.
+
+Candidates reviewed at: https://claude.ai/code/artifact/3010a31f-129a-4bd3-973b-693eb5c1fefc
+
+**Next:** TASK-027 implements Direction A + Fraunces as the real, coded
+landing page. TASK-026's own remaining scope item — wiring Fraunces via
+`next/font` and adding whatever marketing-only Tailwind utilities Direction A
+needs (§3 "Marketing-only additions") — is folded into TASK-027 rather than
+done here in isolation, since it's easiest to verify typecheck/build against
+the real page rather than a standalone font-loading change.

@@ -11,11 +11,37 @@ Buyer-primary, with sellers and drivers served by dedicated sections lower down.
 
 Plan: `docs/plans/landing-page.md` §5, §7. Content source: `IncaCook/docs/prd/prd.md`.
 
+## Decision from TASK-026 (binding for this task)
+
+- **Hero direction: A — Product-first.** Headline + CTA left, the real app
+  dish-detail screen dominant right, composited over a photo. See the
+  reviewed candidates: https://claude.ai/code/artifact/3010a31f-129a-4bd3-973b-693eb5c1fefc
+  — the Direction A markup/layout there (`.a-d` / `.a-m` rules) is a faithful
+  reference for composition and the desktop→mobile recomposition (phone dock
+  leads on mobile, copy follows below it), though it must be rebuilt as real
+  Next.js/Tailwind, not copied as static CSS.
+- **Display face: Fraunces**, headings only (h1/h2). Load via `next/font`
+  (self-hosted, `display: swap`) — do not add a third `<link>`/`@import`
+  stylesheet. Inter stays the body face, unchanged from the admin.
+  - While touching font loading, also move the existing Inter import in
+    `app/globals.css` (currently `@import url("https://rsms.me/inter/inter.css")`)
+    to `next/font` — this removes a render-blocking request site-wide, not
+    just on the landing page. Verify the admin panel still renders Inter
+    correctly after the switch (`(dashboard)` pages, all use Inter too).
+- **Marketing-only Tailwind additions** (TASK-026 §3, now in scope here):
+  a display-font utility/class, whatever section-rhythm spacing helpers
+  Direction A's hero needs. Keep these additive in `tailwind.config.ts` /
+  `globals.css` — do not touch existing admin tokens.
+- Known deviation carried forward without re-litigating: the reviewed
+  artifact colors the trust-row bullet dots with `--primary` in addition to
+  the CTA button (a decorative accent, not a second CTA). Fine to keep, or
+  tighten to CTA-only — implementer's call, not a blocker either way.
+
 ## Structure
 
 ```
 1  Sticky nav ......... TASK-025            [.frost]
-2  Hero ............... TASK-026 direction  ← the bold moment
+2  Hero ............... Direction A (above) ← the bold moment
 3  Anti-gaspillage .... mission/thesis strip [--primary]
 4  How it works ....... 3 steps, buyer POV
 5  Three offerings .... Le Bon Fait Maison / L'Atelier Traiteur / Sauve Ton Panier
