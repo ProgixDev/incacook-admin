@@ -60,7 +60,7 @@ export function BoostsClient() {
       cell: (b) => (
         <span className="inline-flex items-center gap-1.5 text-[13px] text-on-surface">
           <Sparkles className="h-3.5 w-3.5 shrink-0 text-warning" />
-          <span className="truncate">{b.listingTitle || "—"}</span>
+          <span className="truncate">{b.listingName || "—"}</span>
         </span>
       ),
     },

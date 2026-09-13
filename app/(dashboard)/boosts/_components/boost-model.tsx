@@ -21,7 +21,7 @@ export type BoostSource = "FREE_PREMIUM";
 export interface AdminBoost {
   id: string;
   listingId: string;
-  listingTitle: string;
+  listingName: string;
   sellerId: string;
   sellerName: string;
   sellerEmail: string;
