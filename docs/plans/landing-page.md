@@ -29,6 +29,31 @@ A landing page in a separate repo either sits on a different origin from the
 legal pages it must link to, or forces a migration of those pages and a re-file
 with Meta and the app stores. Same-origin is free.
 
+### Domain cutover to `www.incacook.com` — open, do not rewrite piecemeal
+
+**The DNS migration is in progress, not finished.** Until it completes,
+`incacook-admin.vercel.app` is still the live origin and every reference below
+is still correct. They are listed here so the cutover is one deliberate sweep
+rather than a discovery exercise, and so nobody "helpfully" rewrites them early
+and points production at a domain that does not resolve yet.
+
+Highest risk first — the one that is live code rather than documentation:
+
+| Where | What |
+|---|---|
+| `IncaCook/lib/core/constants/text_strings.dart:221` | `privacyPolicyUrl` — **shipped in the app binary**, and the same URL is filed as the store Privacy Policy URL. Changing it needs an app release, so it cannot follow the DNS flip instantly. Keep the old host resolving (redirect, don't retire) until the release that changes this has rolled out. |
+| `incacook-admin/docs/meta-facebook-launch.md` | privacy / terms / data-deletion URLs **registered with Meta** — a change here means re-filing with Meta. |
+| `IncaCook/docs/store_submission/metadata/{app_store,play_store}_metadata_{en,fr}.md` | Privacy Policy and Delete Account URLs in all four store-metadata files. |
+| `IncaCook/docs/qa/revenuecat-android-and-play-release-setup.md` | privacy URL in the Play release walkthrough. |
+| this file, above | the three legal URLs quoted in the constraint. |
+
+Order that actually works: stand up `www.incacook.com` → keep
+`incacook-admin.vercel.app` redirecting permanently → ship the app release that
+changes `privacyPolicyUrl` → re-file store metadata and Meta → only then update
+the docs. Retiring the old host before the app release breaks the privacy link
+for every installed build, which is a store-compliance problem, not a cosmetic
+one.
+
 Next's per-route code splitting means the landing page will not ship the
 `recharts` / `leaflet` / `@tanstack/react-table` weight — those are imported
 only inside `(dashboard)` client components. The root layout is just

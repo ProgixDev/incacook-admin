@@ -1,6 +1,6 @@
 # TASK-027 — Build the landing page sections
 
-Status: Review
+Status: Done
 Priority: P0
 Project: IncaCook Admin
 Owner: Agent

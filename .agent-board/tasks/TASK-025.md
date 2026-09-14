@@ -1,6 +1,6 @@
 # TASK-025 — Free `/` for the public surface + landing shell
 
-Status: Review
+Status: Done
 Priority: P0
 Project: IncaCook Admin
 Owner: Agent
