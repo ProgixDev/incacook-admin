@@ -1,9 +1,9 @@
 {
   "project": "IncaCook Admin",
-  "currentFocus": "Public marketing landing page at / (docs/plans/landing-page.md)",
+  "currentFocus": "Landing page shipped (#8). Remaining: TASK-028 store URLs (blocked on store acceptance) and TASK-029 launch pass.",
   "currentMilestone": "Phase 2 — IncaCook landing page",
-  "updated": "2026-09-11",
-  "recommendedStart": "TASK-025",
+  "updated": "2026-09-14",
+  "recommendedStart": "TASK-028",
   "columns": [
     "Backlog",
     "Ready",
@@ -298,7 +298,7 @@
     {
       "id": "TASK-025",
       "title": "Free / for the public surface + landing shell",
-      "status": "Review",
+      "status": "Done",
       "priority": "P0",
       "owner": "Agent",
       "path": ".agent-board/tasks/TASK-025.md",
@@ -316,7 +316,7 @@
     {
       "id": "TASK-027",
       "title": "Build the landing page sections",
-      "status": "Review",
+      "status": "Done",
       "priority": "P0",
       "owner": "Agent",
       "path": ".agent-board/tasks/TASK-027.md",
