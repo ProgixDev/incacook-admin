@@ -1,9 +1,9 @@
 # IncaCook Admin Agent Board
 
 Project: IncaCook Admin
-Current focus: Public marketing landing page at / (docs/plans/landing-page.md)
+Current focus: Landing page shipped (#8); boosts oversight shipped (#10)
 Current milestone: Phase 2 — IncaCook landing page
-Updated: 2026-09-11
+Updated: 2026-09-14
 
 ## Columns
 
@@ -42,24 +42,33 @@ Updated: 2026-09-11
 | TASK-022 | Drivers oversight → /v1/admin/drivers | Done | Agent | P2 |
 | TASK-023 | Seller subscriptions oversight → /v1/admin/subscriptions | Done | Agent | P2 |
 | TASK-024 | Wallet/payout oversight → /v1/admin/wallets + /withdrawals | Done | Agent | P2 |
-| TASK-025 | Free / for the public surface + landing shell | Review | Agent | P0 |
+| TASK-025 | Free / for the public surface + landing shell | Done | Agent | P0 |
 | TASK-026 | Art direction: three hero directions + display face | Done | Human + Agent | P0 |
-| TASK-027 | Build the landing page sections | Review | Agent | P0 |
+| TASK-027 | Build the landing page sections | Done | Agent | P0 |
 | TASK-028 | Real assets, store links, and French copy sign-off | Backlog | Human + Agent | P0 |
 | TASK-029 | Launch pass: SEO, responsive, a11y, performance | Backlog | Agent | P0 |
 
 ## Recommended Start
 
-Start with **TASK-001** (API client + envelope). Everything that touches the
-backend depends on it. Then **TASK-002** (admin auth + route guard) and
-**TASK-003** (shared table/query infra) unlock the whole wave of page-wiring
-tasks (TASK-004…014).
+**TASK-028**, then **TASK-029**. TASK-001…027 are Done — the admin panel and
+the public landing page (#8) both shipped, as did the boosts oversight list
+(#10, no task on this board).
 
-TASK-020 (CI gates) is independent and can be done first to arm the loop.
+Two caveats on what "remaining" means here, because the board's status column
+alone reads more optimistic than the code:
 
-TASK-015/016/017 (Orders, Sellers, Listings pages) are **Blocked** on backend
-admin endpoints that do not exist yet — they stay blocked until the backend
-adds them; do not wire them to mock data.
+- **TASK-028 is blocked, not merely queued.** `STORE_LINKS.ios` / `.android` in
+  `app/(public)/_lib/store-links.ts` are deliberately empty strings and
+  `<StoreCta />` renders an honest "Bientôt disponible" instead of a dead link.
+  Nothing more can be done there until the app is accepted on each store; the
+  fix is then a one-line edit per platform. Assets and imagery are already real.
+- **TASK-029 has not started.** There is no `sitemap.ts` and no `robots.ts` in
+  the repo, which is the cheapest way to confirm it. Its own rule stands:
+  nothing ships before it is green.
+
+Unresolved contradiction worth a human's eye: `app/(public)/page.tsx` records
+"Copy signed off 2026-09-11 (TASK-028)", while TASK-028's own body still lists
+copy sign-off as "fully open". One of the two is stale.
 
 ## Backend admin surface (source of truth)
 
@@ -77,6 +86,11 @@ endpoints are guarded by `RolesGuard` + `@Roles(Admin, Moderator)`.
 - Catalog: `GET/POST /v1/admin/catalog/products`, `GET/PATCH/DELETE :id`, `GET /v1/admin/catalog/orders`
 - Notifications: `POST /v1/admin/notifications/send`
 - Legal documents: `GET /v1/admin/legal-documents`, `active`, `POST`, `PATCH :id`, `POST :id/publish`
+- Boosts: `GET /v1/admin/boosts` — read-only oversight. `@Get` only, by
+  contract; admin observes boosts, it never grants, extends or cancels one.
+- Orders / Sellers / Listings: `GET /v1/admin/{orders,sellers,listings}`.
 
-**Not yet available (block TASK-015/016/017):** a global `/v1/admin/orders`,
-`/v1/admin/sellers`, or `/v1/admin/listings` list endpoint.
+The former "not yet available, blocks TASK-015/016/017" note here is gone
+because it is no longer true — all three list endpoints now exist
+(`src/modules/admin/{orders,sellers,listings}/*.controller.ts`) and those
+tasks are Done.
