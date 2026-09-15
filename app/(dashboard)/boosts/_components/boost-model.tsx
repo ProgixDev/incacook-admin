@@ -34,9 +34,14 @@ export interface AdminBoost {
 
 export type AdminBoostsListResponse = AdminBoost[];
 
+/**
+ * These values are sent verbatim to `GET /v1/admin/boosts?status=`, so they must
+ * match the server's `ADMIN_BOOST_STATUSES` exactly — including the case.
+ * "ENDED" used to sit where "EXPIRED" is now, and the server rejected it.
+ */
 export const BOOST_STATUS_OPTIONS = [
   { value: "ACTIVE", label: "Actif" },
-  { value: "ENDED", label: "Terminé" },
+  { value: "EXPIRED", label: "Terminé" },
   { value: "CANCELED", label: "Annulé" },
 ] as const;
 
@@ -56,13 +61,13 @@ export function sourceLabel(source: BoostSource): string {
  * the endpoint hasn't sent `isActive` — never used to override a value the
  * server did send.
  */
-export function boostStatus(boost: AdminBoost): "ACTIVE" | "ENDED" | "CANCELED" {
+export function boostStatus(boost: AdminBoost): "ACTIVE" | "EXPIRED" | "CANCELED" {
   if (boost.canceledAt) return "CANCELED";
   const active =
     typeof boost.isActive === "boolean"
       ? boost.isActive
       : new Date(boost.endsAt).getTime() > Date.now();
-  return active ? "ACTIVE" : "ENDED";
+  return active ? "ACTIVE" : "EXPIRED";
 }
 
 export function BoostStatusBadge({ boost }: { boost: AdminBoost }) {
