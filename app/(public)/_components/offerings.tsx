@@ -2,8 +2,8 @@ const OFFERINGS = [
   {
     name: "Le Bon Fait Maison",
     audience: "Particuliers",
-    note: "KYC auto-approuvé · plafond légal 4,50 €",
-    body: "Pour les voisins qui cuisinent chez eux. Inscription simplifiée, sans dossier d'entreprise — le prix par plat est plafonné à 4,50 € par la loi sur le fait-maison.",
+    note: "KYC auto-approuvé · plafond 4,50 €",
+    body: "Pour les voisins qui cuisinent chez eux. Inscription simplifiée, sans dossier d'entreprise — et un prix par plat plafonné à 4,50 €, par conviction : du fait maison bon et accessible à tous.",
   },
   {
     name: "L'Atelier Traiteur",

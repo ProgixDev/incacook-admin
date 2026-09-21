@@ -9,7 +9,7 @@ const FACTS = [
   },
   {
     claim: "Prix encadré",
-    proof: "Le plafond légal du fait-maison — 4,50 € — est bloqué au niveau du produit, pas seulement affiché.",
+    proof: "Notre plafond fait-maison — 4,50 € — est bloqué au niveau du produit, pas seulement affiché. Un choix IncaCook, pour rester abordable.",
   },
   {
     claim: "Paiement sécurisé",

@@ -33,7 +33,7 @@ test.describe("public legal pages (no backend, no auth)", () => {
     await expect(page).toHaveURL(/\/data-deletion$/);
     await expect(page.getByText(/supprimer mon compte/i)).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /tasseltess@gmail\.com/i }).first(),
+      page.getByRole("link", { name: /contact@incacook\.com/i }).first(),
     ).toBeVisible();
   });
 });
