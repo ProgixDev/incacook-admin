@@ -77,8 +77,8 @@ export default async function TermsPage() {
             <h2 className="font-semibold">Conditions en cours de publication</h2>
             <p className="mt-2 leading-7 text-on-surface-variant">
               Les conditions ne sont pas disponibles temporairement. Contactez-nous à{" "}
-              <a className="text-primary underline underline-offset-2" href="mailto:tasseltess@gmail.com">
-                tasseltess@gmail.com
+              <a className="text-primary underline underline-offset-2" href="mailto:contact@incacook.com">
+                contact@incacook.com
               </a>
               .
             </p>

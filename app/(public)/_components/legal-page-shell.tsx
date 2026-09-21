@@ -55,8 +55,8 @@ export function LegalPageShell({
         <footer className="mt-12 border-t border-outline-variant pt-6 text-sm text-on-surface-variant">
           <p>
             Questions concernant vos données ? Contactez-nous à{" "}
-            <a className="text-primary underline underline-offset-2" href="mailto:tasseltess@gmail.com">
-              tasseltess@gmail.com
+            <a className="text-primary underline underline-offset-2" href="mailto:contact@incacook.com">
+              contact@incacook.com
             </a>
             .
           </p>

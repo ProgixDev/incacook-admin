@@ -10,7 +10,7 @@ Utiliser les liens déployés de l'administration :
 - Politique de confidentialité : `https://incacook-admin.vercel.app/privacy`
 - Conditions d'utilisation : `https://incacook-admin.vercel.app/terms`
 - Suppression des données : `https://incacook-admin.vercel.app/data-deletion`
-- E-mail de support : `tasseltess@gmail.com`
+- E-mail de support : `contact@incacook.com`
 
 La page des conditions lit les CGU et CGV actives publiées depuis l'administration.
 Les pages de confidentialité et de suppression des données sont publiques, sans
@@ -36,7 +36,7 @@ Meta, et la liste des URL de redirection doit contenir
 1. Ajouter les comptes de test dans les rôles Meta et leur faire accepter l'invitation.
 2. Tester une première connexion Facebook, une reconnexion et une annulation sur
    iOS et Android.
-3. Vérifier qu'une demande envoyée à `tasseltess@gmail.com` permet de traiter la
+3. Vérifier qu'une demande envoyée à `contact@incacook.com` permet de traiter la
    suppression du compte et des données IncaCook associées.
 4. Lorsque les informations de l'application sont complètes et les tests validés,
    passer l'application Meta en mode **Live**.
