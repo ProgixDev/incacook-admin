@@ -20,8 +20,10 @@ export const metadata: Metadata = {
  * IncaCook landing page (TASK-027).
  *
  * Copy signed off 2026-09-11 (TASK-028) — no longer draft. Brand names (Le
- * Bon Fait Maison / L'Atelier Traiteur / Sauve Ton Panier), the €4,50
- * fait-maison cap and every compliance fact are drawn from the PRD. Store
+ * Bon Fait Maison / L'Atelier Traiteur / Sauve Ton Panier) and every
+ * compliance fact are drawn from the PRD. The €4,50 fait-maison cap is an
+ * IncaCook policy choice, not a statutory one — never describe it as legal.
+ * Store
  * links are intentionally empty (app not yet accepted on either store —
  * see `_lib/store-links.ts`); hero/seller/driver imagery is real IncaCook
  * material, not placeholders.
