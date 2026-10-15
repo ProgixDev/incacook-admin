@@ -1,9 +1,9 @@
 # Deployment
 
 How to deploy the IncaCook admin panel. It's a Next.js 16 app that runs
-**entirely client-side against the IncaCook backend** — every page builds
-static (`○ (Static)`) and fetches data in the browser from the Railway API. So
-hosting it is just "serve a static Next build + one env var."
+**entirely client-side against the IncaCook backend** — most pages build
+static (`○ (Static)`) and fetch data in the browser from the configured API.
+Hosting serves a Next build; the API origin is embedded at build time.
 
 > **Why manual/CLI deploy?** The GitHub repo (`Feint517/incacook-admin`) isn't
 > owned by the deployer, so Vercel's *git integration* (auto-deploy on push)
@@ -17,7 +17,7 @@ hosting it is just "serve a static Next build + one env var."
 The app reads a single build-time variable:
 
 ```
-NEXT_PUBLIC_API_BASE_URL=https://incacook-api-production-146b.up.railway.app
+NEXT_PUBLIC_API_BASE_URL=https://api.incacook.com
 ```
 
 `NEXT_PUBLIC_*` is **inlined into the build**, not read at runtime. So it must
@@ -50,7 +50,7 @@ vercel link            # links this folder to the incacook-admin project (alread
 **Set the env var** (once per environment; skip if already set in the dashboard):
 
 ```bash
-echo "https://incacook-api-production-146b.up.railway.app" \
+echo "https://api.incacook.com" \
   | vercel env add NEXT_PUBLIC_API_BASE_URL production
 ```
 
@@ -76,7 +76,7 @@ No GitHub needed either; Nixpacks auto-detects Next.js (no Dockerfile). Runs
 cd incacook-admin
 railway login                     # if not already: `railway whoami` to check
 railway add                       # create an "incacook-admin" service in the project
-railway variables set NEXT_PUBLIC_API_BASE_URL=https://incacook-api-production-146b.up.railway.app
+railway variables set NEXT_PUBLIC_API_BASE_URL=https://api.incacook.com
 railway up                        # build (pnpm install → pnpm build) + start (next start, binds $PORT)
 railway domain                    # generate a public URL
 ```
@@ -96,6 +96,23 @@ Optional automated check (drives the live app in a browser):
 # creds live in .env.local (E2E_*); the suite covers login + all 15 pages
 pnpm e2e
 ```
+
+## Build for staging
+
+Build a separate artifact against the HTTPS origin of the staging API deployed
+on Cloud Run. Do not include `/v1`; the client adds it. Use the service URL
+shown in Cloud Run:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=https://<staging-cloud-run-service-url> pnpm build
+```
+
+For authenticated Playwright verification, set `E2E_API_BASE_URL` to that same
+origin and use staging-only admin credentials in ignored `.env.local`. Run the
+suite against staging before promotion. The build command clears the previous
+`.next` output, rejects non-HTTPS and localhost origins or path components, and
+verifies the selected API origin is present in the client bundle with no
+Railway hostname present.
 
 ## Rollback
 

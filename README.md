@@ -38,11 +38,16 @@ Run the backend (`IncaCook-Server`) locally, then set:
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:3001
 ```
 
-### Point at production (Railway)
+### Point at production
 
 ```bash
-NEXT_PUBLIC_API_BASE_URL=https://incacook-api-production.up.railway.app
+NEXT_PUBLIC_API_BASE_URL=https://api.incacook.com
 ```
+
+`pnpm build` requires this origin and accepts HTTPS origins only. It clears the
+previous `.next` output, builds the app, and verifies that the selected origin
+is present in the browser bundle and no Railway hostname is present. Set the
+staging Cloud Run API origin before building a staging artifact.
 
 See `.env.example` for the full list of supported variables.
 

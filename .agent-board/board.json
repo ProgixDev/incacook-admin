@@ -2,7 +2,7 @@
   "project": "IncaCook Admin",
   "currentFocus": "Landing page shipped (#8). Remaining: TASK-028 store URLs (blocked on store acceptance) and TASK-029 launch pass.",
   "currentMilestone": "Phase 2 — IncaCook landing page",
-  "updated": "2026-10-12",
+  "updated": "2026-10-14",
   "recommendedStart": "TASK-028",
   "columns": [
     "Backlog",
@@ -351,7 +351,7 @@
     {
       "id": "TASK-030",
       "title": "Cloud Run staging and production API URL builds",
-      "status": "Backlog",
+      "status": "In Progress",
       "priority": "P0",
       "owner": "Agent",
       "path": ".agent-board/tasks/TASK-030.md",

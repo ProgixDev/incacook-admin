@@ -3,7 +3,7 @@
 Project: IncaCook Admin
 Current focus: Landing page shipped (#8); boosts oversight shipped (#10)
 Current milestone: Phase 2 — IncaCook landing page
-Updated: 2026-10-12
+Updated: 2026-10-14
 
 ## Columns
 
@@ -47,7 +47,7 @@ Updated: 2026-10-12
 | TASK-027 | Build the landing page sections | Done | Agent | P0 |
 | TASK-028 | Real assets, store links, and French copy sign-off | Backlog | Human + Agent | P0 |
 | TASK-029 | Launch pass: SEO, responsive, a11y, performance | Backlog | Agent | P0 |
-| TASK-030 | Cloud Run staging and production API URL builds | Backlog | Agent | P0 |
+| TASK-030 | Cloud Run staging and production API URL builds | In Progress | Agent | P0 |
 
 ## Recommended Start
 
