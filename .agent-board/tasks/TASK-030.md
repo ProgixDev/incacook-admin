@@ -48,3 +48,4 @@ Unit-test base URL normalization and fail-fast configuration; run Playwright smo
 - Gates (Node 22.23.2): typecheck clean, `pnpm test` 18/18, lint 0 errors (19 warnings), production build verified.
 - Note: one Playwright failure log printed a short-lived (1h) staging admin access token to the tool output; it was not written to any file or committed. Fixed by catching in-flight route errors.
 - Review (2026-10-20): OpenAI reviewer passed with no must-fix, should-fix, or nit findings. The builder used Anthropic; review ran on a different vendor. Task remains in Review until PR merge.
+- Docs handoff (2026-10-20): PR summary and evidence prepared from the task verification above; all three acceptance criteria are verified. The board remains in Review while PR #12 awaits human review and merge.
