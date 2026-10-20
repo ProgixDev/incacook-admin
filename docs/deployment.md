@@ -47,9 +47,14 @@ vercel login           # interactive — your Vercel account
 vercel link            # links this folder to the incacook-admin project (already done)
 ```
 
-**Set the env var** (once per environment; skip if already set in the dashboard):
+**Set the env var** (once per environment; skip if already set in the dashboard).
+The build fails fast when it is missing, so every environment that builds
+(including PR previews) needs it. Previews target staging, production targets
+the production API:
 
 ```bash
+echo "https://api-staging.incacook.com" \
+  | vercel env add NEXT_PUBLIC_API_BASE_URL preview
 echo "https://api.incacook.com" \
   | vercel env add NEXT_PUBLIC_API_BASE_URL production
 ```
