@@ -2,7 +2,18 @@
 
 import { readdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
+import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
+
+// Load the same .env* files `next build` will read (process.env still wins),
+// so a value configured in .env.production / .env.local passes validation.
+const projectRoot = process.cwd();
+// `@next/env` is Next's own dependency, so resolve it from next's location.
+const nextPackage = createRequire(path.join(projectRoot, "package.json")).resolve(
+  "next/package.json",
+);
+const { loadEnvConfig } = createRequire(nextPackage)("@next/env");
+loadEnvConfig(projectRoot, false);
 
 const origin = process.env.NEXT_PUBLIC_API_BASE_URL;
 if (!origin) {
@@ -34,7 +45,6 @@ if (
   process.exit(1);
 }
 
-const projectRoot = process.cwd();
 const buildDir = path.join(projectRoot, ".next");
 rmSync(buildDir, { recursive: true, force: true });
 

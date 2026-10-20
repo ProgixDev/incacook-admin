@@ -43,4 +43,7 @@ jobs:
         run: pnpm test
 
       - name: Build
+        # The build refuses to run without an explicit public HTTPS API origin.
+        env:
+          NEXT_PUBLIC_API_BASE_URL: https://api-staging.incacook.com
         run: pnpm build
