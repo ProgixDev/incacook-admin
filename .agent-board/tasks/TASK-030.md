@@ -1,7 +1,7 @@
 ## TASK-030 — Build admin for staging and api.incacook.com
-- status: planned
+- status: review
 - depends:
-Status: In Progress
+Status: Review
 Priority: P0
 Project: IncaCook Admin
 Owner: Agent
@@ -40,10 +40,11 @@ Unit-test base URL normalization and fail-fast configuration; run Playwright smo
 
 - Implemented the required API origin, HTTPS build validation, bundle origin verification, and Playwright target matching. The production build verified `https://api.incacook.com`; the existing typed client methods and `/v1` prefix remain intact.
 - `pnpm test` (18 passing), `pnpm typecheck`, `pnpm lint` (19 warnings, no errors), and the production build passed. The current shell runs Node 20.19.4 while this project declares Node 22.x.
-- Staging verification is pending: this worktree has no `NEXT_PUBLIC_API_BASE_URL`, `E2E_API_BASE_URL`, or staging admin credentials configured, so the Cloud Run staging bundle and authenticated Playwright flows could not be run. No staging acceptance criteria are marked complete.
+- Earlier staging verification was pending while the staging backend and dedicated test login were unavailable; the 2026-10-20 run below completes that verification.
 - 2026-10-15 re-run: `pnpm typecheck` clean, `pnpm test` 18/18, `pnpm lint` 0 errors (19 warnings), `pnpm build` fails without the origin, fails for `http://127.0.0.1:3001`, and passes with `https://api.incacook.com` ("Verified client bundle API origin: https://api.incacook.com"). Existing edits committed on `task/TASK-030` per the human decision.
-- Remaining: build with the staging Cloud Run origin and run authenticated Playwright smoke (login, dashboard, orders, users, payment oversight). Blocked on a deployed staging backend (server TASK-010) and a staging admin account. AC 1 (staging bundle half) and AC 2 stay unchecked until then.
+- Follow-up for server TASK-012: add the deployed admin origin to staging and production API `ALLOWED_ORIGINS` before real browsers use the deployed admin panel. This is separate from TASK-030's staging smoke verification.
 - 2026-10-20 staging verification: created `staging-admin-test@incacook.com` (Supabase project frkducrjrwexiwxknkln + `User` role ADMIN) with the server's `scripts/create-admin.ts`; credentials stored only in `incacook-staging` Secret Manager (`incacook-staging-admin-test-email`, `incacook-staging-admin-test-password`). Staging build: "Verified client bundle API origin: https://api-staging.incacook.com", 0 Railway hits in `.next/static`; a `/v1` origin is rejected. `pnpm e2e` against https://api-staging.incacook.com: 28 passed, 2 skipped (non-admin specs needing extra creds) — login, dashboard, users, orders, payouts (payment oversight) and the other admin routes.
 - Fixes needed to get E2E running: `allowedDevOrigins: ["127.0.0.1"]` in `next.config.mjs` (Next 16 blocked dev resources from 127.0.0.1 so the login page never hydrated), and `e2e/fixtures.ts`, a CORS bridge forwarding browser calls to the live staging API from Node. Reason: staging `ALLOWED_ORIGINS` is only `http://localhost:3000,http://localhost:8081`. **Follow-up for server TASK-012:** add the deployed admin origin to the staging/production API `ALLOWED_ORIGINS`.
 - Gates (Node 22.23.2): typecheck clean, `pnpm test` 18/18, lint 0 errors (19 warnings), production build verified.
 - Note: one Playwright failure log printed a short-lived (1h) staging admin access token to the tool output; it was not written to any file or committed. Fixed by catching in-flight route errors.
+- Review (2026-10-20): OpenAI reviewer passed with no must-fix, should-fix, or nit findings. The builder used Anthropic; review ran on a different vendor. Task remains in Review until PR merge.
