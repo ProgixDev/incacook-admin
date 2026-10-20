@@ -99,20 +99,34 @@ pnpm e2e
 
 ## Build for staging
 
-Build a separate artifact against the HTTPS origin of the staging API deployed
-on Cloud Run. Do not include `/v1`; the client adds it. Use the service URL
-shown in Cloud Run:
+Build a separate artifact against the staging API origin. Do not include
+`/v1`; the client adds it:
 
 ```bash
-NEXT_PUBLIC_API_BASE_URL=https://<staging-cloud-run-service-url> pnpm build
+NEXT_PUBLIC_API_BASE_URL=https://api-staging.incacook.com pnpm build
 ```
 
 For authenticated Playwright verification, set `E2E_API_BASE_URL` to that same
-origin and use staging-only admin credentials in ignored `.env.local`. Run the
-suite against staging before promotion. The build command clears the previous
-`.next` output, rejects non-HTTPS and localhost origins or path components, and
-verifies the selected API origin is present in the client bundle with no
-Railway hostname present.
+origin (`https://api-staging.incacook.com`) and use the dedicated staging-only
+admin test login. Its email and password live only in the `incacook-staging`
+Secret Manager (`incacook-staging-admin-test-email` /
+`incacook-staging-admin-test-password`); never use a production identity, and
+never paste the password in chat, files, or logs:
+
+```bash
+S() { gcloud secrets versions access latest --secret "incacook-staging-$1" --project incacook-staging | tr -d '\r\n'; }
+E2E_API_BASE_URL=https://api-staging.incacook.com \
+NEXT_PUBLIC_API_BASE_URL=https://api-staging.incacook.com \
+E2E_ADMIN_EMAIL=$(S admin-test-email) E2E_ADMIN_PASSWORD=$(S admin-test-password) pnpm e2e
+```
+
+The staging API's `ALLOWED_ORIGINS` does not list the Playwright dev origin, so
+`e2e/fixtures.ts` forwards browser calls to the live API from Node (no mocking).
+The deployed admin origin must be added to the API's `ALLOWED_ORIGINS` before
+real browsers can use it. The build command clears the previous `.next` output,
+rejects non-HTTPS and localhost origins or path components, and verifies the
+selected API origin is present in the client bundle with no Railway hostname
+present.
 
 ## Rollback
 

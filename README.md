@@ -46,8 +46,8 @@ NEXT_PUBLIC_API_BASE_URL=https://api.incacook.com
 
 `pnpm build` requires this origin and accepts HTTPS origins only. It clears the
 previous `.next` output, builds the app, and verifies that the selected origin
-is present in the browser bundle and no Railway hostname is present. Set the
-staging Cloud Run API origin before building a staging artifact.
+is present in the browser bundle and no Railway hostname is present. Staging
+builds use `https://api-staging.incacook.com`.
 
 See `.env.example` for the full list of supported variables.
 
