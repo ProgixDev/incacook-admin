@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Playwright drives the dev server through 127.0.0.1; Next 16 blocks dev
+  // resources (and so hydration) from that origin unless it is allowed.
+  allowedDevOrigins: ["127.0.0.1"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
