@@ -88,7 +88,9 @@ export default defineConfig({
   webServer: {
     command: `pnpm dev --port ${PORT}`,
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    // Never reuse a server for live-target runs: an already-running dev server
+    // may have been compiled against a different NEXT_PUBLIC_API_BASE_URL.
+    reuseExistingServer: !process.env.CI && !E2E_API_BASE_URL,
     timeout: 120_000,
     // Point the app at the same origin used by the authenticated E2E suite.
     env: E2E_API_BASE_URL
