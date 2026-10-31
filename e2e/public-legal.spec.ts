@@ -36,4 +36,16 @@ test.describe("public legal pages (no backend, no auth)", () => {
       page.getByRole("link", { name: /contact@incacook\.com/i }).first(),
     ).toBeVisible();
   });
+
+  test("/terms is anonymous, CGU/CGV only, and never shows the courier contract", async ({
+    page,
+  }) => {
+    await page.goto("/terms");
+    await expect(page).toHaveURL(/\/terms$/);
+    await expect(
+      page.getByRole("heading", { name: "Conditions générales", level: 1 }),
+    ).toBeVisible();
+    await expect(page.getByText("DRIVER_CONTRACT")).toHaveCount(0);
+    await expect(page.getByText(/contrat livreur/i)).toHaveCount(0);
+  });
 });
