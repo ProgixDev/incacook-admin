@@ -7,7 +7,7 @@ Project: IncaCook Admin
 Owner: Agent
 
 ### Scope
-Replace the hardcoded Railway fallback in `lib/api/client.ts` with a required explicit `NEXT_PUBLIC_API_BASE_URL` for staging and production builds. Keep its single typed HTTP client and `/v1` response envelope. Update `.env.example`, build/deployment docs, and Playwright configuration so staging builds target `https://api-staging.incacook.com`; production builds target `https://api.incacook.com`. Provision a dedicated staging-only admin test login for this task before authenticated staging verification. Use no production identity or credential, and store any generated password only in the approved secret store, never in chat or committed files. Do not commit `.env.local` or credentials. Verify login, dashboard, orders, users, and payment oversight against staging once the account exists. This task must be complete before server TASK-012 staging rehearsal.
+Replace the hardcoded Railway fallback in `lib/api/client.ts` with a required explicit `NEXT_PUBLIC_API_BASE_URL` for staging and production builds. Keep its single typed HTTP client and `/v1` response envelope. Update `.env.example`, build/deployment docs, and Playwright configuration so staging builds target `https://api-staging.incacook.com`; production builds target `https://api.incacook.com`. The Vercel project has this variable configured for Preview (`https://api-staging.incacook.com`) and Production (`https://api.incacook.com`). Provision a dedicated staging-only admin test login for this task before authenticated staging verification. Use no production identity or credential, and store any generated password only in the approved secret store, never in chat or committed files. Do not commit `.env.local` or credentials. Verify login, dashboard, orders, users, and payment oversight against staging once the account exists. This task must be complete before server TASK-012 staging rehearsal.
 
 ### Interface
 ```ts
@@ -29,6 +29,8 @@ Trailing slash, accidentally including `/v1` in the input, localhost in release 
 
 ### Design decision
 Decided after escalation of TASK-030: create a dedicated staging-only admin test login; use no production identities or credentials; store any generated password only in the approved secret store, never in chat or committed files; use the confirmed staging API origin `https://api-staging.incacook.com`; continue the staging build and verification once the account exists.
+
+Decided after escalation of TASK-030: the Vercel configuration blocker is resolved. `NEXT_PUBLIC_API_BASE_URL` is configured for Preview as `https://api-staging.incacook.com` and Production as `https://api.incacook.com`; the redeployed Preview is Ready and both PR #12 Vercel checks pass.
 
 ### Testing Decisions
 Unit-test base URL normalization and fail-fast configuration; run Playwright smoke against the actual staging backend. The server TASK-012 gate uses that staging build, not a mock API.

@@ -32,6 +32,11 @@ export function isAdminRole(role: string): boolean {
   return (ADMIN_ROLES as readonly string[]).includes(role);
 }
 
+/** True only for `ADMIN` — for endpoints the server restricts to `@Roles(Admin)`. */
+export function isFullAdminRole(role: string): boolean {
+  return role === "ADMIN";
+}
+
 /** The `GET /v1/users/me` shape we consume (subset of UserResponseDto). */
 export interface AuthUser {
   id: string;
