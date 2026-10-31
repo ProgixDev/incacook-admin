@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { API_BASE_URL } from "@/lib/api/client";
 
 import { LegalPageShell } from "../_components/legal-page-shell";
+import { publicTermsDocuments, type PublicTermsDocument } from "./public-documents";
 
 export const dynamic = "force-dynamic";
 
@@ -11,21 +12,12 @@ export const metadata: Metadata = {
   description: "Conditions générales d'utilisation et de vente IncaCook.",
 };
 
-type LegalDocument = {
-  id: string;
-  kind: "CGU" | "CGV";
-  version: string;
-  title: string;
-  content: string;
-  publishedAt: string | null;
-};
-
 type LegalDocumentsResponse = {
   success?: boolean;
-  data?: LegalDocument[];
+  data?: Array<Omit<PublicTermsDocument, "kind"> & { kind: string }>;
 };
 
-async function getActiveLegalDocuments(): Promise<LegalDocument[]> {
+async function getActiveLegalDocuments(): Promise<PublicTermsDocument[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/legal-documents/active`, {
       headers: { Accept: "application/json" },
@@ -34,7 +26,7 @@ async function getActiveLegalDocuments(): Promise<LegalDocument[]> {
     if (!response.ok) return [];
     const payload = (await response.json()) as LegalDocumentsResponse;
     if (!payload.success || !Array.isArray(payload.data)) return [];
-    return payload.data.filter((document) => document.kind === "CGU" || document.kind === "CGV");
+    return publicTermsDocuments(payload.data);
   } catch {
     return [];
   }
