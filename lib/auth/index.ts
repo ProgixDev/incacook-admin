@@ -28,6 +28,7 @@ export { getAccessToken, getRefreshToken } from "./token-store";
 export {
   ADMIN_ROLES,
   isAdminRole,
+  isFullAdminRole,
   type AuthStatus,
   type AuthUser,
   type SessionResponse,

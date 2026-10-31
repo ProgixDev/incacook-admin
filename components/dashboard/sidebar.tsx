@@ -22,6 +22,7 @@ import {
   CreditCard,
   Sparkles,
   Wallet,
+  Landmark,
   Settings,
   Sun,
   Moon,
@@ -29,10 +30,10 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/lib/auth";
+import { useAuth, isFullAdminRole } from "@/lib/auth";
 import { useEffect, useState } from "react";
 
-const NAV = [
+const NAV: { href: string; label: string; icon: typeof LayoutGrid; adminOnly?: boolean }[] = [
   { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutGrid },
   { href: "/users", label: "Utilisateurs", icon: Users },
   { href: "/orders", label: "Commandes", icon: ShoppingBag },
@@ -47,6 +48,7 @@ const NAV = [
   { href: "/subscriptions", label: "Abonnements", icon: CreditCard },
   { href: "/boosts", label: "Mise à la Une", icon: Sparkles },
   { href: "/payouts", label: "Versements", icon: Wallet },
+  { href: "/platform-earnings", label: "Revenus plateforme", icon: Landmark, adminOnly: true },
   { href: "/geography", label: "Carte", icon: MapPinned },
   { href: "/zones", label: "Zones de livraison", icon: Map },
   { href: "/notifications", label: "Notifications", icon: Megaphone },
@@ -58,7 +60,8 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const items = NAV.filter((item) => !item.adminOnly || (user && isFullAdminRole(user.role)));
   const [mounted, setMounted] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
@@ -94,7 +97,7 @@ export function Sidebar() {
       <div className="my-0.5 h-px w-full bg-outline-variant" />
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
-        {NAV.map((item) => {
+        {items.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
