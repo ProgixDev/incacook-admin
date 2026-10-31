@@ -1,4 +1,4 @@
-import { test as setup, expect } from "@playwright/test";
+import { test as setup, expect } from "./fixtures";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 

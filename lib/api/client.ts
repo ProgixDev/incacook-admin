@@ -17,20 +17,36 @@ import {
   type Pagination,
 } from "./types";
 
-/** Production Railway fallback, used when the env var is unset. */
-const DEFAULT_BASE_URL = "https://incacook-api-production-146b.up.railway.app";
-
 /** All endpoints are mounted under `/v1`. */
 const API_PREFIX = "/v1";
 
+/** Base URL of the API origin, without `/v1`; required at build time. */
+const configuredApiOrigin: string = process.env.NEXT_PUBLIC_API_BASE_URL ??
+  (() => { throw new Error("NEXT_PUBLIC_API_BASE_URL is required"); })();
+
+const parsedApiOrigin = new URL(configuredApiOrigin);
+const isLocalDevelopmentOrigin =
+  parsedApiOrigin.protocol === "http:" &&
+  ["localhost", "127.0.0.1", "[::1]"].includes(parsedApiOrigin.hostname);
+
+if (
+  (parsedApiOrigin.protocol !== "https:" && !isLocalDevelopmentOrigin) ||
+  parsedApiOrigin.username !== "" ||
+  parsedApiOrigin.password !== "" ||
+  parsedApiOrigin.pathname !== "/" ||
+  parsedApiOrigin.search !== "" ||
+  parsedApiOrigin.hash !== ""
+) {
+  throw new Error(
+    "NEXT_PUBLIC_API_BASE_URL must be an HTTPS origin without a path (HTTP is allowed for localhost development)",
+  );
+}
+
 /**
- * Resolved base URL including the `/v1` prefix, e.g.
- * `https://…up.railway.app/v1`. Reads `NEXT_PUBLIC_API_BASE_URL` (inlined at
- * build time by Next.js for client bundles) with the Railway prod fallback.
+ * Resolved base URL including the `/v1` prefix. The origin is inlined into
+ * client bundles at build time by Next.js.
  */
-export const API_BASE_URL = `${(
-  process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_BASE_URL
-).replace(/\/+$/, "")}${API_PREFIX}`;
+export const API_BASE_URL = `${configuredApiOrigin.replace(/\/+$/, "")}${API_PREFIX}`;
 
 /** Supported HTTP verbs for the low-level `request()`. */
 type Method = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";

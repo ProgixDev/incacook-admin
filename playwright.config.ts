@@ -25,6 +25,31 @@ if (existsSync(envLocal)) {
  */
 const PORT = Number(process.env.E2E_PORT ?? 3100);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
+const E2E_API_BASE_URL = process.env.E2E_API_BASE_URL;
+
+function normalizeApiOrigin(value: string, name: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`${name} must be a valid API origin.`);
+  }
+  if (parsed.pathname !== "/" || parsed.search || parsed.hash || parsed.username || parsed.password) {
+    throw new Error(`${name} must contain only the API origin, without a path or credentials.`);
+  }
+  return parsed.origin;
+}
+
+if (E2E_API_BASE_URL) {
+  const e2eOrigin = normalizeApiOrigin(E2E_API_BASE_URL, "E2E_API_BASE_URL");
+  const configuredOrigin = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (
+    configuredOrigin &&
+    normalizeApiOrigin(configuredOrigin, "NEXT_PUBLIC_API_BASE_URL") !== e2eOrigin
+  ) {
+    throw new Error("E2E_API_BASE_URL must match NEXT_PUBLIC_API_BASE_URL.");
+  }
+}
 
 export default defineConfig({
   testDir: "./e2e",
@@ -63,12 +88,13 @@ export default defineConfig({
   webServer: {
     command: `pnpm dev --port ${PORT}`,
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    // Never reuse a server for live-target runs: an already-running dev server
+    // may have been compiled against a different NEXT_PUBLIC_API_BASE_URL.
+    reuseExistingServer: !process.env.CI && !E2E_API_BASE_URL,
     timeout: 120_000,
-    // Point the app at whatever backend the E2E run targets (unset = the
-    // app's own default; a down/unreachable API just exercises error paths).
-    env: process.env.E2E_API_BASE_URL
-      ? { NEXT_PUBLIC_API_BASE_URL: process.env.E2E_API_BASE_URL }
+    // Point the app at the same origin used by the authenticated E2E suite.
+    env: E2E_API_BASE_URL
+      ? { NEXT_PUBLIC_API_BASE_URL: E2E_API_BASE_URL }
       : {},
   },
 });
