@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, CheckCircle2, Eye, Pencil } from "lucide-react";
+import { Calendar, CheckCircle2, CopyPlus, Eye, Pencil } from "lucide-react";
 import { post, patch } from "@/lib/api";
 import { useAdminMutation } from "@/lib/query";
 import {
@@ -23,12 +23,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatDateTimeFr } from "@/lib/utils";
+import { ReadOnlyBadge, StateBadge } from "./state-badge";
 import {
   FIELD_LIMITS,
   LEGAL_KINDS,
+  isLegalKind,
+  isReadOnly,
   kindLabel,
   kindShort,
+  newDraftSeed,
   type CreateLegalDocumentInput,
+  type DraftSeed,
   type LegalDocument,
   type LegalKind,
   type UpdateLegalDocumentInput,
@@ -40,14 +45,28 @@ interface Props {
   mode: Mode;
   /** The document being edited (null in create mode). */
   document: LegalDocument | null;
+  /** Prefill for create mode (a correction draft started from a published version). */
+  seed?: DraftSeed | null;
   onClose: () => void;
   /** Fired after a successful create/edit/publish so the list can refetch. */
   onSaved: () => void;
+  /** Start a new draft from a published (read-only) version. */
+  onNewDraftFrom?: (seed: DraftSeed) => void;
 }
 
-export function LegalDocumentDrawer({ mode, document, onClose, onSaved }: Props) {
+export function LegalDocumentDrawer({
+  mode,
+  document,
+  seed = null,
+  onClose,
+  onSaved,
+  onNewDraftFrom,
+}: Props) {
   const open = mode != null;
   const isCreate = mode === "create";
+  // Published versions (active or superseded) are never edited in place.
+  const readOnly = !isCreate && document != null && isReadOnly(document);
+  const correctionSeed = readOnly && document ? newDraftSeed(document) : null;
 
   const [kind, setKind] = useState<LegalKind>("CGU");
   const [version, setVersion] = useState("");
@@ -77,18 +96,18 @@ export function LegalDocumentDrawer({ mode, document, onClose, onSaved }: Props)
     update.reset();
     publish.reset();
     if (mode === "edit" && document) {
-      setKind((document.kind as LegalKind) ?? "CGU");
+      setKind(isLegalKind(document.kind) ? document.kind : "CGU");
       setVersion(document.version);
       setTitle(document.title);
       setContent(document.content);
     } else {
-      setKind("CGU");
-      setVersion("");
-      setTitle("");
-      setContent("");
+      setKind(seed?.kind ?? "CGU");
+      setVersion(seed?.version ?? "");
+      setTitle(seed?.title ?? "");
+      setContent(seed?.content ?? "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, document?.id]);
+  }, [mode, document?.id, seed]);
 
   const saveError = isCreate ? create.error : update.error;
   const saving = isCreate ? create.isPending : update.isPending;
@@ -102,7 +121,7 @@ export function LegalDocumentDrawer({ mode, document, onClose, onSaved }: Props)
     trimmedContent.length > 0;
 
   async function save() {
-    if (!canSave) return;
+    if (!canSave || readOnly) return;
     try {
       if (isCreate) {
         await create.mutate({
@@ -143,21 +162,26 @@ export function LegalDocumentDrawer({ mode, document, onClose, onSaved }: Props)
         <div className="flex flex-col gap-4 p-6">
           <div className="flex flex-wrap items-center gap-2 pr-8">
             <DialogTitle>
-              {isCreate ? "Nouveau document légal" : "Modifier le document"}
+              {isCreate
+                ? "Nouveau document légal"
+                : readOnly
+                  ? "Version publiée"
+                  : "Modifier le document"}
             </DialogTitle>
             {!isCreate && document && (
               <>
-                {document.isActive ? (
-                  <Badge variant="success">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Active
-                  </Badge>
-                ) : (
-                  <Badge variant="neutral">Brouillon</Badge>
-                )}
+                <StateBadge document={document} />
+                {readOnly && <ReadOnlyBadge />}
               </>
             )}
           </div>
+
+          {readOnly && (
+            <p className="rounded-md border border-outline-variant bg-surface-container-low p-3 text-[12px] text-on-surface-variant">
+              Une version publiée n&apos;est jamais modifiée. Pour la corriger,
+              préparez un nouveau brouillon avec un nouveau numéro de version.
+            </p>
+          )}
 
           {/* Kind — selectable on create, fixed (immutable) on edit. */}
           <Field label="Type de document">
@@ -189,6 +213,7 @@ export function LegalDocumentDrawer({ mode, document, onClose, onSaved }: Props)
               <Input
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
+                readOnly={readOnly}
                 maxLength={FIELD_LIMITS.version}
                 placeholder="ex. 1.0.0"
               />
@@ -197,6 +222,7 @@ export function LegalDocumentDrawer({ mode, document, onClose, onSaved }: Props)
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                readOnly={readOnly}
                 maxLength={FIELD_LIMITS.title}
                 placeholder="Titre affiché"
               />
@@ -231,6 +257,7 @@ export function LegalDocumentDrawer({ mode, document, onClose, onSaved }: Props)
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
+                readOnly={readOnly}
                 rows={12}
                 maxLength={FIELD_LIMITS.content}
                 placeholder="Corps du document (Markdown ou texte brut)…"
@@ -291,19 +318,32 @@ export function LegalDocumentDrawer({ mode, document, onClose, onSaved }: Props)
             )}
             <div className="ml-auto flex items-center gap-2">
               <Button variant="ghost" onClick={onClose} disabled={saving}>
-                Annuler
+                {readOnly ? "Fermer" : "Annuler"}
               </Button>
-              <Button
-                variant="default"
-                onClick={save}
-                disabled={!canSave || saving}
-              >
-                {saving
-                  ? "Enregistrement…"
-                  : isCreate
-                    ? "Créer le brouillon"
-                    : "Enregistrer"}
-              </Button>
+              {readOnly ? (
+                correctionSeed &&
+                onNewDraftFrom && (
+                  <Button
+                    variant="default"
+                    onClick={() => onNewDraftFrom(correctionSeed)}
+                  >
+                    <CopyPlus className="h-4 w-4" />
+                    Nouveau brouillon à partir de cette version
+                  </Button>
+                )
+              ) : (
+                <Button
+                  variant="default"
+                  onClick={save}
+                  disabled={!canSave || saving}
+                >
+                  {saving
+                    ? "Enregistrement…"
+                    : isCreate
+                      ? "Créer le brouillon"
+                      : "Enregistrer"}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -324,8 +364,10 @@ export function LegalDocumentDrawer({ mode, document, onClose, onSaved }: Props)
                 <DialogDescription>
                   {kindShort(document.kind)} · version {document.version}{" "}
                   deviendra la version active. Toute autre version{" "}
-                  {kindShort(document.kind)} active sera désactivée et tous les
-                  utilisateurs seront notifiés.
+                  {kindShort(document.kind)} active sera désactivée
+                  {document.kind === "DRIVER_CONTRACT"
+                    ? ". Le contrat est présenté en intégralité lors de l'inscription des livreurs ; une version publiée ne pourra plus être modifiée."
+                    : " et tous les utilisateurs seront notifiés."}
                 </DialogDescription>
               </div>
 
