@@ -55,5 +55,12 @@ if (files.length === 0) {
 
 const result = spawnSync("node", ["--import", "tsx", "--test", ...files], {
   stdio: "inherit",
+  // Unit tests use the local development origin when they import the client;
+  // this test-only value never reaches a Next.js build or app runtime.
+  env: {
+    ...process.env,
+    NEXT_PUBLIC_API_BASE_URL:
+      process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:3001",
+  },
 });
 process.exit(result.status ?? 1);
