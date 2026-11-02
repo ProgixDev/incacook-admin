@@ -21,8 +21,11 @@ import {
 const API_PREFIX = "/v1";
 
 /** Base URL of the API origin, without `/v1`; required at build time. */
-const configuredApiOrigin: string = process.env.NEXT_PUBLIC_API_BASE_URL ??
-  (() => { throw new Error("NEXT_PUBLIC_API_BASE_URL is required"); })();
+const configuredApiOrigin: string =
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  (() => {
+    throw new Error("NEXT_PUBLIC_API_BASE_URL is required");
+  })();
 
 const parsedApiOrigin = new URL(configuredApiOrigin);
 const isLocalDevelopmentOrigin =
@@ -76,10 +79,7 @@ export interface RequestOptions {
   next?: { revalidate?: number | false; tags?: string[] };
 }
 
-function buildUrl(
-  path: string,
-  query?: RequestOptions["query"],
-): string {
+function buildUrl(path: string, query?: RequestOptions["query"]): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const url = `${API_BASE_URL}${normalizedPath}`;
   if (!query) return url;
@@ -150,7 +150,10 @@ export async function request<T>(
   };
 
   const hasBody = body !== undefined && body !== null;
-  if (hasBody && headers["Content-Type"] === undefined) {
+  // FormData sets its own multipart Content-Type (with boundary) and is sent as-is.
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
+  if (hasBody && !isFormData && headers["Content-Type"] === undefined) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -166,7 +169,11 @@ export async function request<T>(
     response = await fetch(buildUrl(path, options?.query), {
       method,
       headers,
-      body: hasBody ? JSON.stringify(body) : undefined,
+      body: hasBody
+        ? isFormData
+          ? (body as FormData)
+          : JSON.stringify(body)
+        : undefined,
       signal: options?.signal,
       cache: options?.cache,
       ...(options?.next ? { next: options.next } : {}),
@@ -179,9 +186,7 @@ export async function request<T>(
       statusCode: 0,
       code: aborted ? "REQUEST_ABORTED" : "NETWORK_ERROR",
       message:
-        cause instanceof Error
-          ? cause.message
-          : "Network request failed",
+        cause instanceof Error ? cause.message : "Network request failed",
       details: cause,
     });
   }

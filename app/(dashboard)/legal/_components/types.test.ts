@@ -83,3 +83,17 @@ test("a correction starts a new draft seeded from the published version, never r
 test("a seed from a row with an unexpected kind is rejected rather than creating an unsupported draft", () => {
   assert.equal(newDraftSeed(doc({ kind: "HYGIENE" })), null);
 });
+
+test("pdfFileError accepts a PDF and rejects other files, empty files and files over 10 Mo", async () => {
+  const { pdfFileError, PDF_MAX_BYTES } = await import("./types.ts");
+  const file = (name: string, type: string, size: number) =>
+    ({ name, type, size }) as File;
+  assert.equal(pdfFileError(file("cgu.pdf", "application/pdf", 1000)), null);
+  assert.equal(pdfFileError(file("CGU.PDF", "", 1000)), null);
+  assert.match(pdfFileError(file("cgu.docx", "application/msword", 1000)) ?? "", /PDF/);
+  assert.match(pdfFileError(file("a.pdf", "application/pdf", 0)) ?? "", /vide/);
+  assert.match(
+    pdfFileError(file("a.pdf", "application/pdf", PDF_MAX_BYTES + 1)) ?? "",
+    /10 Mo/,
+  );
+});

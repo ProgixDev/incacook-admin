@@ -1,8 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, CheckCircle2, CopyPlus, Eye, Pencil } from "lucide-react";
-import { post, patch } from "@/lib/api";
+import {
+  Calendar,
+  CheckCircle2,
+  CopyPlus,
+  ExternalLink,
+  Eye,
+  FileUp,
+  Pencil,
+} from "lucide-react";
+import { post, patch, put } from "@/lib/api";
 import { useAdminMutation } from "@/lib/query";
 import {
   Dialog,
@@ -32,6 +40,7 @@ import {
   kindLabel,
   kindShort,
   newDraftSeed,
+  pdfFileError,
   type CreateLegalDocumentInput,
   type DraftSeed,
   type LegalDocument,
@@ -74,6 +83,27 @@ export function LegalDocumentDrawer({
   const [content, setContent] = useState("");
   const [preview, setPreview] = useState(false);
   const [confirmPublish, setConfirmPublish] = useState(false);
+  const [pdf, setPdf] = useState<File | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  function pickPdf(file: File | null) {
+    setPdf(null);
+    setPdfError(null);
+    if (!file) return;
+    const err = pdfFileError(file);
+    if (err) setPdfError(err);
+    else setPdf(file);
+  }
+
+  const createPdf = useAdminMutation<LegalDocument, FormData>((form, opts) =>
+    post("/admin/legal-documents/pdf", form, opts),
+  );
+  const replacePdf = useAdminMutation<
+    LegalDocument,
+    { id: string; form: FormData }
+  >(({ id, form }, opts) =>
+    put(`/admin/legal-documents/${id}/pdf`, form, opts),
+  );
 
   const create = useAdminMutation<LegalDocument, CreateLegalDocumentInput>(
     (payload, opts) => post("/admin/legal-documents", payload, opts),
@@ -92,6 +122,10 @@ export function LegalDocumentDrawer({
   useEffect(() => {
     setPreview(false);
     setConfirmPublish(false);
+    setPdf(null);
+    setPdfError(null);
+    createPdf.reset();
+    replacePdf.reset();
     create.reset();
     update.reset();
     publish.reset();
@@ -109,8 +143,18 @@ export function LegalDocumentDrawer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, document?.id, seed]);
 
-  const saveError = isCreate ? create.error : update.error;
-  const saving = isCreate ? create.isPending : update.isPending;
+  // A version is PDF-based when it already has a file, or when a new draft is
+  // created (new drafts are PDF-only). Legacy text drafts keep the text editor.
+  const isPdfDoc = isCreate || Boolean(document?.fileUrl);
+  const saveError =
+    (isCreate
+      ? (createPdf.error ?? create.error)
+      : (update.error ?? replacePdf.error)) ?? null;
+  const saving =
+    createPdf.isPending ||
+    create.isPending ||
+    update.isPending ||
+    replacePdf.isPending;
 
   const trimmedVersion = version.trim();
   const trimmedTitle = title.trim();
@@ -118,27 +162,34 @@ export function LegalDocumentDrawer({
   const canSave =
     trimmedVersion.length > 0 &&
     trimmedTitle.length > 0 &&
-    trimmedContent.length > 0;
+    (isPdfDoc ? (isCreate ? pdf !== null : true) : trimmedContent.length > 0);
 
   async function save() {
     if (!canSave || readOnly) return;
     try {
       if (isCreate) {
-        await create.mutate({
-          kind,
-          version: trimmedVersion,
-          title: trimmedTitle,
-          content: trimmedContent,
-        });
+        const form = new FormData();
+        form.append("kind", kind);
+        form.append("version", trimmedVersion);
+        form.append("title", trimmedTitle);
+        if (pdf) form.append("file", pdf);
+        await createPdf.mutate(form);
       } else if (document) {
         await update.mutate({
           id: document.id,
-          payload: {
-            version: trimmedVersion,
-            title: trimmedTitle,
-            content: trimmedContent,
-          },
+          payload: isPdfDoc
+            ? { version: trimmedVersion, title: trimmedTitle }
+            : {
+                version: trimmedVersion,
+                title: trimmedTitle,
+                content: trimmedContent,
+              },
         });
+        if (pdf) {
+          const form = new FormData();
+          form.append("file", pdf);
+          await replacePdf.mutate({ id: document.id, form });
+        }
       }
       onSaved();
     } catch {
@@ -186,7 +237,10 @@ export function LegalDocumentDrawer({
           {/* Kind — selectable on create, fixed (immutable) on edit. */}
           <Field label="Type de document">
             {isCreate ? (
-              <Select value={kind} onValueChange={(v) => setKind(v as LegalKind)}>
+              <Select
+                value={kind}
+                onValueChange={(v) => setKind(v as LegalKind)}
+              >
                 <SelectTrigger aria-label="Type de document">
                   <SelectValue />
                 </SelectTrigger>
@@ -229,46 +283,101 @@ export function LegalDocumentDrawer({
             </Field>
           </div>
 
-          <Field
-            label="Contenu"
-            action={
-              <button
-                type="button"
-                onClick={() => setPreview((p) => !p)}
-                className="inline-flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-on-surface"
-              >
-                {preview ? (
-                  <>
-                    <Pencil className="h-3 w-3" /> Éditer
-                  </>
-                ) : (
-                  <>
-                    <Eye className="h-3 w-3" /> Aperçu
-                  </>
+          {isPdfDoc ? (
+            <Field label="Document PDF">
+              <div className="space-y-2">
+                {document?.fileUrl && (
+                  <div className="space-y-2">
+                    <iframe
+                      src={document.fileUrl}
+                      title={`PDF ${document.title}`}
+                      className="h-72 w-full rounded-md border border-outline-variant bg-surface-container-low"
+                    />
+                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-on-surface-variant">
+                      <a
+                        href={document.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                      >
+                        <ExternalLink className="h-3 w-3" /> Ouvrir le PDF
+                      </a>
+                      {document.fileSize ? (
+                        <span>{(document.fileSize / 1024).toFixed(0)} Ko</span>
+                      ) : null}
+                      {document.fileSha256 && (
+                        <span className="font-mono" title={document.fileSha256}>
+                          SHA-256 {document.fileSha256.slice(0, 12)}…
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 )}
-              </button>
-            }
-          >
-            {preview ? (
-              <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-md border border-outline-variant bg-surface-container-low p-3 text-[12px] text-on-surface">
-                {content || "— (vide) —"}
-              </pre>
-            ) : (
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                readOnly={readOnly}
-                rows={12}
-                maxLength={FIELD_LIMITS.content}
-                placeholder="Corps du document (Markdown ou texte brut)…"
-                className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 font-mono text-[12px] text-on-surface placeholder:text-on-surface-variant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              />
-            )}
-            <p className="mt-1 text-right text-[10.5px] text-on-surface-variant tabular-nums">
-              {content.length.toLocaleString("fr-FR")} /{" "}
-              {FIELD_LIMITS.content.toLocaleString("fr-FR")}
-            </p>
-          </Field>
+                {!readOnly && (
+                  <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-outline-variant bg-surface-container-low px-3 py-3 text-[12px] text-on-surface hover:bg-surface-container">
+                    <FileUp className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 truncate">
+                      {pdf
+                        ? pdf.name
+                        : document?.fileUrl
+                          ? "Remplacer le PDF (facultatif)"
+                          : "Choisir un fichier PDF (10 Mo max)"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      className="sr-only"
+                      onChange={(e) => pickPdf(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                )}
+                {pdfError && (
+                  <p className="text-[12px] text-error">{pdfError}</p>
+                )}
+              </div>
+            </Field>
+          ) : (
+            <Field
+              label="Contenu"
+              action={
+                <button
+                  type="button"
+                  onClick={() => setPreview((p) => !p)}
+                  className="inline-flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-on-surface"
+                >
+                  {preview ? (
+                    <>
+                      <Pencil className="h-3 w-3" /> Éditer
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-3 w-3" /> Aperçu
+                    </>
+                  )}
+                </button>
+              }
+            >
+              {preview ? (
+                <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-md border border-outline-variant bg-surface-container-low p-3 text-[12px] text-on-surface">
+                  {content || "— (vide) —"}
+                </pre>
+              ) : (
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  readOnly={readOnly}
+                  rows={12}
+                  maxLength={FIELD_LIMITS.content}
+                  placeholder="Corps du document (Markdown ou texte brut)…"
+                  className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 font-mono text-[12px] text-on-surface placeholder:text-on-surface-variant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
+              )}
+              <p className="mt-1 text-right text-[10.5px] text-on-surface-variant tabular-nums">
+                {content.length.toLocaleString("fr-FR")} /{" "}
+                {FIELD_LIMITS.content.toLocaleString("fr-FR")}
+              </p>
+            </Field>
+          )}
 
           {!isCreate && document && (
             <div className="grid gap-1.5 rounded-md border border-outline-variant bg-surface-container-low p-3 text-[12px] text-on-surface-variant">
@@ -372,7 +481,9 @@ export function LegalDocumentDrawer({
               </div>
 
               {publish.error && (
-                <p className="text-[12px] text-error">{publish.error.message}</p>
+                <p className="text-[12px] text-error">
+                  {publish.error.message}
+                </p>
               )}
 
               <div className="flex items-center justify-end gap-2">

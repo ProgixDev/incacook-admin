@@ -28,6 +28,10 @@ export interface LegalDocument {
   version: string;
   title: string;
   content: string;
+  /** Public URL of the uploaded PDF; null for legacy text-only versions. */
+  fileUrl?: string | null;
+  fileSha256?: string | null;
+  fileSize?: number | null;
   isActive: boolean;
   publishedAt: string | null;
   createdAt: string;
@@ -47,6 +51,19 @@ export interface UpdateLegalDocumentInput {
   version?: string;
   title?: string;
   content?: string;
+}
+
+/** Max PDF size accepted by the server (10 Mo). */
+export const PDF_MAX_BYTES = 10 * 1024 * 1024;
+
+/** Returns an error message when `file` cannot be uploaded as a legal PDF. */
+export function pdfFileError(file: File): string | null {
+  const isPdf =
+    file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+  if (!isPdf) return "Le fichier doit être un PDF.";
+  if (file.size > PDF_MAX_BYTES) return "Le PDF dépasse 10 Mo.";
+  if (file.size === 0) return "Le fichier est vide.";
+  return null;
 }
 
 /** Field length limits mirrored from the server DTOs (class-validator). */
