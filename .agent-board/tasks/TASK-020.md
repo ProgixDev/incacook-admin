@@ -13,7 +13,7 @@ Add the PR gate that mirrors take-my-pic — every PR re-runs the objective chec
 ## Scope
 
 - Add `"typecheck": "tsc --noEmit"` to `package.json` scripts.
-- Add `.github/workflows/quality-gates.yml`: on PR to `dev`, run `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm build`.
+- Add `.github/workflows/quality-gates.yml`: on PR to `staging`, run `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm build`.
 
 ## Backend Endpoints
 
@@ -22,7 +22,7 @@ Add the PR gate that mirrors take-my-pic — every PR re-runs the objective chec
 ## Acceptance Criteria
 
 - [ ] `pnpm typecheck` script exists and passes locally.
-- [ ] Workflow runs the three gates on PRs into `dev`.
+- [ ] Workflow runs the three gates on PRs into `staging`.
 
 ## Edge Cases
 
