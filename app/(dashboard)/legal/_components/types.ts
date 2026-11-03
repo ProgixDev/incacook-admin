@@ -15,11 +15,16 @@
 
 /**
  * Document kind. The backend `CharterKind` enum has more values
- * (HYGIENE/FAIT_MAISON/…) but only these three are managed by this feature:
- * the customer CGU/CGV and the courier contract (`DRIVER_CONTRACT`, shown in
- * full during courier signup — never on the public `/terms` page).
+ * (HYGIENE/FAIT_MAISON/…) but only these are managed by this feature:
+ * the customer CGU/CGV, the courier contract (`DRIVER_CONTRACT`, shown in
+ * full during courier signup) and the seller contract (`SELLER_CONTRACT`,
+ * shown during seller signup) — never on the public `/terms` page.
  */
-export type LegalKind = "CGU" | "CGV" | "DRIVER_CONTRACT";
+export type LegalKind =
+  | "CGU"
+  | "CGV"
+  | "DRIVER_CONTRACT"
+  | "SELLER_CONTRACT";
 
 /** A legal document row (list and active share the same `LegalDocumentView`). */
 export interface LegalDocument {
@@ -77,6 +82,7 @@ export const KIND_LABEL: Record<LegalKind, string> = {
   CGU: "CGU — Conditions générales d'utilisation",
   CGV: "CGV — Conditions générales de vente",
   DRIVER_CONTRACT: "Contrat livreur — Contrat de prestation des livreurs",
+  SELLER_CONTRACT: "Contrat vendeur — Contrat d'adhésion Vendeur",
 };
 
 /** Short label for badges/columns. */
@@ -84,10 +90,16 @@ export const KIND_SHORT: Record<LegalKind, string> = {
   CGU: "CGU",
   CGV: "CGV",
   DRIVER_CONTRACT: "Contrat livreur",
+  SELLER_CONTRACT: "Contrat vendeur",
 };
 
 /** The kinds a document can be created as. */
-export const LEGAL_KINDS: LegalKind[] = ["CGU", "CGV", "DRIVER_CONTRACT"];
+export const LEGAL_KINDS: LegalKind[] = [
+  "CGU",
+  "CGV",
+  "DRIVER_CONTRACT",
+  "SELLER_CONTRACT",
+];
 
 export function kindLabel(kind: string): string {
   return KIND_LABEL[kind as LegalKind] ?? kind;

@@ -137,7 +137,7 @@ export function LegalClient() {
         <div className="min-w-0">
           <div className="inline-flex items-center gap-2 text-[13px] text-on-surface-variant">
             <FileText className="h-4 w-4" />
-            Versions légales CGU / CGV / Contrat livreur
+            Versions légales CGU / CGV / Contrat livreur / Contrat vendeur
           </div>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {activeQuery.isLoading ? (
