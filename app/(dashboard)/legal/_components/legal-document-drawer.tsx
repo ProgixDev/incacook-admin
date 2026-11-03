@@ -476,7 +476,9 @@ export function LegalDocumentDrawer({
                   {kindShort(document.kind)} active sera désactivée
                   {document.kind === "DRIVER_CONTRACT"
                     ? ". Le contrat est présenté en intégralité lors de l'inscription des livreurs ; une version publiée ne pourra plus être modifiée."
-                    : " et tous les utilisateurs seront notifiés."}
+                    : document.kind === "SELLER_CONTRACT"
+                      ? ". Les vendeurs seront notifiés ; une version publiée ne pourra plus être modifiée."
+                      : " et tous les utilisateurs seront notifiés."}
                 </DialogDescription>
               </div>
 

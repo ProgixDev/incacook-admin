@@ -26,7 +26,13 @@ function doc(overrides: Partial<LegalDocument> = {}): LegalDocument {
 }
 
 test("the editor offers the courier contract as a third document kind", () => {
-  assert.deepEqual(LEGAL_KINDS, ["CGU", "CGV", "DRIVER_CONTRACT"]);
+  assert.deepEqual(LEGAL_KINDS, [
+    "CGU",
+    "CGV",
+    "DRIVER_CONTRACT",
+    "SELLER_CONTRACT",
+  ]);
+  assert.equal(kindShort("SELLER_CONTRACT"), "Contrat vendeur");
   assert.equal(kindShort("DRIVER_CONTRACT"), "Contrat livreur");
   assert.match(kindLabel("DRIVER_CONTRACT"), /Contrat/);
 });
