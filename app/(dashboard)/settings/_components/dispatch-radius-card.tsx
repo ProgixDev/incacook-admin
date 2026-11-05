@@ -87,7 +87,8 @@ function DispatchRadiusEditor() {
   async function persist(steps: DispatchRadiusStep[]) {
     setSaved(false);
     try {
-      await save.mutate({ steps });
+      const updated = await save.mutate({ steps });
+      setRows(toRows(updated.steps));
       setSaved(true);
       query.refetch();
     } catch {
