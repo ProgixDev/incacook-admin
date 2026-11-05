@@ -173,6 +173,7 @@ export function ZoneFormDialog({ open, zone, onClose, onSaved }: Props) {
               />
             </Field>
           </div>
+          <p className="text-[11px] text-on-surface-variant">Centre de la zone, réservé à un usage futur</p>
 
           <label className="flex items-center gap-2 text-sm text-on-surface">
             <input
