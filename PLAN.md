@@ -44,12 +44,12 @@ Mount `DispatchRadiusCard` on Settings using the delivery-fee card's query/mutat
 `GET/PATCH /v1/admin/settings/dispatch-radius` use `DispatchRadiusSetting` and `{steps}` above. `afterSeconds` and `radiusMeters` are integers, `null` radius means unlimited. `isDefault` means the row is absent; an explicit unlimited PATCH returns the server's updated setting. `noDriverTimeoutSeconds` is the limit shown in validation help. Keep HTTP errors in `DataTableError` or inline mutation error as appropriate.
 
 ### Acceptance Criteria
-- [ ] GET populates rows; default state shows one unlimited row and the exact open-dispatch banner.
-- [ ] Valid save persists and re-renders from server read-back; invalid input blocks save with a clear rule-specific message; a server 400 appears inline.
-- [ ] Disable asks for confirmation and PATCHes `[{afterSeconds:0,radiusMeters:null}]`, then shows the refreshed open schedule.
-- [ ] Non-Admin sessions cannot reach the card or issue its GET/PATCH; unreachable server and 403 render existing error treatment.
-- [ ] Zones page displays the informational note and lat/lng help.
-- [ ] Typecheck, lint, existing Playwright smoke and a pure validator test pass.
+- [x] GET populates rows; default state shows one unlimited row and the exact open-dispatch banner.
+- [x] Valid save persists and re-renders from server read-back; invalid input blocks save with a clear rule-specific message; a server 400 appears inline.
+- [x] Disable asks for confirmation and PATCHes `[{afterSeconds:0,radiusMeters:null}]`, then shows the refreshed open schedule.
+- [x] Non-Admin sessions cannot reach the card or issue its GET/PATCH; unreachable server and 403 render existing error treatment.
+- [x] Zones page displays the informational note and lat/lng help.
+- [x] Typecheck, lint, existing Playwright smoke and a pure validator test pass.
 
 ### Edge Cases
 Two admins edit concurrently (last write wins and refreshed “modifié par”); minutes:seconds parsing; decimal km conversion to integer metres; a 403 after the page loaded; absent/default setting.
