@@ -23,7 +23,7 @@ you review + merge → `/next-task` again.
    Admin/Moderator account. The pipeline halts without a green typecheck+build.
 5. **Pass criteria** — tick what's truly verified; mark fixture-dependent states
    `manual`.
-6. **PR** — branch `task/TASK-XXX` → `dev`, then stop.
+6. **PR** — branch `task/TASK-XXX` → `staging`, then stop.
 
 ## Two trigger options
 

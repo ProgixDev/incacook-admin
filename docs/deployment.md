@@ -146,8 +146,8 @@ Once the deployer has repo access (added as a collaborator on
 
 1. Vercel dashboard → the `incacook-admin` project → **Settings → Git** →
    connect the repository.
-2. Set the **Production Branch** to `main` (it tracks the finished app; `dev`
-   is the integration branch).
+2. Set the **Production Branch** to `main` (it tracks the finished app; `staging`
+   is the integration branch — see `docs/branching.md`).
 3. Keep `NEXT_PUBLIC_API_BASE_URL` set for Production + Preview.
 
 After that, every push to `main` auto-deploys and every PR gets a preview URL —

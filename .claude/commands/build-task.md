@@ -13,7 +13,7 @@ Work the steps in order. **Stop and report** if any step fails or a precondition
 1. Run `node scripts/agent-board.mjs list` and confirm `$ARGUMENTS` is marked `BUILDABLE` (all `blockedBy` tasks are `Done`). If it is not buildable, stop and say which blocker is open. If it is `Blocked` on a missing backend endpoint (TASK-015/016/017), stop — that is not agent-buildable.
 2. Ensure the working tree is clean (`git status`). If dirty, stop and ask.
 3. Confirm a local IncaCook-Server is reachable for manual verification (`curl -s http://127.0.0.1:3001/v1/health` or the health route). If it is not up, you can still build + typecheck, but the manual pass-criteria stay `manual` — say so.
-4. Create/switch to branch `task/$ARGUMENTS` off the latest `dev` (`git fetch`, then branch from `origin/dev`).
+4. Create/switch to branch `task/$ARGUMENTS` off the latest `staging` (`git fetch`, then branch from `origin/staging`).
 5. Move the task into progress: `node scripts/agent-board.mjs set-status $ARGUMENTS "In Progress"`.
 
 ## 1. Grill the spec — MANDATORY, never skip
@@ -49,7 +49,7 @@ In `.agent-board/tasks/$ARGUMENTS.md`, tick the Acceptance / Pass Criteria you g
 
 ## 6. Open the PR
 
-Commit on `task/$ARGUMENTS` and open a PR into `dev` with `gh pr create`. The PR body must list:
+Commit on `task/$ARGUMENTS` and open a PR into `staging` with `gh pr create`. The PR body must list:
 - what was built + which endpoint it wired,
 - the grilling-driven spec refinements,
 - the `pnpm typecheck` + `pnpm build` results (paste pass/fail),

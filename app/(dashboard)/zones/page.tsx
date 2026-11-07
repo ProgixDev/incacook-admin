@@ -5,7 +5,7 @@ export default function ZonesPage() {
   return (
     <PageShell
       title="Zones de livraison"
-      subtitle="Zones d'opération que les livreurs sélectionnent à l'inscription"
+      subtitle="Les zones sont indicatives : elles ne limitent pas les commandes visibles par les livreurs."
     >
       <ZonesClient />
     </PageShell>
