@@ -72,6 +72,23 @@ async function mockApi(page: Page, role: string, getFailure?: "forbidden" | "unr
 }
 
 test.describe("dispatch radius settings", () => {
+  test("disable discards an unsaved radius edit and shows the server schedule", async ({ page }) => {
+    const calls = await mockApi(page, "ADMIN");
+    await page.goto("/settings");
+    await expect(page.getByLabel("Rayon étape 1")).toHaveValue("");
+
+    await page.getByLabel("Rayon étape 1").fill("2,5");
+    page.on("dialog", (dialog) => dialog.accept());
+    await page.getByRole("button", { name: "Désactiver le rayon (répartition ouverte)" }).click();
+
+    await expect.poll(() => calls.filter((call) => call.method === "PATCH").length).toBe(1);
+    expect(calls.find((call) => call.method === "PATCH")?.body).toEqual({ steps: [{ afterSeconds: 0, radiusMeters: null }] });
+    await expect(page.getByText("Aucun rayon configuré : la répartition est ouverte à tous les livreurs en ligne.")).toBeVisible();
+    await expect(page.getByLabel("Délai étape 1")).toHaveValue("00:00");
+    await expect(page.getByLabel("Rayon étape 1")).toHaveValue("");
+    await expect(page.getByLabel(/^Délai étape/)).toHaveCount(1);
+  });
+
   test("loads default, saves/read-backs, surfaces server 400, and confirms disable", async ({ page }) => {
     const calls = await mockApi(page, "ADMIN");
     await page.goto("/settings");
