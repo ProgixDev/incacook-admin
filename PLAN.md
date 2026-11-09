@@ -129,8 +129,8 @@ No wire contract or production code changes.
 ```
 
 ### Acceptance Criteria
-- [ ] Proposal shows all affected views, exact copy and interaction states, including Admin-only access and direct `/zones` outcome.
-- [ ] Proposal uses the existing schedule wire shape and stage example, with seconds/metres distinguished from display minutes/km.
+- [x] Proposal shows all affected views, exact copy and interaction states, including Admin-only access and direct `/zones` outcome.
+- [x] Proposal uses the existing schedule wire shape and stage example, with seconds/metres distinguished from display minutes/km.
 - [ ] Human explicitly approves or requests revisions. Until approval, task is `human_needed` and TASK-039 does not start.
 
 ### Edge Cases
