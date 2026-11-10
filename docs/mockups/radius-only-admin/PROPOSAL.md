@@ -1,6 +1,6 @@
 # Radius-only dispatch: admin UI proposal
 
-**Status: awaiting human review.** This is a static proposal only. It makes no production changes and does not call the staging API.
+**Status: approved for implementation (2026-11-10).** This is a static proposal only. It makes no production changes and does not call the staging API.
 
 Open [`index.html`](./index.html) in a browser for the desktop and narrow-width frames. The page contains the proposed Settings editor in the default state, inline validation state, driver list and drawer before/after, and the direct `/zones` outcome.
 
@@ -32,7 +32,7 @@ The current parser also checks that the last delay precedes `noDriverTimeoutSeco
 
 ## Review and approval
 
-Please review the frames and copy. Record **approved** or requested revisions here and in the Role Router decision record. Until explicit approval, TASK-038 remains `human_needed` and TASK-039 must not start.
+The human approved this proposal and allowed TASK-039 to start. The approved scope is the sidebar and `/zones` removal, removing zone labels from driver views, and retaining the Admin-only radius schedule editor with the four staged rows and states described above. The Role Router decision record records the same approval.
 
-**Human decision:** pending.
+**Human decision:** approved, 2026-11-10. No revisions requested.
 
