@@ -175,7 +175,7 @@ PATCH body: { steps: DispatchRadiusStep[] };
 - Desktop and 390 px screenshots: `/private/tmp/TASK-039-evidence/` (Settings and driver drawer). The narrow editor and drawer have no page overflow.
 
 ### Review follow-up (2026-11-10)
-Review passed with no Must-fix. Open Should-fix, non-blocking: in `e2e/radius-only-admin.spec.ts` (around lines 57 and 68) `getByText("Stripe Connect")` is not exact and can intermittently match a Next dev-overlay code frame; use `{ exact: true }` or scope it to the dialog. Nit: sidebar collapses at 640 px (`sm`), the mockup at 700 px.
+Review passed twice with no Must-fix. The `Stripe Connect` locator Should-fix from the first review is fixed (exact match). Open Should-fix, non-blocking, from the second review: `e2e/radius-only-admin.spec.ts` (lines 59 and 70) `getByText("Zones d’opération")` uses a curly apostrophe, but the removed drawer copy used a straight one, so those two "zones card is gone" assertions can never match. Use a regex such as `/Zones d.opération/`. The `columnheader "Zones"` assertion is meaningful. Nit: sidebar collapses at 640 px (`sm`), the mockup at 700 px.
 
 ### Builder verification blocker (2026-11-10)
 - `pnpm typecheck` and `pnpm test` pass (49/49). `pnpm lint --quiet` first raced with Playwright creating `test-results` and failed with ENOENT; rerun it without Playwright was clean.
