@@ -55,7 +55,7 @@ for (const legacy of [false, true]) {
     await expect(page.getByRole("columnheader", { name: "Zones" })).toHaveCount(0);
     await expect(page.getByText("Supervision des livreurs : véhicule, KYC, activité")).toBeVisible();
     await page.getByText("Amine Benali").first().click();
-    await expect(page.getByText("Stripe Connect")).toBeVisible();
+    await expect(page.getByText("Stripe Connect", { exact: true })).toBeVisible();
     await expect(page.getByText("Zones d’opération")).toHaveCount(0);
   });
 }
@@ -65,7 +65,7 @@ test("driver drawer remains readable at narrow width", async ({ page }) => {
   await mockAdmin(page, { ...driver, zones: ["Paris Centre"] });
   await page.goto("/drivers");
   await page.getByText("Amine Benali").first().click();
-  await expect(page.getByText("Stripe Connect")).toBeVisible();
+  await expect(page.getByText("Stripe Connect", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await expect(page.getByText("Zones d’opération")).toHaveCount(0);
 });

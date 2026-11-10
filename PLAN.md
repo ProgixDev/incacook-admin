@@ -177,6 +177,16 @@ PATCH body: { steps: DispatchRadiusStep[] };
 ### Review follow-up (2026-11-10)
 Review passed with no Must-fix. Open Should-fix, non-blocking: in `e2e/radius-only-admin.spec.ts` (around lines 57 and 68) `getByText("Stripe Connect")` is not exact and can intermittently match a Next dev-overlay code frame; use `{ exact: true }` or scope it to the dialog. Nit: sidebar collapses at 640 px (`sm`), the mockup at 700 px.
 
+### Builder verification blocker (2026-11-10)
+- `pnpm typecheck` and `pnpm test` pass (49/49). `pnpm lint --quiet` first raced with Playwright creating `test-results` and failed with ENOENT; rerun it without Playwright was clean.
+- `pnpm e2e` failed twice: the dev server reported repeated `EMFILE: too many open files, watch` and Playwright timed out waiting 120 seconds for `config.webServer`. The first run was parallel with the other gates; the second was isolated and failed the same way. Needs a worker environment with sufficient file watcher capacity or a server configuration that runs here.
+- Kept status at `building`; no code changes were made during this verification pass.
+
+### Escalated Builder verification resolution (2026-11-10)
+- Reproduced `EMFILE` with `pnpm dev --port 3100`. Pinning `turbopack.root` to this worktree did not remove it, so that diagnostic config change was reverted. `pnpm start --port 3100` served the existing production build without watcher errors; Playwright reused that server.
+- Chromium required execution outside the macOS process sandbox. The focused radius-only smoke passed 4/4; the full Playwright suite passed 30 tests with 16 live-backend tests skipped by their existing credential guards.
+- Removed only generated `.next/dev` files left by the failed dev starts; `pnpm typecheck`, `pnpm test` (49/49), and `pnpm lint --quiet` passed. The review's `Stripe Connect` locator was made exact and passed in the full suite.
+
 ### Edge Cases
 Direct bookmark, default unlimited setting, 403, concurrent Admin edits and response with/without `zones`.
 
