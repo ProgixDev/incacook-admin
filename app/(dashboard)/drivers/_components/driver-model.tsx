@@ -20,7 +20,6 @@ export interface AdminDriver {
   stripeChargesEnabled: boolean;
   stripePayoutsEnabled: boolean;
   stripeOnboardingCompleted: boolean;
-  zones: string[];
   isSuspended: boolean;
   createdAt: string;
 }

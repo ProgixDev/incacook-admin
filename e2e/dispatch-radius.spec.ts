@@ -72,6 +72,15 @@ async function mockApi(page: Page, role: string, getFailure?: "forbidden" | "unr
 }
 
 test.describe("dispatch radius settings", () => {
+  test("the narrow editor remains readable without page overflow", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mockApi(page, "ADMIN");
+    await page.goto("/settings");
+    await expect(page.getByLabel("Délai étape 1")).toBeVisible();
+    const card = page.getByText("Rayon de répartition", { exact: true }).first().locator("xpath=../..");
+    expect((await card.boundingBox())!.width).toBeGreaterThan(250);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  });
   test("disable discards an unsaved radius edit and shows the server schedule", async ({ page }) => {
     const calls = await mockApi(page, "ADMIN");
     await page.goto("/settings");
@@ -99,7 +108,7 @@ test.describe("dispatch radius settings", () => {
     await page.getByLabel("Rayon étape 1").fill("2,5");
     await page.getByRole("button", { name: "Enregistrer" }).last().click();
     await expect.poll(() => calls.filter((call) => call.method === "PATCH").length).toBe(1);
-    expect(calls.at(-1)?.body).toEqual({ steps: [{ afterSeconds: 0, radiusMeters: 2500 }] });
+    expect(calls.filter((call) => call.method === "PATCH").at(-1)?.body).toEqual({ steps: [{ afterSeconds: 0, radiusMeters: 2500 }] });
     await expect(page.getByText("Administrateur u1")).toBeVisible();
 
     await page.getByLabel("Rayon étape 1").fill("0x10");
@@ -116,7 +125,7 @@ test.describe("dispatch radius settings", () => {
     page.on("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Désactiver le rayon (répartition ouverte)" }).click();
     await expect.poll(() => calls.filter((call) => call.method === "PATCH").length).toBe(3);
-    expect(calls.at(-1)?.body).toEqual({ steps: [{ afterSeconds: 0, radiusMeters: null }] });
+    expect(calls.filter((call) => call.method === "PATCH").at(-1)?.body).toEqual({ steps: [{ afterSeconds: 0, radiusMeters: null }] });
     await expect(page.getByText("Aucun rayon configuré : la répartition est ouverte à tous les livreurs en ligne.")).toBeVisible();
   });
 

@@ -147,7 +147,7 @@ Open proposal and frames, record approval in `PROPOSAL.md` and Role Router; no p
 - Proposal frame 1 shows the "Aucun rayon configuré…" banner above four rows. The real card shows it only for the default or a single unlimited step. The four rows are a staged example, not seeded values.
 
 ## TASK-039 — Build approved radius-only admin UI
-- status: planned
+- status: review
 - depends: TASK-038
 
 ### Scope
@@ -163,11 +163,29 @@ PATCH body: { steps: DispatchRadiusStep[] };
 ```
 
 ### Acceptance Criteria
-- [ ] No reachable `/zones` UI, sidebar link, zone CRUD request, or zone field in driver views; direct bookmarked route is 404 or redirects to Settings exactly as approved.
-- [ ] Radius editor remains Admin-only and saves/reads back the same server schedule; invalid inputs and server errors remain visible.
-- [ ] Older and newer admin-driver payloads render without zone UI; unrelated driver facts remain.
-- [ ] Active docs describe radius-only dispatch; typecheck, lint, parser tests and Playwright smoke pass.
-- [ ] Approved mockup and implemented screenshots match at desktop and narrow widths.
+- [x] No reachable `/zones` UI, sidebar link, or zone CRUD request; direct bookmarked route returns the approved French 404. (Verified by source search and HTTP response.)
+- [x] Radius editor remains Admin-only and saves/reads back the same server schedule; invalid inputs and server errors remain visible. (Mocked Chromium tests.)
+- [x] Older and newer admin-driver payloads render without zone UI; unrelated driver facts remain. (Mocked Chromium tests.)
+- [x] Active docs describe radius-only dispatch; typecheck, lint, parser tests and Playwright smoke pass.
+- [x] Approved mockup and implemented screenshots match at desktop and narrow widths. (Four staged rows are server data; the open banner belongs only to the default/unlimited state, per TASK-038 review note.)
+
+### Build verification (2026-11-10)
+- The earlier browser launch blocker was the macOS process sandbox. Running local Chromium outside it passed the mocked Playwright smoke (22/22).
+- `pnpm typecheck`, `pnpm lint --quiet`, `pnpm test` (49/49), and the production build passed. Lint without `--quiet` reports 18 existing warnings and 0 errors.
+- Desktop and 390 px screenshots: `/private/tmp/TASK-039-evidence/` (Settings and driver drawer). The narrow editor and drawer have no page overflow.
+
+### Review follow-up (2026-11-10)
+Review passed twice with no Must-fix. The `Stripe Connect` locator Should-fix from the first review is fixed (exact match). Open Should-fix, non-blocking, from the second review: `e2e/radius-only-admin.spec.ts` (lines 59 and 70) `getByText("Zones d’opération")` uses a curly apostrophe, but the removed drawer copy used a straight one, so those two "zones card is gone" assertions can never match. Use a regex such as `/Zones d.opération/`. The `columnheader "Zones"` assertion is meaningful. Nit: sidebar collapses at 640 px (`sm`), the mockup at 700 px.
+
+### Builder verification blocker (2026-11-10)
+- `pnpm typecheck` and `pnpm test` pass (49/49). `pnpm lint --quiet` first raced with Playwright creating `test-results` and failed with ENOENT; rerun it without Playwright was clean.
+- `pnpm e2e` failed twice: the dev server reported repeated `EMFILE: too many open files, watch` and Playwright timed out waiting 120 seconds for `config.webServer`. The first run was parallel with the other gates; the second was isolated and failed the same way. Needs a worker environment with sufficient file watcher capacity or a server configuration that runs here.
+- Kept status at `building`; no code changes were made during this verification pass.
+
+### Escalated Builder verification resolution (2026-11-10)
+- Reproduced `EMFILE` with `pnpm dev --port 3100`. Pinning `turbopack.root` to this worktree did not remove it, so that diagnostic config change was reverted. `pnpm start --port 3100` served the existing production build without watcher errors; Playwright reused that server.
+- Chromium required execution outside the macOS process sandbox. The focused radius-only smoke passed 4/4; the full Playwright suite passed 30 tests with 16 live-backend tests skipped by their existing credential guards.
+- Removed only generated `.next/dev` files left by the failed dev starts; `pnpm typecheck`, `pnpm test` (49/49), and `pnpm lint --quiet` passed. The review's `Stripe Connect` locator was made exact and passed in the full suite.
 
 ### Edge Cases
 Direct bookmark, default unlimited setting, 403, concurrent Admin edits and response with/without `zones`.
