@@ -3,7 +3,7 @@
 import { Drawer, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Bike, Star, Package, MapPin, CreditCard } from "lucide-react";
+import { Bike, Star, Package, CreditCard } from "lucide-react";
 import { formatDateFr, formatDateTimeFr, formatNum } from "@/lib/utils";
 import { ConnectReadinessBadge, ChargesEnabledBadge } from "@/components/dashboard/status-badge";
 import {
@@ -64,23 +64,6 @@ export function DriverDrawer({
               </div>
             }
           />
-        </div>
-
-        <div className="rounded-md border border-outline-variant bg-surface-container-low p-3">
-          <p className="mb-2 flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-on-surface-variant">
-            <MapPin className="h-3.5 w-3.5" /> Zones d&apos;opération
-          </p>
-          {driver.zones.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {driver.zones.map((z) => (
-                <span key={z} className="rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] text-on-surface">
-                  {z}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[12px] text-on-surface-variant">Aucune zone sélectionnée</p>
-          )}
         </div>
 
         <div className="rounded-md border border-outline-variant bg-surface-container-low p-3 text-[13px]">

@@ -177,7 +177,7 @@ function DispatchRadiusEditor() {
                 <Button type="button" variant="outline" onClick={addRow} disabled={rows.length >= 8 || save.isPending}><Plus className="h-4 w-4" />Ajouter une étape</Button>
                 {rows.length > 1 && <Button type="button" variant="outline" onClick={() => setRows((current) => current.slice(0, -1))} disabled={save.isPending}>Retirer la dernière</Button>}
                 <Button type="button" onClick={() => validation.steps && persist(validation.steps)} disabled={!changed || !validation.steps || save.isPending}>Enregistrer</Button>
-                <Button type="button" variant="outline" onClick={disable} disabled={save.isPending}>Désactiver le rayon (répartition ouverte)</Button>
+                <Button type="button" variant="outline" onClick={disable} disabled={save.isPending} className="h-auto min-h-9 max-w-full whitespace-normal py-2 text-center">Désactiver le rayon (répartition ouverte)</Button>
               </div>
             </div>
           ) : null}

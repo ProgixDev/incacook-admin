@@ -102,15 +102,6 @@ export function DriversClient() {
         ),
     },
     {
-      key: "zones",
-      header: "Zones",
-      cell: (d) => (
-        <span className="text-[12px] text-on-surface-variant">
-          {d.zones.length ? d.zones.slice(0, 2).join(", ") + (d.zones.length > 2 ? ` +${d.zones.length - 2}` : "") : "—"}
-        </span>
-      ),
-    },
-    {
       key: "created",
       header: "Inscrit le",
       cell: (d) => <span className="text-[12px] text-on-surface-variant">{formatDateFr(d.createdAt)}</span>,

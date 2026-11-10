@@ -28,7 +28,8 @@ mock prototype; now fully wired, mock-free, and E2E-verified against live.
 - **Admin panel: 24/24 board tasks** (`.agent-board/board.md`). 15 surfaces:
   overview, geography, users(+strikes/suspend), sellers, drivers, orders(+order
   financials), listings, reports, disputes, KYC, catalog(+claims), subscriptions,
-  payouts(balances+withdrawals), zones, notifications, legal. No mock data
+  payouts(balances+withdrawals), notifications, legal. Dispatch radius is
+  configured in Settings; delivery-zone management is removed. No mock data
   anywhere.
 - **Backend endpoints added** (all Admin/Moderator, `?filters&limit&offset`,
   `{items,hasMore}`): `GET /v1/admin/{orders,sellers,listings,drivers,
@@ -54,7 +55,7 @@ pnpm e2e            # Playwright authed E2E: login + all 15 pages vs live
   `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD`. Test admin:
   `libertadhif+claudeadmin2@gmail.com` / `ClaudeAdmin!2026x` (role ADMIN in the
   prod DB — a real test account, not a fixture).
-- The single test seam is `e2e/authed.spec.ts` (+ `auth.setup.ts`, saved session).
+- Authenticated live smoke is in `e2e/authed.spec.ts` (+ `auth.setup.ts`, saved session); radius-only UI behavior is covered by `e2e/radius-only-admin.spec.ts`.
   To cover a new page: add its route to the array in `authed.spec.ts`.
 
 ## Key gotchas (will bite you)
@@ -94,4 +95,4 @@ pnpm e2e            # Playwright authed E2E: login + all 15 pages vs live
 - Manual deploy guide: `docs/deployment.md`.
 - API client / auth / query hooks: `lib/api`, `lib/auth`, `lib/query`.
 - Backend admin endpoints: `IncaCook-Server/src/modules/admin/*` (+ `catalog`,
-  `moderation`, `compliance/legal-documents`, `zones`, `wallets`).
+  `moderation`, `compliance/legal-documents`, `wallets`).
