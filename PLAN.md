@@ -113,7 +113,7 @@ Review mockup at desktop and narrow widths. Existing parser tests cover units an
 Mockup screenshot and annotated proposal before approval. After approval: `pnpm typecheck`, `pnpm lint`, `pnpm test`, existing Playwright smoke; staging GET/PATCH read-back belongs to IncaCook-Server:TASK-036.
 
 ## TASK-038 — Propose admin zone removal and radius editor mockup
-- status: planned
+- status: review
 - depends:
 
 ### Scope
@@ -129,9 +129,9 @@ No wire contract or production code changes.
 ```
 
 ### Acceptance Criteria
-- [ ] Proposal shows all affected views, exact copy and interaction states, including Admin-only access and direct `/zones` outcome.
-- [ ] Proposal uses the existing schedule wire shape and stage example, with seconds/metres distinguished from display minutes/km.
-- [ ] Human explicitly approves or requests revisions. Until approval, task is `human_needed` and TASK-039 does not start.
+- [x] Proposal shows all affected views, exact copy and interaction states, including Admin-only access and direct `/zones` outcome.
+- [x] Proposal uses the existing schedule wire shape and stage example, with seconds/metres distinguished from display minutes/km.
+- [x] Human explicitly approves the proposal; TASK-039 may start.
 
 ### Edge Cases
 Narrow viewport, empty/default schedule, invalid row, server 400/403, stale driver response with a zone field.
@@ -141,6 +141,10 @@ Human visual review of frames and copy. No app build or staging write.
 
 ### Verification
 Open proposal and frames, record approval in `PROPOSAL.md` and Role Router; no production source change.
+
+### Review notes for TASK-039
+- `app/` has no `not-found` file, so a direct `/zones` visit shows Next's default English 404, not the approved French copy. TASK-039 must add a French `not-found.tsx` with that copy, or redirect, so the outcome matches the proposal.
+- Proposal frame 1 shows the "Aucun rayon configuré…" banner above four rows. The real card shows it only for the default or a single unlimited step. The four rows are a staged example, not seeded values.
 
 ## TASK-039 — Build approved radius-only admin UI
 - status: planned
