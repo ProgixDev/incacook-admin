@@ -55,8 +55,9 @@ for (const legacy of [false, true]) {
     await expect(page.getByRole("columnheader", { name: "Zones" })).toHaveCount(0);
     await expect(page.getByText("Supervision des livreurs : véhicule, KYC, activité")).toBeVisible();
     await page.getByText("Amine Benali").first().click();
-    await expect(page.getByText("Stripe Connect", { exact: true })).toBeVisible();
-    await expect(page.getByText("Zones d’opération")).toHaveCount(0);
+    await expect(page.getByRole("dialog").getByText("Stripe Connect", { exact: true })).toBeVisible();
+    await expect(page.getByText(/Zones d['’]opération/)).toHaveCount(0);
+    await expect(page.getByText("Paris Centre")).toHaveCount(0);
   });
 }
 
@@ -64,8 +65,28 @@ test("driver drawer remains readable at narrow width", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockAdmin(page, { ...driver, zones: ["Paris Centre"] });
   await page.goto("/drivers");
+  await expect(page.getByText("Amine Benali").first()).toBeVisible({ timeout: 30_000 });
   await page.getByText("Amine Benali").first().click();
-  await expect(page.getByText("Stripe Connect", { exact: true })).toBeVisible();
+  const drawer = page.getByRole("dialog");
+  await expect(drawer.getByText("Stripe Connect", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
-  await expect(page.getByText("Zones d’opération")).toHaveCount(0);
+  expect(
+    await drawer.evaluate((el) => el.scrollWidth <= el.clientWidth),
+    "drawer content must not overflow horizontally",
+  ).toBe(true);
+  await expect(page.getByText(/Zones d['’]opération/)).toHaveCount(0);
+    await expect(page.getByText("Paris Centre")).toHaveCount(0);
+});
+
+test("sidebar has no Zones link and stays labelled when icon-only", async ({ page }) => {
+  await mockAdmin(page, driver);
+  await page.goto("/drivers");
+  await expect(page.locator('a[href="/zones"]')).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const links = page.locator("nav a");
+  const count = await links.count();
+  expect(count).toBeGreaterThan(0);
+  for (let i = 0; i < count; i++) {
+    await expect(links.nth(i)).toHaveAttribute("aria-label", /.+/);
+  }
 });
