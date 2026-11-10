@@ -142,6 +142,10 @@ Human visual review of frames and copy. No app build or staging write.
 ### Verification
 Open proposal and frames, record approval in `PROPOSAL.md` and Role Router; no production source change.
 
+### Review notes for TASK-039
+- `app/` has no `not-found` file, so a direct `/zones` visit shows Next's default English 404, not the approved French copy. TASK-039 must add a French `not-found.tsx` with that copy, or redirect, so the outcome matches the proposal.
+- Proposal frame 1 shows the "Aucun rayon configuré…" banner above four rows. The real card shows it only for the default or a single unlimited step. The four rows are a staged example, not seeded values.
+
 ## TASK-039 — Build approved radius-only admin UI
 - status: planned
 - depends: TASK-038
