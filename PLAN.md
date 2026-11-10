@@ -174,6 +174,9 @@ PATCH body: { steps: DispatchRadiusStep[] };
 - `pnpm typecheck`, `pnpm lint --quiet`, `pnpm test` (49/49), and the production build passed. Lint without `--quiet` reports 18 existing warnings and 0 errors.
 - Desktop and 390 px screenshots: `/private/tmp/TASK-039-evidence/` (Settings and driver drawer). The narrow editor and drawer have no page overflow.
 
+### Review follow-up (2026-11-10)
+Review passed with no Must-fix. Open Should-fix, non-blocking: in `e2e/radius-only-admin.spec.ts` (around lines 57 and 68) `getByText("Stripe Connect")` is not exact and can intermittently match a Next dev-overlay code frame; use `{ exact: true }` or scope it to the dialog. Nit: sidebar collapses at 640 px (`sm`), the mockup at 700 px.
+
 ### Edge Cases
 Direct bookmark, default unlimited setting, 403, concurrent Admin edits and response with/without `zones`.
 
