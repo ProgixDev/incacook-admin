@@ -13,7 +13,7 @@ operators (Admin / Moderator staff) had **no way to actually use it**: the only
 admin UI was a mock-data prototype with no authentication and no connection to
 the backend. Everything an operator needs to run the marketplace — reviewing
 KYC, resolving disputes, moderating reports, managing the supply catalog,
-overseeing payouts, defining delivery zones, broadcasting notifications — could
+overseeing payouts, configuring radius-based dispatch, broadcasting notifications — could
 only be done by hand-crafting API calls or editing the database directly. That
 is slow, error-prone, and unsafe.
 
@@ -25,8 +25,10 @@ Admin/Moderator login, that wires every operator workflow to the live
 they can see the whole platform and take every moderation/financial/config
 action the backend supports — with real data, loading/empty/error states, and
 no fake numbers anywhere. Where the backend lacked an admin surface for a
-workflow that clearly needed one (drivers, subscriptions, payouts, delivery
-zones), the endpoint was added so the panel could cover it.
+workflow that clearly needed one (drivers, subscriptions, payouts), the endpoint
+was added so the panel could cover it. Dispatch is configured through the
+Admin-only radius schedule in Settings; delivery-zone management has been
+removed from the admin UI.
 
 ## User Stories
 
@@ -55,7 +57,7 @@ Actors: **Admin** (full access), **Moderator** (moderation subset), and the
 
 ### Sellers, drivers, listings
 15. As an operator, I want a sellers list with rating, sales, revenue, active listings and subscription tier, so that I can assess seller health.
-16. As an operator, I want a drivers list with vehicle, KYC status, online/offline, deliveries, rating, zones and Stripe onboarding, so that I can oversee the delivery fleet.
+16. As an operator, I want a drivers list with vehicle, KYC status, online/offline, deliveries, rating and Stripe onboarding, so that I can oversee the delivery fleet.
 17. As an operator, I want to filter drivers by KYC status and online state, so that I can find drivers needing attention.
 18. As an operator, I want a listings list across all statuses (active/sold-out/expired/paused) with report and order counts, so that I can moderate the catalog of dishes.
 
@@ -84,7 +86,7 @@ Actors: **Admin** (full access), **Moderator** (moderation subset), and the
 34. As an operator, I want a withdrawals/payout history (amount, status, Stripe transfer id), so that I can audit money movement.
 
 ### Config & communication
-35. As an operator, I want to create/edit/deactivate delivery zones (name, city, order, coordinates), so that drivers can pick operating zones at signup.
+35. Superseded: dispatch is radius-only and configured through the Admin-only Settings schedule; the admin UI has no delivery-zone management.
 36. As an operator, I want to broadcast a push notification to a targeted audience (all/role/category/city/recurring/etc.), so that I can communicate with users.
 37. As an operator, I want to manage legal documents (CGU/CGV): list, create a draft, edit, and publish a version, so that legal terms can change without an app release.
 
@@ -113,11 +115,11 @@ Actors: **Admin** (full access), **Moderator** (moderation subset), and the
   route through the auth layer so every read/write inherits the bearer +
   single-flight refresh. A shared `DataTable` provides server pagination and the
   loading/empty/error states.
-- **Surfaces.** Fifteen routes: overview, geography, users (+ strikes/suspend),
+- **Surfaces.** Routes: overview, geography, users (+ strikes/suspend),
   sellers, drivers, orders (+ order financials), listings, reports, disputes,
   KYC, catalog + catalog-claims, subscriptions, payouts (balances + withdrawals),
-  zones, notifications, legal. Each maps to a `/v1/admin/*` (or `/v1/zones`)
-  endpoint.
+  notifications, legal, and the Admin-only dispatch-radius Settings editor. Each
+  maps to a `/v1/admin/*` endpoint.
 - **Backend additions.** Where no admin endpoint existed for a needed workflow,
   read-only list endpoints were added mirroring the existing `admin/users`
   conventions (Admin/Moderator guard, `?filters&limit&offset`,
@@ -185,8 +187,8 @@ Actors: **Admin** (full access), **Moderator** (moderation subset), and the
 
 - The panel is fully wired, mock-free, and E2E-green across all 15 surfaces
   (24 board tasks, `.agent-board/`). The mobile app was cross-referenced against
-  the backoffice to find gaps; drivers/subscriptions/payouts/zones were the
-  surfaced ones and are now covered.
+  the backoffice to find gaps; drivers/subscriptions/payouts were the
+  surfaced ones and are now covered. Dispatch is configured by radius in Settings.
 - The live backend intermittently 500s on the first query after idle (Prisma
   pooler reconnect) — an environmental flake absorbed by E2E retries, not a
   product defect.

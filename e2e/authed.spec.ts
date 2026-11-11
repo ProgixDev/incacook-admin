@@ -75,7 +75,7 @@ test.describe("authenticated admin flows", () => {
     await expectListLoaded(page, "/payouts", "/admin/wallets", /^Aucun solde\.$/);
   });
 
-  for (const route of ["/sellers", "/drivers", "/listings", "/catalog", "/subscriptions", "/zones", "/legal", "/geography"]) {
+  for (const route of ["/sellers", "/drivers", "/listings", "/catalog", "/subscriptions", "/legal", "/geography"]) {
     test(`${route} renders without error`, async ({ page }) => {
       await page.goto(route);
       await expect(page.locator("main")).toBeVisible({ timeout: 30_000 });

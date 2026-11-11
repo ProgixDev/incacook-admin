@@ -16,7 +16,6 @@ import {
   PackageOpen,
   Boxes,
   MapPinned,
-  Map,
   Megaphone,
   FileText,
   CreditCard,
@@ -37,6 +36,7 @@ const NAV: { href: string; label: string; icon: typeof LayoutGrid; adminOnly?: b
   { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutGrid },
   { href: "/users", label: "Utilisateurs", icon: Users },
   { href: "/orders", label: "Commandes", icon: ShoppingBag },
+  { href: "/refunds", label: "Remboursements", icon: CreditCard },
   { href: "/sellers", label: "Vendeurs", icon: Store },
   { href: "/drivers", label: "Livreurs", icon: Bike },
   { href: "/listings", label: "Annonces", icon: Tag },
@@ -50,7 +50,6 @@ const NAV: { href: string; label: string; icon: typeof LayoutGrid; adminOnly?: b
   { href: "/payouts", label: "Versements", icon: Wallet },
   { href: "/platform-earnings", label: "Revenus plateforme", icon: Landmark, adminOnly: true },
   { href: "/geography", label: "Carte", icon: MapPinned },
-  { href: "/zones", label: "Zones de livraison", icon: Map },
   { href: "/notifications", label: "Notifications", icon: Megaphone },
   { href: "/legal", label: "Documents légaux", icon: FileText },
   { href: "/settings", label: "Paramètres", icon: Settings },
@@ -79,16 +78,16 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="frost fixed inset-y-0 left-0 z-40 flex w-64 flex-col gap-1.5 border-r border-outline-variant/40 p-3">
+    <aside className="frost fixed inset-y-0 left-0 z-40 flex w-16 flex-col gap-1.5 border-r border-outline-variant/40 p-2 sm:w-64 sm:p-3">
       <Link
         href="/dashboard"
         title="Retour à l'accueil"
-        className="flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-surface-container-high"
+        className="flex items-center justify-center gap-3 rounded-2xl p-1 transition-colors hover:bg-surface-container-high sm:justify-start sm:p-2"
       >
         <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-container-high">
           <Image src="/app_logo.png" alt="IncaCook" width={32} height={32} className="object-contain" />
         </div>
-        <div className="flex flex-col leading-tight">
+        <div className="hidden flex-col leading-tight sm:flex">
           <span className="text-sm font-semibold text-on-surface">IncaCook</span>
           <span className="text-[11px] text-on-surface-variant">Administration</span>
         </div>
@@ -104,15 +103,17 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              title={item.label}
+              aria-label={item.label}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center justify-center gap-3 rounded-xl px-2 py-2.5 text-sm font-medium transition-colors sm:justify-start sm:px-3",
                 active
                   ? "bg-primary text-primary-foreground"
                   : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
               )}
             >
               <Icon className="h-[18px] w-[18px] shrink-0" />
-              <span className="truncate">{item.label}</span>
+              <span className="hidden truncate sm:inline">{item.label}</span>
             </Link>
           );
         })}
@@ -123,20 +124,22 @@ export function Sidebar() {
       {mounted && (
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+          className="flex items-center justify-center gap-3 rounded-xl px-2 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface sm:justify-start sm:px-3"
+          aria-label={theme === "dark" ? "Mode clair" : "Mode sombre"}
         >
           {theme === "dark" ? <Sun className="h-[18px] w-[18px] shrink-0" /> : <Moon className="h-[18px] w-[18px] shrink-0" />}
-          <span>{theme === "dark" ? "Mode clair" : "Mode sombre"}</span>
+          <span className="hidden sm:inline">{theme === "dark" ? "Mode clair" : "Mode sombre"}</span>
         </button>
       )}
 
       <button
         onClick={handleSignOut}
         disabled={signingOut}
-        className="flex items-center gap-3 rounded-xl bg-error/10 px-3 py-2.5 text-sm font-medium text-error transition-colors hover:bg-error hover:text-white disabled:pointer-events-none disabled:opacity-50"
+        className="flex items-center justify-center gap-3 rounded-xl bg-error/10 px-2 py-2.5 text-sm font-medium text-error transition-colors hover:bg-error hover:text-white disabled:pointer-events-none disabled:opacity-50 sm:justify-start sm:px-3"
+        aria-label="Déconnexion"
       >
         <LogOut className="h-[18px] w-[18px] shrink-0" />
-        <span>Déconnexion</span>
+        <span className="hidden sm:inline">Déconnexion</span>
       </button>
     </aside>
   );

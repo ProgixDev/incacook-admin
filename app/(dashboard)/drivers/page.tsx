@@ -5,7 +5,7 @@ export default function DriversPage() {
   return (
     <PageShell
       title="Livreurs"
-      subtitle="Supervision des livreurs : véhicule, KYC, zones, activité"
+      subtitle="Supervision des livreurs : véhicule, KYC, activité"
     >
       <DriversClient />
     </PageShell>

@@ -155,6 +155,9 @@ export function UserSanctions({ user, onMutated }: Props) {
                   <p className="mt-1 text-[12px] text-on-surface">{s.reason}</p>
                   <div className="mt-1 flex items-center gap-2 text-[10px] text-on-surface-variant">
                     <span>{sourceTypeLabel(s.sourceType)}</span>
+                    {s.expiresAt && (
+                      <span>· Fin de validité : {formatDateTimeFr(s.expiresAt)}</span>
+                    )}
                     {s.notes && (
                       <span className="truncate italic">· {s.notes}</span>
                     )}
@@ -455,7 +458,7 @@ function UnsuspendDialog({
       open={open}
       onClose={handleClose}
       title="Réactiver le compte"
-      description="La suspension sera levée et l'utilisateur pourra de nouveau accéder à son compte."
+      description="La suspension sera levée. Les strikes restent enregistrés : un nouvel incident peut entraîner une nouvelle suspension si le seuil est atteint."
     >
       <DialogError message={mutation.error?.message} />
       <DialogActions
