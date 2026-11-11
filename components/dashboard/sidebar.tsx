@@ -36,6 +36,7 @@ const NAV: { href: string; label: string; icon: typeof LayoutGrid; adminOnly?: b
   { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutGrid },
   { href: "/users", label: "Utilisateurs", icon: Users },
   { href: "/orders", label: "Commandes", icon: ShoppingBag },
+  { href: "/refunds", label: "Remboursements", icon: CreditCard },
   { href: "/sellers", label: "Vendeurs", icon: Store },
   { href: "/drivers", label: "Livreurs", icon: Bike },
   { href: "/listings", label: "Annonces", icon: Tag },
