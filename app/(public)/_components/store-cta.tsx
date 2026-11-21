@@ -3,22 +3,25 @@ import { STORE_LINKS } from "../_lib/store-links";
 
 /**
  * One store badge. Renders as a real link when its URL is set, or as an
- * inert "coming soon" pill when it's empty — the app isn't accepted on
- * either store yet, so there is nothing to link to (see `_lib/store-links.ts`).
+ * inert "coming soon" pill when it's empty (see `_lib/store-links.ts`).
  * A badge must never point at a placeholder anchor that goes nowhere.
  */
-function StoreBadge({ store, href, compact }: { store: "ios" | "android"; href: string; compact?: boolean }) {
+function StoreBadge({ store, href, primary }: { store: "ios" | "android"; href: string; primary?: boolean }) {
   const label = store === "ios" ? "App Store" : "Google Play";
-  const base = compact
-    ? "rounded-md border px-3 py-2 text-xs font-medium"
-    : "rounded-md border px-2.5 py-1.5 text-xs font-mono";
+  const base = primary
+    ? "inline-flex items-center justify-center rounded-[14px] px-6 py-3 text-base font-semibold"
+    : "rounded-md border px-3 py-2 text-xs font-medium";
 
   if (!href) {
     return (
       <span
         aria-disabled="true"
         title="Bientôt disponible"
-        className={cn(base, "cursor-default border-outline-variant text-on-surface-variant/60")}
+        className={cn(
+          base,
+          "cursor-default",
+          primary ? "bg-outline-variant text-on-surface-variant" : "border-outline-variant text-on-surface-variant/60",
+        )}
       >
         {label} — bientôt
       </span>
@@ -26,18 +29,25 @@ function StoreBadge({ store, href, compact }: { store: "ios" | "android"; href: 
   }
 
   return (
-    <a href={href} className={cn(base, "border-outline-variant text-on-surface-variant transition-colors hover:text-on-surface")}>
+    <a
+      href={href}
+      aria-label={`Télécharger IncaCook sur ${label}`}
+      className={cn(
+        base,
+        "transition-colors",
+        primary
+          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+          : "border-outline-variant text-on-surface-variant hover:text-on-surface",
+      )}
+    >
       {label}
     </a>
   );
 }
 
 /**
- * The landing page's one primary CTA — "Télécharger l'app". Neither store
- * listing is live yet (app not yet accepted), so this renders an honest
- * "bientôt disponible" state rather than a working install button or a link
- * to nowhere. UA-sniffed platform preference and a real deep link are
- * TASK-028's job, once at least one listing goes live.
+ * The landing page's one primary CTA, "Télécharger l'app". Links directly to
+ * each live store listing and needs no client JS.
  */
 export function StoreCta({
   variant = "primary",
@@ -51,30 +61,24 @@ export function StoreCta({
   if (variant === "compact") {
     return (
       <div className={cn("flex flex-wrap items-center gap-3", className)}>
-        <StoreBadge store="ios" href={STORE_LINKS.ios} compact />
-        <StoreBadge store="android" href={STORE_LINKS.android} compact />
+        <StoreBadge store="ios" href={STORE_LINKS.ios} />
+        <StoreBadge store="android" href={STORE_LINKS.android} />
       </div>
     );
   }
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <div
-        aria-disabled="true"
-        className="inline-flex w-fit cursor-default items-center gap-2 rounded-[14px] bg-outline-variant px-6 py-3 text-base font-semibold text-on-surface-variant"
-      >
-        Bientôt disponible
+      <p className="text-sm font-medium text-on-surface-variant">Télécharger l&apos;app</p>
+      <div className="flex flex-wrap items-center gap-3">
+        <StoreBadge store="ios" href={STORE_LINKS.ios} primary />
+        <StoreBadge store="android" href={STORE_LINKS.android} primary />
       </div>
       {bothPending ? (
         <p className="text-xs text-on-surface-variant">
           L&apos;application est en cours de validation sur l&apos;App Store et Google Play.
         </p>
-      ) : (
-        <div className="flex items-center gap-2">
-          <StoreBadge store="ios" href={STORE_LINKS.ios} />
-          <StoreBadge store="android" href={STORE_LINKS.android} />
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }

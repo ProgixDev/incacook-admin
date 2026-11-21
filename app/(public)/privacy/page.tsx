@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Politique de confidentialité
           </h1>
-          <p className="text-sm text-on-surface-variant">Dernière mise à jour : 24 août 2026</p>
+          <p className="text-sm text-on-surface-variant">Dernière mise à jour : 21 novembre 2026</p>
         </header>
 
         <section className="space-y-3">
@@ -122,9 +122,41 @@ export default function PrivacyPage() {
             </li>
             <li>
               <span className="font-medium text-on-surface">Google Maps</span> — géolocalisation,
-              géocodage et affichage cartographique pour la livraison.
+              géocodage et affichage cartographique pour la livraison ;
+            </li>
+            <li>
+              <span className="font-medium text-on-surface">Vercel</span> — hébergement de nos
+              sites web.
             </li>
           </ul>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">Quiz, cookies et publicité</h2>
+          <p className="leading-7 text-on-surface-variant">
+            Notre quiz sur go.incacook.com ne demande ni nom, ni e-mail, ni numéro de téléphone. Vos
+            réponses restent dans votre navigateur. Si vous saisissez un code postal, il est
+            transmis à nos serveurs et au service public geo.api.gouv.fr uniquement pour trouver
+            les plats proches de vous. Nous ne l&apos;enregistrons pas dans une base de données et ne
+            le transmettons jamais à nos partenaires publicitaires.
+          </p>
+          <p className="leading-7 text-on-surface-variant">
+            Avec votre accord uniquement, ce quiz utilise des cookies et traceurs de Meta (Meta
+            Pixel et API Conversions) et de Google (Google Analytics et Google Ads) pour mesurer
+            l&apos;efficacité de nos publicités. Ces services reçoivent la page visitée, le fait
+            qu&apos;une étape du quiz a été franchie ou qu&apos;un bouton de téléchargement a été
+            utilisé, ainsi que des données techniques comme votre adresse IP, votre navigateur et
+            l&apos;identifiant de clic publicitaire. Ils ne reçoivent jamais vos réponses au quiz ni
+            votre code postal.
+          </p>
+          <p className="leading-7 text-on-surface-variant">
+            Refuser n&apos;a aucune conséquence sur le quiz. Votre choix est conservé 6 mois dans
+            votre navigateur et vous pouvez le modifier à tout moment avec le lien « Gérer les
+            cookies » en bas du quiz. Ces cookies ont une durée de vie maximale de 13 mois. Meta et
+            Google peuvent traiter ces données hors de l&apos;Union européenne, notamment aux
+            États-Unis. Le responsable de ce traitement est INCACOOK LLC. Vous pouvez adresser une
+            réclamation à la CNIL.
+          </p>
         </section>
 
         <section className="space-y-3">

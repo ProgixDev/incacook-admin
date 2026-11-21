@@ -1,14 +1,10 @@
 /**
  * App store destination URLs for the landing page's `<StoreCta />`.
  *
- * **DELIBERATELY EMPTY.** The app isn't accepted on either store yet — there
- * is nothing to link to. `<StoreCta />` treats an empty string as "not live"
- * and renders an honest "coming soon" state instead of a link, per the
- * plan's rule that a badge must never link nowhere. TASK-028 fills each one
- * in as its listing goes live — the two platforms don't have to land
- * together.
+ * An empty string means "not live": `<StoreCta />` then renders an honest
+ * "coming soon" state, because a badge must never link nowhere.
  */
-export const STORE_LINKS = {
-  ios: "",
-  android: "",
-} as const;
+export const STORE_LINKS: Record<"ios" | "android", string> = {
+  ios: "https://apps.apple.com/fr/app/incacook/id6783878120",
+  android: "https://play.google.com/store/apps/details?id=com.incacook.app",
+};
