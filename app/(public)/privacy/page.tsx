@@ -134,9 +134,10 @@ export default function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">Quiz, cookies et publicité</h2>
           <p className="leading-7 text-on-surface-variant">
-            Notre quiz sur go.incacook.com ne demande ni nom, ni e-mail, ni numéro de téléphone. Vos
+            Notre quiz IncaCook ne demande ni nom, ni e-mail, ni numéro de téléphone. Vos
             réponses restent dans votre navigateur. Si vous saisissez un code postal, il est
-            transmis à nos serveurs et au service public geo.api.gouv.fr uniquement pour trouver
+            transmis à nos serveurs et à un service public de géolocalisation (geo.api.gouv.fr en
+            France, geo.ca au Canada, où seuls les 3 premiers caractères sont envoyés) uniquement pour trouver
             les plats proches de vous. Nous ne l&apos;enregistrons pas dans une base de données et ne
             le transmettons jamais à nos partenaires publicitaires.
           </p>
