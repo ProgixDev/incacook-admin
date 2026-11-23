@@ -24,9 +24,8 @@ export const metadata: Metadata = {
  * compliance fact are drawn from the PRD. The €4,50 fait-maison cap is an
  * IncaCook policy choice, not a statutory one — never describe it as legal.
  * Store
- * links are intentionally empty (app not yet accepted on either store —
- * see `_lib/store-links.ts`); hero/seller/driver imagery is real IncaCook
- * material, not placeholders.
+ * links live in `_lib/store-links.ts`; hero/seller/driver imagery is real
+ * IncaCook material, not placeholders.
  *
  * Every section below is a server component; `Faq` uses native
  * `<details>`/`<summary>` so it needs no client JS either.

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SOCIAL_LINKS } from "../_lib/store-links";
 import { StoreCta } from "./store-cta";
 
 const LEGAL_LINKS = [
@@ -23,6 +24,19 @@ export function SiteFooter() {
 
           <StoreCta variant="compact" />
         </div>
+
+        <p>
+          Suivez-nous sur{" "}
+          <a
+            className="text-primary underline underline-offset-2"
+            href={SOCIAL_LINKS.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Instagram
+          </a>
+          .
+        </p>
 
         <p>
           Une question ? Écrivez-nous à{" "}

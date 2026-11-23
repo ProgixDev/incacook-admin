@@ -21,9 +21,10 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-3 rounded-md" title="IncaCook">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface-container-high">
-            <Image src="/app_logo.png" alt="IncaCook" width={28} height={28} className="object-contain" />
+            <Image src="/app_logo.png" alt="IncaCook" width={40} height={40} className="h-full w-full object-cover" />
           </div>
-          <span className="text-lg font-semibold tracking-tight text-on-surface">IncaCook</span>
+          <Image src="/app_wordmark.png" alt="IncaCook" width={108} height={22} className="h-[22px] w-auto dark:hidden" />
+          <Image src="/app_wordmark_on_dark.png" alt="" aria-hidden width={108} height={22} className="hidden h-[22px] w-auto dark:block" />
         </Link>
 
         <nav aria-label="Sections" className="hidden items-center gap-6 text-sm font-medium text-on-surface-variant sm:flex">

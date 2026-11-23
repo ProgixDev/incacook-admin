@@ -85,10 +85,11 @@ export function Sidebar() {
         className="flex items-center justify-center gap-3 rounded-2xl p-1 transition-colors hover:bg-surface-container-high sm:justify-start sm:p-2"
       >
         <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface-container-high">
-          <Image src="/app_logo.png" alt="IncaCook" width={32} height={32} className="object-contain" />
+          <Image src="/app_logo.png" alt="IncaCook" width={44} height={44} className="h-full w-full object-cover" />
         </div>
         <div className="hidden flex-col leading-tight sm:flex">
-          <span className="text-sm font-semibold text-on-surface">IncaCook</span>
+          <Image src="/app_wordmark.png" alt="IncaCook" width={78} height={16} className="h-4 w-auto dark:hidden" />
+          <Image src="/app_wordmark_on_dark.png" alt="" aria-hidden width={78} height={16} className="hidden h-4 w-auto dark:block" />
           <span className="text-[11px] text-on-surface-variant">Administration</span>
         </div>
       </Link>

@@ -3,8 +3,7 @@ import { STORE_LINKS } from "../_lib/store-links";
 
 /**
  * One store badge. Renders as a real link when its URL is set, or as an
- * inert "coming soon" pill when it's empty — the app isn't accepted on
- * either store yet, so there is nothing to link to (see `_lib/store-links.ts`).
+ * inert "coming soon" pill when it's empty (see `_lib/store-links.ts`).
  * A badge must never point at a placeholder anchor that goes nowhere.
  */
 function StoreBadge({ store, href, compact }: { store: "ios" | "android"; href: string; compact?: boolean }) {
@@ -26,18 +25,17 @@ function StoreBadge({ store, href, compact }: { store: "ios" | "android"; href: 
   }
 
   return (
-    <a href={href} className={cn(base, "border-outline-variant text-on-surface-variant transition-colors hover:text-on-surface")}>
+    <a href={href} target="_blank" rel="noopener noreferrer" className={cn(base, "border-outline-variant text-on-surface-variant transition-colors hover:text-on-surface")}>
       {label}
     </a>
   );
 }
 
 /**
- * The landing page's one primary CTA — "Télécharger l'app". Neither store
- * listing is live yet (app not yet accepted), so this renders an honest
- * "bientôt disponible" state rather than a working install button or a link
- * to nowhere. UA-sniffed platform preference and a real deep link are
- * TASK-028's job, once at least one listing goes live.
+ * The landing page's one primary CTA — "Télécharger l'app". Links straight to
+ * the App Store and Google Play listings. When a listing URL is empty (see
+ * `_lib/store-links.ts`) that store falls back to the inert "bientôt" pill,
+ * and if both are empty the whole CTA is an honest "bientôt disponible".
  */
 export function StoreCta({
   variant = "primary",
@@ -57,24 +55,47 @@ export function StoreCta({
     );
   }
 
-  return (
-    <div className={cn("flex flex-col gap-3", className)}>
-      <div
-        aria-disabled="true"
-        className="inline-flex w-fit cursor-default items-center gap-2 rounded-[14px] bg-outline-variant px-6 py-3 text-base font-semibold text-on-surface-variant"
-      >
-        Bientôt disponible
-      </div>
-      {bothPending ? (
+  if (bothPending) {
+    return (
+      <div id="telecharger" className={cn("flex flex-col gap-3", className)}>
+        <div
+          aria-disabled="true"
+          className="inline-flex w-fit cursor-default items-center gap-2 rounded-[14px] bg-outline-variant px-6 py-3 text-base font-semibold text-on-surface-variant"
+        >
+          Bientôt disponible
+        </div>
         <p className="text-xs text-on-surface-variant">
           L&apos;application est en cours de validation sur l&apos;App Store et Google Play.
         </p>
-      ) : (
-        <div className="flex items-center gap-2">
-          <StoreBadge store="ios" href={STORE_LINKS.ios} />
-          <StoreBadge store="android" href={STORE_LINKS.android} />
-        </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div id="telecharger" className={cn("flex flex-col gap-3", className)}>
+      <div className="flex flex-wrap items-center gap-3">
+        {STORE_LINKS.ios ? <StoreButton store="ios" href={STORE_LINKS.ios} /> : null}
+        {STORE_LINKS.android ? <StoreButton store="android" href={STORE_LINKS.android} /> : null}
+      </div>
+      {!STORE_LINKS.ios || !STORE_LINKS.android ? (
+        <p className="text-xs text-on-surface-variant">
+          {STORE_LINKS.ios ? "Google Play" : "L'App Store"} : bientôt disponible.
+        </p>
+      ) : null}
     </div>
+  );
+}
+
+function StoreButton({ store, href }: { store: "ios" | "android"; href: string }) {
+  const label = store === "ios" ? "Télécharger sur l'App Store" : "Disponible sur Google Play";
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex w-fit items-center rounded-[14px] bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+    >
+      {label}
+    </a>
   );
 }
