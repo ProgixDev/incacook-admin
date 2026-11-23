@@ -71,9 +71,9 @@ export default function LoginPage() {
             <Image
               src="/app_logo.png"
               alt="IncaCook"
-              width={40}
-              height={40}
-              className="object-contain"
+              width={56}
+              height={56}
+              className="h-full w-full object-cover"
             />
           </div>
           <CardTitle>Administration IncaCook</CardTitle>
