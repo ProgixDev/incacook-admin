@@ -16,20 +16,26 @@ export interface TrialFacts {
   requestState: RequestState;
   /** Store subscription or running trial. Unknown (undefined) in the trial lists. */
   accessActive?: boolean;
-  /** The platform trial's end. Only reliable when the trial is the access source or comes from the trial lists. */
+  /** The platform trial's own end (null when none). */
   trialEndsAt: string | null;
   trialRevokedAt: string | null;
+  /**
+   * Onboarding finished and approved. A grant before that would start the trial
+   * before the seller can publish, so Accorder is only offered to ready sellers.
+   * Undefined (the trial lists: ready sellers and pending requests) is not a block.
+   */
+  ready?: boolean;
 }
 
 export function factsFromActivationRow(row: ActivationRow): TrialFacts {
   return {
     requestState: row.trialRequest,
     accessActive: row.access.active,
-    // `access.endsAt` is the trial's end only when the trial alone grants access
-    // (a store subscription makes it the later of both, which must not be sent
-    // as the end to extend).
-    trialEndsAt: row.access.source === "platform_trial" ? row.access.endsAt : null,
-    trialRevokedAt: null,
+    // The trial's own dates: `access.endsAt` would be the later end when a store
+    // subscription overlaps the trial, which must not be sent as the end to extend.
+    trialEndsAt: row.trialEndsAt,
+    trialRevokedAt: row.trialRevokedAt,
+    ready: row.canList === true,
   };
 }
 
@@ -51,7 +57,7 @@ export function availableActions(facts: TrialFacts, now: Date = new Date()): Tri
   const actions: TrialActionKind[] = [];
   const ends = facts.trialEndsAt ? new Date(facts.trialEndsAt).getTime() : null;
   const running = ends !== null && ends > now.getTime() && !facts.trialRevokedAt;
-  if (facts.accessActive !== true) actions.push("grant");
+  if (facts.accessActive !== true && facts.ready !== false) actions.push("grant");
   if (ends !== null && !facts.trialRevokedAt) actions.push("extend");
   if (running) actions.push("revoke");
   if (facts.requestState === "pending") actions.push("refuse");

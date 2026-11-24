@@ -14,6 +14,7 @@ const REFRESH_KEY = "incacook.admin.refresh_token";
 const EXPIRES_KEY = "incacook.admin.expires_at";
 const meta = { timestamp: "2026-12-10T10:00:00.000Z", version: "v1" };
 const FUTURE = new Date(Date.now() + 40 * 86_400_000).toISOString();
+const LATER = new Date(Date.now() + 90 * 86_400_000).toISOString();
 
 const row = (over: Record<string, unknown>) => ({
   sellerId: "s1",
@@ -28,6 +29,8 @@ const row = (over: Record<string, unknown>) => ({
   canList: true,
   onboardingUnavailable: false,
   access: { active: false, source: null, endsAt: null },
+  trialEndsAt: null,
+  trialRevokedAt: null,
   listings: 0,
   orders: 0,
   trialRequest: "none",
@@ -75,7 +78,9 @@ async function mockApi(page: Page, role: "ADMIN" | "MODERATOR", handlers: { post
       const sellers = [
         row({ sellerId: "s1", displayName: "Chez Rosa", canList: true }),
         row({ sellerId: "s2", displayName: "A".repeat(120), email: "long@example.fr", nextStep: "kyc_id", canList: false, trialRequest: "pending" }),
-        row({ sellerId: "s3", displayName: "Trial Tom", email: "tom@example.fr", access: { active: true, source: "platform_trial", endsAt: FUTURE }, trialRequest: "granted", listings: 2, orders: 1 }),
+        row({ sellerId: "s3", displayName: "Trial Tom", email: "tom@example.fr", access: { active: true, source: "platform_trial", endsAt: FUTURE }, trialEndsAt: FUTURE, trialRequest: "granted", listings: 2, orders: 1 }),
+        // Store subscription overlapping a longer trial: the trial can still be extended or revoked.
+        row({ sellerId: "s5", displayName: "Both Bea", email: "bea@example.fr", access: { active: true, source: "store", endsAt: LATER }, trialEndsAt: FUTURE, trialRequest: "granted" }),
         ...(includeTest ? [row({ sellerId: "s4", displayName: "QA bot", email: "qa@example.fr", isTestAccount: true })] : []),
       ];
       return ok(route, activation(sellers));
@@ -131,6 +136,19 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await page.getByLabel("Inclure les comptes test").check();
     await expect(page.getByText("QA bot")).toBeVisible();
     await page.screenshot({ path: "test-results/seller-activation-desktop.png", fullPage: true });
+  });
+
+  test("actions follow the seller's real state: incomplete onboarding cannot be granted, store + trial can be managed", async ({ page }) => {
+    await mockApi(page, "ADMIN");
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Both Bea")).toBeVisible({ timeout: 30_000 });
+    const incomplete = page.getByRole("row", { name: /AAAA/ });
+    await expect(incomplete.getByRole("button", { name: "Accorder" })).toHaveCount(0); // onboarding not finished
+    await expect(incomplete.getByRole("button", { name: "Refuser" })).toBeVisible(); // its pending request can be refused
+    const both = page.getByRole("row", { name: /Both Bea/ });
+    await expect(both.getByRole("button", { name: "Prolonger" })).toBeVisible();
+    await expect(both.getByRole("button", { name: "Révoquer" })).toBeVisible();
+    await expect(both.getByRole("button", { name: "Accorder" })).toHaveCount(0);
   });
 
   test("moderator does not see the nav entry and gets the access-denied panel", async ({ page }) => {

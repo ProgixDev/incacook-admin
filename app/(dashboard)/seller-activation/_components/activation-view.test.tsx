@@ -50,7 +50,7 @@ test("request states and duplicate hints render readably", () => {
 const row = (over: Partial<ActivationRow>): ActivationRow => ({
   sellerId: "s1", displayName: "R", email: "r@x.fr", category: null, signedUpAt: "2026-12-01T00:00:00.000Z",
   isTestAccount: false, isSuspended: false, nextStep: null, kycState: null, canList: false, onboardingUnavailable: false,
-  access: { active: false, source: null, endsAt: null }, listings: 0, orders: 0, trialRequest: "none", ...over,
+  access: { active: false, source: null, endsAt: null }, trialEndsAt: null, trialRevokedAt: null, listings: 0, orders: 0, trialRequest: "none", ...over,
 });
 
 test("onboarding cell: ready, first missing step, unreadable, waiting for validation", () => {

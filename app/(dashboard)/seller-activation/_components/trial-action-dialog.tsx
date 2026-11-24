@@ -29,7 +29,7 @@ export interface TrialActionTarget {
 
 const COPY: Record<TrialActionKind, (t: TrialActionTarget) => string> = {
   grant: (t) =>
-    `${t.sellerName} recevra une notification et un e-mail, puis pourra publier ses plats et recevoir des commandes pendant la durée choisie.`,
+    `${t.sellerName} pourra publier ses plats et recevoir des commandes pendant la durée choisie. Une notification et un e-mail lui sont envoyés, sans garantie de réception : préviens-le toi-même si besoin.`,
   extend: (t) =>
     t.trialEndsAt
       ? `L’essai actuel se termine le ${formatDateFr(t.trialEndsAt)}. La durée choisie s’ajoute à cette date (ou part d’aujourd’hui si l’essai est terminé).`

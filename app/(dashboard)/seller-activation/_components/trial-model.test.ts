@@ -61,7 +61,11 @@ test("unknown access (trial lists) still offers grant", () => {
   assert.deepEqual(availableActions(facts({ accessActive: undefined }), NOW), ["grant"]);
 });
 
-const row = (over: Partial<ActivationRow["access"]>, trialRequest: ActivationRow["trialRequest"] = "none"): ActivationRow => ({
+const row = (
+  over: Partial<ActivationRow["access"]>,
+  trialRequest: ActivationRow["trialRequest"] = "none",
+  more: Partial<ActivationRow> = {},
+): ActivationRow => ({
   sellerId: "s1",
   displayName: "Rosa",
   email: "r@x.fr",
@@ -74,15 +78,41 @@ const row = (over: Partial<ActivationRow["access"]>, trialRequest: ActivationRow
   canList: true,
   onboardingUnavailable: false,
   access: { active: false, source: null, endsAt: null, ...over },
+  trialEndsAt: null,
+  trialRevokedAt: null,
   listings: 0,
   orders: 0,
   trialRequest,
+  ...more,
 });
 
-test("the trial end is taken from the access only when the trial alone grants access", () => {
-  assert.equal(factsFromActivationRow(row({ active: true, source: "platform_trial", endsAt: FUTURE })).trialEndsAt, FUTURE);
-  // store + trial: access.endsAt is the later of both, never offered as the trial end
-  assert.equal(factsFromActivationRow(row({ active: true, source: "store", endsAt: FUTURE })).trialEndsAt, null);
+test("the trial's own dates are used, whatever the access source", () => {
+  // trial alone
+  const alone = factsFromActivationRow(row({ active: true, source: "platform_trial", endsAt: FUTURE }, "granted", { trialEndsAt: FUTURE }));
+  assert.equal(alone.trialEndsAt, FUTURE);
+  // store + longer trial: access.endsAt is the later end, the trial's end is reported separately
+  const LATER = "2027-03-01T00:00:00.000Z";
+  const both = factsFromActivationRow(row({ active: true, source: "store", endsAt: LATER }, "granted", { trialEndsAt: FUTURE }));
+  assert.equal(both.trialEndsAt, FUTURE);
+  // ...so a seller who pays AND has a running trial can still have it extended or revoked
+  assert.deepEqual(availableActions(both, NOW), ["extend", "revoke"]);
+});
+
+test("a revoked trial is reported as revoked on activation rows too", () => {
+  const f = factsFromActivationRow(row({}, "granted", { trialEndsAt: FUTURE, trialRevokedAt: "2026-12-01T00:00:00.000Z", canList: true }));
+  assert.deepEqual(availableActions(f, NOW), ["grant"]);
+});
+
+test("Accorder is only offered to sellers whose onboarding is complete", () => {
+  const incomplete = factsFromActivationRow(row({}, "none", { canList: false }));
+  assert.deepEqual(availableActions(incomplete, NOW), []);
+  const unreadable = factsFromActivationRow(row({}, "none", { canList: null }));
+  assert.deepEqual(availableActions(unreadable, NOW), []);
+  // a pending request from an incomplete seller can still be refused
+  const pending = factsFromActivationRow(row({}, "pending", { canList: false }));
+  assert.deepEqual(availableActions(pending, NOW), ["refuse"]);
+  const ready = factsFromActivationRow(row({}, "none", { canList: true }));
+  assert.deepEqual(availableActions(ready, NOW), ["grant"]);
 });
 
 test("trial-list items carry their own trial dates", () => {

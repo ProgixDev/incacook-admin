@@ -26,6 +26,9 @@ export interface ActivationRow {
   canList: boolean | null;
   onboardingUnavailable: boolean;
   access: { active: boolean; source: AccessSource; endsAt: string | null };
+  /** The platform trial on its own (`access.endsAt` is the later end when a store subscription overlaps it). */
+  trialEndsAt: string | null;
+  trialRevokedAt: string | null;
   listings: number;
   orders: number;
   trialRequest: RequestState;
