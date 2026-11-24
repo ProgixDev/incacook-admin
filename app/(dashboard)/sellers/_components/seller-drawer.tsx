@@ -9,7 +9,7 @@ import { ConnectReadinessBadge, ChargesEnabledBadge } from "@/components/dashboa
 import {
   SellerCategoryBadge,
   SellerStatus,
-  SellerTierBadge,
+  SellerAccessCell,
   initialsOf,
   type AdminSeller,
 } from "./seller-model";
@@ -55,7 +55,7 @@ export function SellerDrawer({
             <DialogTitle className="truncate text-base">{seller.name}</DialogTitle>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
               <SellerCategoryBadge category={seller.category} />
-              <SellerTierBadge tier={seller.subscriptionTier} />
+              <SellerAccessCell seller={seller} />
               <SellerStatus seller={seller} />
             </div>
             <p className="mt-1 text-[12px] text-on-surface-variant">
