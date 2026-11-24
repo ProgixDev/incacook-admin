@@ -49,8 +49,8 @@ export function TrialActionDialog({
   onClose: () => void;
   /** Called with the server's result so the page can refetch the real state. */
   onDone: (kind: TrialActionKind, result: TrialActionResult) => void;
-  /** Called when the server says the data on screen is out of date. */
-  onStale: () => void;
+  /** Called when the server says the data on screen is out of date, with its error code. */
+  onStale: (code: string) => void;
 }) {
   const [days, setDays] = useState(String(DEFAULT_TRIAL_DAYS));
   const [reason, setReason] = useState("");
@@ -87,7 +87,7 @@ export function TrialActionDialog({
       });
       onDone(target.kind, result);
     } catch (err) {
-      if (err instanceof ApiError && shouldRefetchAfterError(err.code)) onStale();
+      if (err instanceof ApiError && shouldRefetchAfterError(err.code)) onStale(err.code);
     }
   }
 

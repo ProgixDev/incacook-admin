@@ -6,6 +6,7 @@ import { DataTable, type Column } from "@/components/dashboard/data-table";
 import { ColumnCards } from "./column-cards";
 import { Button } from "@/components/ui/button";
 import { ApiError, patch } from "@/lib/api";
+import { ErrorCodes } from "@/lib/api/error-codes";
 import type { Pagination } from "@/lib/api";
 import { isFullAdminRole, useAuth } from "@/lib/auth";
 import { useAdminMutation, useAdminQuery } from "@/lib/query";
@@ -21,6 +22,7 @@ import {
 import { TrialActionDialog, type TrialActionTarget } from "./trial-action-dialog";
 import {
   ACTION_LABEL,
+  actionErrorMessage,
   availableActions,
   factsFromActivationRow,
   factsFromTrialItem,
@@ -85,6 +87,9 @@ function ActivationPanel() {
   const [page, setPage] = useState(1); // 1-based
   const [target, setTarget] = useState<TrialActionTarget | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  // Sellers the server said already have access (the trial lists do not carry that fact).
+  const [knownActive, setKnownActive] = useState<ReadonlySet<string>>(new Set());
 
   // The summary always runs (counters). In the "all" view it also pages the rows;
   // in the other views one row is enough.
@@ -121,7 +126,25 @@ function ActivationPanel() {
 
   function open(kind: TrialActionKind, sellerId: string, sellerName: string, facts: TrialFacts) {
     setNotice(null);
+    setAlertMessage(null);
     setTarget({ kind, sellerId, sellerName, trialEndsAt: facts.trialEndsAt });
+  }
+
+  /**
+   * The server rejected an action because what is on screen is out of date: refetch.
+   * A stale end date would be re-sent by an open dialog and fail again, so that dialog is closed
+   * and the admin starts over from the refreshed row; a seller who turned out to have access
+   * stops being offered "Accorder".
+   */
+  function onStale(code: string) {
+    if (code === ErrorCodes.TRIAL_STALE) {
+      setTarget(null);
+      setAlertMessage(actionErrorMessage(code, "L’essai a été modifié entre-temps."));
+    }
+    if (code === ErrorCodes.TRIAL_ALREADY_ACTIVE && target) {
+      setKnownActive((prev) => new Set(prev).add(target.sellerId));
+    }
+    refetchAll();
   }
 
   function onDone(kind: TrialActionKind, result: TrialActionResult) {
@@ -150,7 +173,7 @@ function ActivationPanel() {
   }
 
   function actionButtons(sellerId: string, name: string, facts: TrialFacts) {
-    const actions = availableActions(facts);
+    const actions = availableActions(knownActive.has(sellerId) ? { ...facts, accessActive: true } : facts);
     if (actions.length === 0) return <span className="text-[12px] text-on-surface-variant">—</span>;
     return (
       <div className="flex flex-wrap gap-1.5">
@@ -257,6 +280,15 @@ function ActivationPanel() {
   ];
 
   const summaryData = summary.data;
+
+  // An action (or another admin) can empty the page we are on: step back instead of
+  // leaving the admin on an empty page with no way to go back.
+  const listLoading = view === "all" ? summary.isLoading : trials.isLoading;
+  const listRows = view === "all" ? summary.data?.sellers : trials.data;
+  const listLoaded = view === "all" ? summary.data !== null : trials.data !== null;
+  useEffect(() => {
+    if (page > 1 && listLoaded && !listLoading && (listRows?.length ?? 0) === 0) setPage(page - 1);
+  }, [page, listLoaded, listLoading, listRows]);
   const allPagination: Pagination | null = summaryData
     ? { hasMore: summaryData.pagination.hasMore, total: null, nextCursor: null, page, limit: PAGE_SIZE }
     : null;
@@ -310,6 +342,11 @@ function ActivationPanel() {
         )}
       </div>
 
+      {alertMessage && (
+        <p role="alert" className="mb-3 rounded-md bg-error/15 px-3 py-2 text-[13px] text-error">
+          {alertMessage}
+        </p>
+      )}
       {notice && (
         <p role="status" className="mb-3 rounded-md bg-success/15 px-3 py-2 text-[13px] text-success">
           {notice}
@@ -400,7 +437,7 @@ function ActivationPanel() {
         target={target}
         onClose={() => setTarget(null)}
         onDone={onDone}
-        onStale={refetchAll}
+        onStale={onStale}
       />
     </div>
   );

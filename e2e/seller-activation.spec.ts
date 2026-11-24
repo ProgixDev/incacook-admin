@@ -200,6 +200,43 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
     await expect(page.getByRole("dialog").getByRole("alert")).toContainText("Prolonge son essai");
     await expect.poll(() => calls.activation).toBeGreaterThan(before);
+    // The seller is now known to have access: "Accorder" is no longer offered for them.
+    await page.getByRole("button", { name: "Annuler" }).click();
+    await expect(page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" })).toHaveCount(0);
+  });
+
+  test("a stale end date closes the dialog, says so, and refetches (no re-sending the old date)", async ({ page }) => {
+    const calls = await mockApi(page, "ADMIN", {
+      post: async (_url, route) => {
+        await fail(route, 409, "INCACOOK_TRIAL_STALE", "stale");
+        return true;
+      },
+    });
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Trial Tom")).toBeVisible({ timeout: 30_000 });
+    const before = calls.activation;
+    await page.getByRole("row", { name: /Trial Tom/ }).getByRole("button", { name: "Prolonger" }).click();
+    await page.getByRole("button", { name: /Confirmer : prolonger/ }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.locator("main").getByRole("alert")).toContainText("modifié entre-temps");
+    await expect.poll(() => calls.activation).toBeGreaterThan(before);
+    expect(calls.posts).toHaveLength(1);
+  });
+
+  test("an emptied page steps back instead of leaving a dead end (phone)", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mockApi(page, "ADMIN");
+    await page.route(`${API}/v1/admin/seller-activation*`, (route) => {
+      const offset = Number(new URL(route.request().url()).searchParams.get("offset") ?? "0");
+      const data = offset > 0 ? { ...activation([]) } : { ...activation([row({ sellerId: "s1", displayName: "Chez Rosa" })]), pagination: { limit: 20, offset: 0, hasMore: true } };
+      return route.fulfill({ status: 200, headers: { "access-control-allow-origin": "*" }, contentType: "application/json", body: JSON.stringify({ success: true, data, meta }) });
+    });
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("button", { name: "Suivant" }).click();
+    // Page 2 is empty: the page goes back to 1 by itself.
+    await expect(page.getByText("Page 1")).toBeVisible();
+    await expect(page.getByText("Chez Rosa")).toBeVisible();
   });
 
   test("test-account toggle calls the API and refetches", async ({ page }) => {
