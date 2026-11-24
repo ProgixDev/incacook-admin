@@ -195,3 +195,59 @@ Existing parser suite plus mocked card/driver-view tests and Playwright smoke fo
 
 ### Verification
 `pnpm typecheck`; `pnpm lint`; `pnpm test`; existing Playwright smoke and approved-frame comparison. Do not PATCH staging as part of this build.
+
+# Seller activation page and trial actions (admin)
+
+Overview: `docs/plans/2026-11-24-seller-trial-onboarding-analytics.md` in `incacook-server`. Server tasks TASK-042..048 provide the endpoints. PRs target `staging`; branches and worktrees are deleted after merge; nothing is merged or deployed without the owner's go-ahead.
+
+## Problem
+
+Sellers abandon at the paywall and nobody can see where new sellers get stuck. An admin must be able to grant a 2-month trial to validated sellers and to see the activation funnel without reading the database.
+
+## Solution
+
+A new "Activation vendeurs" page backed by the server's activation summary and trial endpoints, and the trial shown in the existing sellers and subscriptions views.
+
+## Out of Scope
+
+Firebase data in the dashboard, automatic grants, changing server policy.
+
+## Grounding
+
+`app/(dashboard)/` already has `sellers`, `subscriptions` and `platform-earnings` pages built on `useAdminQuery` / `useAdminMutation` and the central `lib/api` client; `platform-earnings` shows the full-Admin visibility pattern. Destructive actions elsewhere use a confirmation dialog.
+
+## TASK-040 — "Activation vendeurs" page
+- status: planned
+- depends: IncaCook-Server:TASK-045, IncaCook-Server:TASK-047
+### Scope
+New dashboard page: four 30-day counters (signups, ready, with access, first listing); a table with one row per seller; filters "Prêts sans accès" and "Demandes en attente"; duplicate hints; buttons Accorder, Prolonger, Révoquer, Refuser with a confirmation dialog and a required reason for revoke and refuse; a test-account toggle. Full-Admin only.
+### Interface
+Consumes the TASK-045 and TASK-047 endpoints; no server change.
+### Acceptance Criteria
+- [ ] Counters and rows match the API response; test accounts excluded by default.
+- [ ] Each action asks for confirmation, refetches server state and shows the server error on failure.
+- [ ] Non-full-Admin roles do not see the page or the actions.
+- [ ] Usable at 390 px width.
+### Edge Cases
+Empty table, 403, a seller already granted by another admin, long names.
+### Testing Decisions
+Mocked component tests plus a Playwright smoke for navigation and role visibility; screenshots at desktop and 390 px.
+### Verification
+`pnpm typecheck`, `pnpm lint --quiet`, `pnpm test`, existing Playwright smoke.
+
+## TASK-041 — Show platform trials in sellers and subscriptions views
+- status: planned
+- depends: IncaCook-Server:TASK-043
+### Scope
+Show access source (store or essai plateforme) and end date in the sellers list/detail and the subscriptions view.
+### Interface
+Reads the fields added by the server task; no new endpoint.
+### Acceptance Criteria
+- [ ] A trial-only seller is labelled "Essai offert" with its end date; a store subscriber keeps today's label.
+- [ ] Filters and counts that treat a seller as subscribed use the same rule as the server.
+### Edge Cases
+Both store and trial; revoked trial; expired trial.
+### Testing Decisions
+Component tests with the four states.
+### Verification
+`pnpm typecheck`, `pnpm lint --quiet`, `pnpm test`.
