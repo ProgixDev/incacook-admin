@@ -19,13 +19,14 @@ export function LegalPageShell({
               <Image
                 src="/app_logo.png"
                 alt="IncaCook"
-                width={36}
-                height={36}
+                width={44}
+                height={44}
                 priority
-                className="object-contain"
+                className="h-full w-full object-cover"
               />
             </div>
-            <span className="text-lg font-semibold tracking-tight">IncaCook</span>
+            <Image src="/app_wordmark.png" alt="IncaCook" width={108} height={22} className="h-[22px] w-auto dark:hidden" />
+            <Image src="/app_wordmark_on_dark.png" alt="" aria-hidden width={108} height={22} className="hidden h-[22px] w-auto dark:block" />
           </Link>
 
           <nav aria-label="Pages légales" className="flex flex-wrap gap-x-4 gap-y-2 text-sm">

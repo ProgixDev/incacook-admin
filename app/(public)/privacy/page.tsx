@@ -134,12 +134,9 @@ export default function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">Quiz, cookies et publicité</h2>
           <p className="leading-7 text-on-surface-variant">
-            Notre quiz IncaCook ne demande ni nom, ni e-mail, ni numéro de téléphone. Vos
-            réponses restent dans votre navigateur. Si vous saisissez un code postal, il est
-            transmis à nos serveurs et à un service public de géolocalisation (geo.api.gouv.fr en
-            France, geo.ca au Canada, où seuls les 3 premiers caractères sont envoyés) uniquement pour trouver
-            les plats proches de vous. Nous ne l&apos;enregistrons pas dans une base de données et ne
-            le transmettons jamais à nos partenaires publicitaires.
+            Notre quiz IncaCook ne demande ni nom, ni e-mail, ni numéro de téléphone, ni code
+            postal. Vos réponses restent dans votre navigateur : nous ne les enregistrons pas dans
+            une base de données et ne les transmettons jamais à nos partenaires publicitaires.
           </p>
           <p className="leading-7 text-on-surface-variant">
             Avec votre accord uniquement, ce quiz utilise des cookies et traceurs de Meta (Meta
@@ -147,8 +144,7 @@ export default function PrivacyPage() {
             l&apos;efficacité de nos publicités. Ces services reçoivent la page visitée, le fait
             qu&apos;une étape du quiz a été franchie ou qu&apos;un bouton de téléchargement a été
             utilisé, ainsi que des données techniques comme votre adresse IP, votre navigateur et
-            l&apos;identifiant de clic publicitaire. Ils ne reçoivent jamais vos réponses au quiz ni
-            votre code postal.
+            l&apos;identifiant de clic publicitaire. Ils ne reçoivent jamais vos réponses au quiz.
           </p>
           <p className="leading-7 text-on-surface-variant">
             Refuser n&apos;a aucune conséquence sur le quiz. Votre choix est conservé 6 mois dans
