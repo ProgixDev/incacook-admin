@@ -21,7 +21,7 @@ const QUESTIONS = [
   },
   {
     q: "Combien ça coûte pour vendre sur IncaCook ?",
-    a: "Créer un compte vendeur est gratuit. Pour vendre, un abonnement mensuel est nécessaire : 2 mois offerts à la première inscription, puis moins de 5 € par mois pour les offres Standard du Bon Fait Maison et de Sauve Ton Panier, moins de 10 € pour L'Atelier Traiteur. IncaCook prélève aussi une commission de 30 % sur les plats vendus (25 % en Premium), avec un minimum de 1 € par commande.",
+    a: "IncaCook prélève une commission sur chaque vente réglée dans l'app ; aucun frais n'est demandé pour créer un compte vendeur.",
   },
 ] as const;
 

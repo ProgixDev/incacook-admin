@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { LEGAL_PAGE_LINKS } from "../_lib/legal-notice";
+const links = [
+  { href: "/privacy", label: "Confidentialité" },
+  { href: "/terms", label: "Conditions" },
+  { href: "/data-deletion", label: "Suppression des données" },
+] as const;
 
 export function LegalPageShell({
   children,
@@ -30,7 +34,7 @@ export function LegalPageShell({
           </Link>
 
           <nav aria-label="Pages légales" className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-            {LEGAL_PAGE_LINKS.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
