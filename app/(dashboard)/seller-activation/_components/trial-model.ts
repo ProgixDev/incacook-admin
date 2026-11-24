@@ -43,6 +43,8 @@ export function factsFromTrialItem(item: TrialListItem): TrialFacts {
   return {
     requestState: item.requestState,
     accessActive: item.access?.active,
+    // Unreadable (null) is not ready: no grant is offered on a guess. Absent (older server) is no block.
+    ready: item.ready === undefined ? undefined : item.ready === true,
     trialEndsAt: item.trialEndsAt,
     trialRevokedAt: item.trialRevokedAt,
   };

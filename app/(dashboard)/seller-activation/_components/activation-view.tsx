@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { formatDateFr } from "@/lib/utils";
+import { formatDateParis } from "./dates";
 import { duplicateReasonLabel, nextStepLabel, REQUEST_STATE_LABEL } from "./trial-model";
 import type { ActivationCounters, ActivationRow, DuplicateHint, RequestState } from "./types";
 
@@ -62,7 +62,7 @@ export function AccessBadge({ access }: { access: ActivationRow["access"] }) {
   // report a trial's end (when the store period end is unknown), which is not a
   // subscription end: no date rather than a wrong one.
   if (access.source === "platform_trial") {
-    const end = access.endsAt ? ` · jusqu’au ${formatDateFr(access.endsAt)}` : "";
+    const end = access.endsAt ? ` · jusqu’au ${formatDateParis(access.endsAt)}` : "";
     return <Badge variant="info">{`Essai offert${end}`}</Badge>;
   }
   return <Badge variant="success">Abonné</Badge>;

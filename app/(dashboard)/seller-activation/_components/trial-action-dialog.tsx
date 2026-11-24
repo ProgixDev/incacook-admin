@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Input } from "@/components/ui/input";
 import { ApiError, post } from "@/lib/api";
 import { useAdminMutation } from "@/lib/query";
-import { formatDateFr } from "@/lib/utils";
+import { formatDateParis } from "./dates";
 import {
   ACTION_LABEL,
   actionErrorMessage,
@@ -32,7 +32,7 @@ const COPY: Record<TrialActionKind, (t: TrialActionTarget) => string> = {
     `${t.sellerName} pourra publier ses plats et recevoir des commandes pendant la durée choisie. Une notification et un e-mail lui sont envoyés, sans garantie de réception : préviens-le toi-même si besoin.`,
   extend: (t) =>
     t.trialEndsAt
-      ? `L’essai actuel se termine le ${formatDateFr(t.trialEndsAt)}. La durée choisie s’ajoute à cette date (ou part d’aujourd’hui si l’essai est terminé).`
+      ? `L’essai actuel se termine le ${formatDateParis(t.trialEndsAt)}. La durée choisie s’ajoute à cette date (ou part d’aujourd’hui si l’essai est terminé).`
       : "La durée choisie s’ajoute à la fin de l’essai.",
   revoke: (t) => `${t.sellerName} perdra l’accès immédiatement. Les commandes déjà passées restent traitables.`,
   refuse: (t) => `La demande de ${t.sellerName} sera refusée. Elle ne pourra pas en refaire une.`,

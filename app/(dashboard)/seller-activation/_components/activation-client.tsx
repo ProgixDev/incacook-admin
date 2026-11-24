@@ -10,7 +10,7 @@ import { ErrorCodes } from "@/lib/api/error-codes";
 import type { Pagination } from "@/lib/api";
 import { isFullAdminRole, useAuth } from "@/lib/auth";
 import { useAdminMutation, useAdminQuery } from "@/lib/query";
-import { formatDateFr } from "@/lib/utils";
+import { formatDateParis } from "./dates";
 import {
   AccessBadge,
   CountersGrid,
@@ -158,7 +158,7 @@ function ActivationPanel() {
       });
     }
     setTarget(null);
-    const end = result.endsAt ? ` jusqu’au ${formatDateFr(result.endsAt)}` : "";
+    const end = result.endsAt ? ` jusqu’au ${formatDateParis(result.endsAt)}` : "";
     setNotice(
       {
         grant: `Essai accordé à ${name}${end}.`,
@@ -214,7 +214,7 @@ function ActivationPanel() {
     {
       key: "signup",
       header: "Inscrit le",
-      cell: (r) => <span className="text-[13px] text-on-surface-variant">{formatDateFr(r.signedUpAt)}</span>,
+      cell: (r) => <span className="text-[13px] text-on-surface-variant">{formatDateParis(r.signedUpAt)}</span>,
       width: "110px",
     },
     { key: "onboarding", header: "Inscription", cell: (r) => <OnboardingCell row={r} />, width: "150px" },
@@ -259,7 +259,7 @@ function ActivationPanel() {
     {
       key: "signup",
       header: "Inscrit le",
-      cell: (r) => <span className="text-[13px] text-on-surface-variant">{formatDateFr(r.signedUpAt)}</span>,
+      cell: (r) => <span className="text-[13px] text-on-surface-variant">{formatDateParis(r.signedUpAt)}</span>,
       width: "110px",
     },
     {
@@ -269,7 +269,7 @@ function ActivationPanel() {
         <div className="flex flex-col gap-0.5">
           <RequestBadge state={r.requestState} />
           {r.requestedAt && (
-            <span className="text-[11px] text-on-surface-variant">le {formatDateFr(r.requestedAt)}</span>
+            <span className="text-[11px] text-on-surface-variant">le {formatDateParis(r.requestedAt)}</span>
           )}
         </div>
       ),

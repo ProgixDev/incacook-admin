@@ -121,7 +121,7 @@ test("trial-list items carry their own trial dates", () => {
     requestState: "granted", requestedAt: null, trialEndsAt: FUTURE, trialRevokedAt: null, duplicates: [],
   };
   assert.deepEqual(factsFromTrialItem(item), {
-    requestState: "granted", accessActive: undefined, trialEndsAt: FUTURE, trialRevokedAt: null,
+    requestState: "granted", accessActive: undefined, ready: undefined, trialEndsAt: FUTURE, trialRevokedAt: null,
   });
 });
 
@@ -183,4 +183,17 @@ test("labels for duplicate reasons and onboarding steps", () => {
   assert.equal(nextStepLabel("kyc_id"), "Pièce d’identité");
   assert.equal(nextStepLabel("brand_new_step"), "brand_new_step");
   assert.equal(nextStepLabel(null), "—");
+});
+
+test("a pending request whose seller is no longer ready (or unreadable) cannot be granted, only refused", () => {
+  const base: TrialListItem = {
+    sellerId: "s1", displayName: null, email: "r@x.fr", category: null, signedUpAt: PAST,
+    requestState: "pending", requestedAt: PAST, trialEndsAt: null, trialRevokedAt: null,
+    access: { active: false, source: null, endsAt: null }, duplicates: [],
+  };
+  assert.deepEqual(availableActions(factsFromTrialItem({ ...base, ready: false }), NOW), ["refuse"]);
+  assert.deepEqual(availableActions(factsFromTrialItem({ ...base, ready: null }), NOW), ["refuse"]);
+  assert.deepEqual(availableActions(factsFromTrialItem({ ...base, ready: true }), NOW), ["grant", "refuse"]);
+  // an older server without the field: no block
+  assert.deepEqual(availableActions(factsFromTrialItem(base), NOW), ["grant", "refuse"]);
 });

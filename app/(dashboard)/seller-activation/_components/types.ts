@@ -64,6 +64,8 @@ export interface TrialListItem {
   trialRevokedAt: string | null;
   /** Access today. Absent on servers older than the access field: then it is unknown. */
   access?: { active: boolean; source: AccessSource; endsAt: string | null };
+  /** Onboarding complete now; null when it could not be read; absent on older servers (then unknown). */
+  ready?: boolean | null;
   duplicates: DuplicateHint[];
 }
 
