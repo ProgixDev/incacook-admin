@@ -25,7 +25,7 @@ function StoreBadge({ store, href, compact }: { store: "ios" | "android"; href: 
   }
 
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={cn(base, "border-outline-variant text-on-surface-variant transition-colors hover:text-on-surface")}>
+    <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Télécharger IncaCook sur ${label}`} className={cn(base, "border-outline-variant text-on-surface-variant transition-colors hover:text-on-surface")}>
       {label}
     </a>
   );
