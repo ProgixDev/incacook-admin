@@ -149,6 +149,14 @@ function ActivationPanel() {
 
   function onDone(kind: TrialActionKind, result: TrialActionResult) {
     const name = target?.sellerName ?? "Le vendeur";
+    if (target) {
+      // The seller's state just changed: what we remembered about them is no longer reliable.
+      setKnownActive((prev) => {
+        const next = new Set(prev);
+        next.delete(target.sellerId);
+        return next;
+      });
+    }
     setTarget(null);
     const end = result.endsAt ? ` jusqu’au ${formatDateFr(result.endsAt)}` : "";
     setNotice(
@@ -173,7 +181,9 @@ function ActivationPanel() {
   }
 
   function actionButtons(sellerId: string, name: string, facts: TrialFacts) {
-    const actions = availableActions(knownActive.has(sellerId) ? { ...facts, accessActive: true } : facts);
+    // A conflict answer fills in what a list without access information could not know.
+    const known = facts.accessActive === undefined && knownActive.has(sellerId);
+    const actions = availableActions(known ? { ...facts, accessActive: true } : facts);
     if (actions.length === 0) return <span className="text-[12px] text-on-surface-variant">—</span>;
     return (
       <div className="flex flex-wrap gap-1.5">

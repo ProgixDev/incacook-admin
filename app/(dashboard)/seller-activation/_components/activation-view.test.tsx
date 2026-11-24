@@ -25,7 +25,10 @@ test("warns when onboarding states were unreadable or the cohort was capped", ()
 test("labels the access source: trial, store, none", () => {
   const end = "2027-01-10T00:00:00.000Z";
   assert.match(text(<AccessBadge access={{ active: true, source: "platform_trial", endsAt: end }} />), /Essai offert · jusqu’au 10\/01\/2027/);
-  assert.match(text(<AccessBadge access={{ active: true, source: "store", endsAt: end }} />), /Abonné · jusqu’au 10\/01\/2027/);
+  // A store subscriber never shows a date: the server's endsAt can be a trial's end then.
+  const store = text(<AccessBadge access={{ active: true, source: "store", endsAt: end }} />);
+  assert.match(store, /Abonné/);
+  assert.doesNotMatch(store, /jusqu’au|2027/);
   assert.match(text(<AccessBadge access={{ active: false, source: null, endsAt: null }} />), /Aucun accès/);
 });
 

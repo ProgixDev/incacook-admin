@@ -90,7 +90,20 @@ test("trial-list items carry their own trial dates", () => {
     sellerId: "s1", displayName: null, email: "r@x.fr", category: null, signedUpAt: PAST,
     requestState: "granted", requestedAt: null, trialEndsAt: FUTURE, trialRevokedAt: null, duplicates: [],
   };
-  assert.deepEqual(factsFromTrialItem(item), { requestState: "granted", trialEndsAt: FUTURE, trialRevokedAt: null });
+  assert.deepEqual(factsFromTrialItem(item), {
+    requestState: "granted", accessActive: undefined, trialEndsAt: FUTURE, trialRevokedAt: null,
+  });
+});
+
+test("a pending seller who subscribed meanwhile is not offered a grant (list access), only a refusal", () => {
+  const item: TrialListItem = {
+    sellerId: "s1", displayName: null, email: "r@x.fr", category: null, signedUpAt: PAST,
+    requestState: "pending", requestedAt: PAST, trialEndsAt: null, trialRevokedAt: null,
+    access: { active: true, source: "store", endsAt: FUTURE }, duplicates: [],
+  };
+  assert.deepEqual(availableActions(factsFromTrialItem(item), NOW), ["refuse"]);
+  const without = { ...item, access: { active: false, source: null, endsAt: null } };
+  assert.deepEqual(availableActions(factsFromTrialItem(without), NOW), ["grant", "refuse"]);
 });
 
 test("grant and extend need a whole number of days between 1 and 365", () => {

@@ -58,12 +58,14 @@ export function SellerCell({
 
 export function AccessBadge({ access }: { access: ActivationRow["access"] }) {
   if (!access.active) return <Badge variant="neutral">Aucun accès</Badge>;
-  const end = access.endsAt ? ` · jusqu’au ${formatDateFr(access.endsAt)}` : "";
-  return access.source === "platform_trial" ? (
-    <Badge variant="info">{`Essai offert${end}`}</Badge>
-  ) : (
-    <Badge variant="success">{`Abonné${end}`}</Badge>
-  );
+  // The date is shown for a trial only. With a store subscription the server may
+  // report a trial's end (when the store period end is unknown), which is not a
+  // subscription end: no date rather than a wrong one.
+  if (access.source === "platform_trial") {
+    const end = access.endsAt ? ` · jusqu’au ${formatDateFr(access.endsAt)}` : "";
+    return <Badge variant="info">{`Essai offert${end}`}</Badge>;
+  }
+  return <Badge variant="success">Abonné</Badge>;
 }
 
 const REQUEST_VARIANT: Record<RequestState, "neutral" | "warning" | "success" | "error"> = {

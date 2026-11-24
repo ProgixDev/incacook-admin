@@ -36,6 +36,7 @@ export function factsFromActivationRow(row: ActivationRow): TrialFacts {
 export function factsFromTrialItem(item: TrialListItem): TrialFacts {
   return {
     requestState: item.requestState,
+    accessActive: item.access?.active,
     trialEndsAt: item.trialEndsAt,
     trialRevokedAt: item.trialRevokedAt,
   };

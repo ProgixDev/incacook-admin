@@ -85,7 +85,9 @@ async function mockApi(page: Page, role: "ADMIN" | "MODERATOR", handlers: { post
       const filter = url.searchParams.get("filter");
       const items =
         filter === "pending"
-          ? [{ sellerId: "s2", displayName: "Pending Pat", email: "pat@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T10:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, duplicates: [{ sellerId: "s9", displayName: "Pat bis", reasons: ["email", "phone"] }] }]
+          ? [{ sellerId: "s2", displayName: "Pending Pat", email: "pat@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T10:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, access: { active: false, source: null, endsAt: null }, duplicates: [{ sellerId: "s9", displayName: "Pat bis", reasons: ["email", "phone"] }] },
+              // Asked for a trial, then subscribed through the store: a grant could only fail.
+              { sellerId: "s7", displayName: "Sub Sam", email: "sam@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T11:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, access: { active: true, source: "store", endsAt: FUTURE }, duplicates: [] }]
           : [{ sellerId: "s1", displayName: "Chez Rosa", email: "rosa@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-01T10:00:00.000Z", requestState: "none", requestedAt: null, trialEndsAt: null, trialRevokedAt: null, duplicates: [] }];
       // The server flattens `{ items, hasMore }` to data = items + a top-level pagination block.
       return ok(route, items, { pagination: { hasMore: false, limit: 20 } });
@@ -147,7 +149,11 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await page.getByRole("tab", { name: "Demandes en attente" }).click();
     await expect(page.getByText("Pending Pat")).toBeVisible();
     await expect(page.getByText("Pat bis : même e-mail, même téléphone")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Refuser" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Refuser" }).first()).toBeVisible();
+    // The subscriber is only offered a refusal, never a grant that would answer 409.
+    const sam = page.getByRole("row", { name: /Sub Sam/ });
+    await expect(sam.getByRole("button", { name: "Refuser" })).toBeVisible();
+    await expect(sam.getByRole("button", { name: "Accorder" })).toHaveCount(0);
   });
 
   test("grant: confirmation, default 60 days, server state refetched", async ({ page }) => {
@@ -200,9 +206,7 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
     await expect(page.getByRole("dialog").getByRole("alert")).toContainText("Prolonge son essai");
     await expect.poll(() => calls.activation).toBeGreaterThan(before);
-    // The seller is now known to have access: "Accorder" is no longer offered for them.
-    await page.getByRole("button", { name: "Annuler" }).click();
-    await expect(page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" })).toHaveCount(0);
+    // (The refetch shows what the server now says; a list row without access information is covered by the unit tests.)
   });
 
   test("a stale end date closes the dialog, says so, and refetches (no re-sending the old date)", async ({ page }) => {
