@@ -115,9 +115,9 @@ export function buildActionBody(
 
 const ERROR_MESSAGES: Record<string, string> = {
   [ErrorCodes.TRIAL_ALREADY_ACTIVE]:
-    "Ce vendeur a déjà accès à la plateforme (abonnement ou essai en cours). Prolonge son essai plutôt que d’en accorder un nouveau.",
+    "Ce vendeur a déjà accès à la plateforme (abonnement ou essai en cours). La liste a été rechargée : vérifie son état avant de continuer.",
   [ErrorCodes.TRIAL_NOT_GRANTED]:
-    "Ce vendeur n’a pas d’essai en cours (jamais accordé, révoqué ou terminé). Recharge la liste.",
+    "Cette action n’est pas possible sur l’essai de ce vendeur (jamais accordé, déjà révoqué ou déjà terminé). La liste a été rechargée : vérifie son état.",
   [ErrorCodes.TRIAL_NO_PENDING_REQUEST]:
     "Ce vendeur n’a pas de demande en attente : elle a peut-être déjà été traitée par un autre administrateur.",
   [ErrorCodes.TRIAL_STALE]:

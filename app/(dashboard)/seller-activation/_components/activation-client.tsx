@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ShieldAlert } from "lucide-react";
 import { DataTable, type Column } from "@/components/dashboard/data-table";
 import { ColumnCards } from "./column-cards";
@@ -129,7 +129,23 @@ function ActivationPanel() {
   );
   const [toggleError, setToggleError] = useState<string | null>(null);
 
+  // After an action the rows on screen are stale until the refetch answers: a second click on one
+  // of their buttons would send an out-of-date state (and come back as a 409). Lock them meanwhile.
+  const [refreshing, setRefreshing] = useState(false);
+  const sawLoading = useRef(false);
+  const anyLoading = summary.isLoading || (view !== "all" && trials.isLoading);
+  useEffect(() => {
+    if (!refreshing) return;
+    if (anyLoading) sawLoading.current = true;
+    else if (sawLoading.current) {
+      sawLoading.current = false;
+      setRefreshing(false);
+    }
+  }, [refreshing, anyLoading]);
+
   function refetchAll() {
+    sawLoading.current = false;
+    setRefreshing(true);
     summary.refetch();
     if (view !== "all") trials.refetch();
   }
@@ -202,6 +218,7 @@ function ActivationPanel() {
             key={kind}
             size="sm"
             variant={kind === "grant" ? "default" : "outline"}
+            disabled={refreshing}
             onClick={() => open(kind, sellerId, name, facts)}
           >
             {ACTION_LABEL[kind]}

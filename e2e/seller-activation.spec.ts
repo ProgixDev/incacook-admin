@@ -194,6 +194,28 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await expect.poll(() => calls.activation).toBeGreaterThan(before); // refetched, not assumed
   });
 
+  test("buttons are locked while the list refreshes after an action (no second click on stale state)", async ({ page }) => {
+    const calls = await mockApi(page, "ADMIN");
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    let held = false;
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    await page.route(`${API}/v1/admin/seller-activation*`, async (route) => {
+      if (!held && calls.posts.length > 0) {
+        held = true;
+        await gate;
+      }
+      return route.fallback();
+    });
+    await page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
+    await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
+    await expect(page.getByRole("status")).toContainText("Essai accordé");
+    await expect(page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" })).toBeDisabled();
+    release();
+    await expect(page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" })).toBeEnabled();
+  });
+
   test("revoke needs a reason: nothing is sent until one is typed", async ({ page }) => {
     const calls = await mockApi(page, "ADMIN");
     await page.goto("/seller-activation");
@@ -232,7 +254,7 @@ test.describe("Activation vendeurs (mocked API)", () => {
     const before = calls.activation;
     await page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
     await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
-    await expect(page.getByRole("dialog").getByRole("alert")).toContainText("Prolonge son essai");
+    await expect(page.getByRole("dialog").getByRole("alert")).toContainText("vérifie son état avant de continuer");
     await expect.poll(() => calls.activation).toBeGreaterThan(before);
     // (The refetch shows what the server now says; a list row without access information is covered by the unit tests.)
   });

@@ -165,7 +165,7 @@ test("known error codes get a French message, unknown ones the server's", () => 
   assert.match(actionErrorMessage("INCACOOK_TRIAL_STALE", "x"), /modifié entre-temps/);
   assert.match(actionErrorMessage("INCACOOK_TRIAL_ALREADY_ACTIVE", "x"), /déjà accès/);
   assert.match(actionErrorMessage("INCACOOK_TRIAL_NO_PENDING_REQUEST", "x"), /en attente/);
-  assert.match(actionErrorMessage("INCACOOK_TRIAL_NOT_GRANTED", "x"), /pas d’essai/);
+  assert.match(actionErrorMessage("INCACOOK_TRIAL_NOT_GRANTED", "x"), /n’est pas possible sur l’essai/);
   assert.equal(actionErrorMessage("INCACOOK_SOMETHING", "message serveur"), "message serveur");
   assert.equal(actionErrorMessage(undefined, "message serveur"), "message serveur");
 });
