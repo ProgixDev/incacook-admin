@@ -11,6 +11,7 @@ import {
   dailyTotal,
   formatCount,
   formatRate,
+  knownResults,
   outcomeCard,
   shortDay,
   stepHasActivity,
@@ -164,14 +165,19 @@ function AnalyticsReport({ data }: { data: AnalyticsFunnel }) {
         />
         {(
           [
-            outcomeCard(by.trial_request, {
-              success: "Essais demandés",
-              attempts: "Tentatives d’essai",
-            }),
-            outcomeCard(by.subscription_purchase, {
-              success: "Abonnements achetés",
-              attempts: "Tentatives d’achat",
-            }),
+            outcomeCard(
+              by.trial_request,
+              { success: "Essais demandés", attempts: "Tentatives d’essai" },
+              knownResults(data.breakdowns, "trial_request"),
+            ),
+            outcomeCard(
+              by.subscription_purchase,
+              {
+                success: "Abonnements achetés",
+                attempts: "Tentatives d’achat",
+              },
+              knownResults(data.breakdowns, "subscription_purchase"),
+            ),
           ] as const
         ).map((card) => (
           <StatCard

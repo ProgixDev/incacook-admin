@@ -56,10 +56,10 @@ const funnel = (over: Record<string, unknown> = {}) => ({
     event,
     label,
     events,
-    // 5 of the 8 trial requests and 2 of the 3 purchase attempts worked; others have no outcome.
+    // 7 of the 8 trial requests and 2 of the 3 purchase attempts worked; others have no outcome.
     succeededEvents:
       event === "trial_request"
-        ? 5
+        ? 7
         : event === "subscription_purchase"
           ? 2
           : null,
@@ -200,6 +200,38 @@ test.describe("Analytics (mocked API)", () => {
     await expect(key).toContainText("Tentatives d’achat");
     await expect(key).toContainText("Tentatives d’essai");
     await expect(key).not.toContainText("Abonnements achetés");
+  });
+
+  test("a success count that covers only some attempts is labelled partial", async ({
+    page,
+  }) => {
+    await mockApi(page, "ADMIN", async (url, route) => {
+      if (url.pathname.endsWith("/analytics/funnel")) {
+        await ok(
+          route,
+          funnel({
+            // 8 trial requests, but only 5 have a recorded result (the rest predate the dimension).
+            breakdowns: [
+              {
+                event: "trial_request",
+                parameter: "result",
+                label: "Demandes d’essai : résultat",
+                values: [
+                  { value: "requested", events: 4 },
+                  { value: "error", events: 1 },
+                ],
+              },
+            ],
+          }),
+        );
+        return true;
+      }
+      return false;
+    });
+    await page.goto("/analytics");
+    const key = page.getByRole("region", { name: "Chiffres clés" });
+    await expect(key).toContainText("Essais demandés (partiel)");
+    await expect(key).toContainText("résultat connu pour 5 des 8 tentatives");
   });
 
   test("breakdowns use French labels and show an empty split as such", async ({

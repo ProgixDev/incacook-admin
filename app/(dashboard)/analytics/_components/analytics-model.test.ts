@@ -5,6 +5,7 @@ import {
   dailyTotal,
   formatCount,
   formatRate,
+  knownResults,
   outcomeCard,
   shortDay,
   valueLabel,
@@ -104,4 +105,37 @@ test("outcome card: never shows attempts under a success label", () => {
   assert.equal(unknown.label, "Tentatives d’achat");
   assert.equal(unknown.value, 7);
   assert.equal(outcomeCard(undefined, labels).value, 0);
+});
+
+test("outcome card: a success count that covers only some attempts is labelled partial", () => {
+  // 7 attempts, but only 4 have a result (the rest were logged before the dimension existed).
+  const card = outcomeCard(step(7, 2), labels, 4);
+  assert.equal(card.label, "Abonnements achetés (partiel)");
+  assert.equal(card.value, 2);
+  assert.equal(card.hint, "résultat connu pour 4 des 7 tentatives");
+  // Full coverage is not partial.
+  assert.equal(outcomeCard(step(7, 2), labels, 7).label, "Abonnements achetés");
+});
+
+test("known results: the sum of the result breakdown, null when it is unavailable", () => {
+  const breakdowns = [
+    {
+      event: "subscription_purchase",
+      parameter: "result",
+      label: "x",
+      values: [
+        { value: "success", events: 2 },
+        { value: "cancelled", events: 2 },
+      ],
+    },
+    {
+      event: "subscription_purchase",
+      parameter: "product",
+      label: "y",
+      values: [{ value: "premium", events: 9 }],
+    },
+  ];
+  assert.equal(knownResults(breakdowns, "subscription_purchase"), 4);
+  assert.equal(knownResults(breakdowns, "trial_request"), null);
+  assert.equal(knownResults(null, "subscription_purchase"), null);
 });

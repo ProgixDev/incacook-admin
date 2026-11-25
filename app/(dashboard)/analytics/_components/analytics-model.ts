@@ -1,4 +1,8 @@
-import type { AnalyticsDaily, AnalyticsStep } from "./types";
+import type {
+  AnalyticsBreakdown,
+  AnalyticsDaily,
+  AnalyticsStep,
+} from "./types";
 
 /** « 42 % », « 3,5 % » (French decimal comma), « — » when there is no rate. */
 export function formatRate(rate: number | null): string {
@@ -88,21 +92,44 @@ export function stepHasActivity(step: AnalyticsStep): boolean {
   return step.events > 0 || step.users > 0;
 }
 
+/** How many attempts of an event have a known result: the sum of its `result` breakdown (null if unavailable). */
+export function knownResults(
+  breakdowns: AnalyticsBreakdown[] | null,
+  event: string,
+): number | null {
+  const b = breakdowns?.find(
+    (x) => x.event === event && x.parameter === "result",
+  );
+  return b ? b.values.reduce((sum, v) => sum + v.events, 0) : null;
+}
+
 /**
- * A key-figure card for an event that fires on every ATTEMPT (trial request, purchase): the
- * successful count when Google can tell, otherwise the attempts, labelled as such. Never
- * attempts under a success label.
+ * A key-figure card for an event that fires on every ATTEMPT (trial request, purchase).
+ * - results known for every attempt: the successes, "sur N tentatives";
+ * - results known for only some (attempts logged before Google registered the `result`
+ *   dimension have none): the successes counted so far, labelled partial, with the coverage;
+ * - no result available: the attempts, labelled as attempts.
+ * Never attempts, nor a partial count, under a plain success label.
  */
 export function outcomeCard(
   step: AnalyticsStep | undefined,
   labels: { success: string; attempts: string },
+  known: number | null = step?.events ?? null,
 ): { label: string; value: number; hint: string } {
   const attempts = step?.events ?? 0;
   if (step && step.succeededEvents !== null) {
+    const plural = (n: number) => `${n} tentative${n > 1 ? "s" : ""}`;
+    if (known !== null && known < attempts) {
+      return {
+        label: `${labels.success} (partiel)`,
+        value: step.succeededEvents,
+        hint: `résultat connu pour ${known} des ${plural(attempts)}`,
+      };
+    }
     return {
       label: labels.success,
       value: step.succeededEvents,
-      hint: `sur ${attempts} tentative${attempts > 1 ? "s" : ""}`,
+      hint: `sur ${plural(attempts)}`,
     };
   }
   return {
