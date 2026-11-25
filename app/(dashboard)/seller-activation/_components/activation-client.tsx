@@ -93,8 +93,11 @@ function ActivationPanel() {
 
   // The summary always runs (counters). In the "all" view it also pages the rows;
   // in the other views one row is enough.
+  // keepPreviousData: false everywhere here: rows carry action buttons, so a previous view's or
+  // page's rows must never stay on screen (and clickable) while the current query loads.
   const summary = useAdminQuery<ActivationResponse>({
     path: "/admin/seller-activation",
+    keepPreviousData: false,
     params: {
       limit: view === "all" ? PAGE_SIZE : 1,
       offset: view === "all" ? (page - 1) * PAGE_SIZE : 0,
@@ -103,6 +106,7 @@ function ActivationPanel() {
   });
   const trials = useAdminQuery<TrialListItem[]>({
     path: "/admin/seller-trials",
+    keepPreviousData: false,
     enabled: view !== "all",
     params: {
       limit: PAGE_SIZE,
@@ -290,6 +294,9 @@ function ActivationPanel() {
   ];
 
   const summaryData = summary.data;
+  // Until the response for the current query arrives there is no data (not a stale page): show it as loading.
+  const summaryLoading = summary.isLoading || (summary.data === null && !summary.isError);
+  const trialsLoading = trials.isLoading || (trials.data === null && !trials.isError);
 
   // An action (or another admin) can empty the page we are on: step back instead of
   // leaving the admin on an empty page with no way to go back.
@@ -377,7 +384,7 @@ function ActivationPanel() {
             rows={summaryData?.sellers ?? []}
             rowKey={(r) => r.sellerId}
             pageSize={PAGE_SIZE}
-            isLoading={summary.isLoading}
+            isLoading={summaryLoading}
             isError={summary.isError}
             error={summary.error}
             onRetry={summary.refetch}
@@ -387,7 +394,7 @@ function ActivationPanel() {
               page,
               onPageChange: setPage,
               pageSize: PAGE_SIZE,
-              isFetching: summary.isLoading,
+              isFetching: summaryLoading,
             }}
           />
         ) : (
@@ -396,7 +403,7 @@ function ActivationPanel() {
             rows={trials.data ?? []}
             rowKey={(r) => r.sellerId}
             pageSize={PAGE_SIZE}
-            isLoading={trials.isLoading}
+            isLoading={trialsLoading}
             isError={trials.isError}
             error={trials.error}
             onRetry={trials.refetch}
@@ -406,7 +413,7 @@ function ActivationPanel() {
               page,
               onPageChange: setPage,
               pageSize: PAGE_SIZE,
-              isFetching: trials.isLoading,
+              isFetching: trialsLoading,
             }}
           />
         )}
@@ -418,7 +425,7 @@ function ActivationPanel() {
             columns={allColumns}
             rows={summaryData?.sellers ?? []}
             rowKey={(r) => r.sellerId}
-            isLoading={summary.isLoading}
+            isLoading={summaryLoading}
             errorMessage={summary.isError ? (summary.error?.message ?? "Erreur de chargement.") : null}
             emptyLabel={EMPTY_LABEL.all}
             onRetry={summary.refetch}
@@ -431,7 +438,7 @@ function ActivationPanel() {
             columns={trialColumns}
             rows={trials.data ?? []}
             rowKey={(r) => r.sellerId}
-            isLoading={trials.isLoading}
+            isLoading={trialsLoading}
             errorMessage={trials.isError ? (trials.error?.message ?? "Erreur de chargement.") : null}
             emptyLabel={EMPTY_LABEL[view]}
             onRetry={trials.refetch}

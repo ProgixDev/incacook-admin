@@ -34,7 +34,8 @@ const COPY: Record<TrialActionKind, (t: TrialActionTarget) => string> = {
     t.trialEndsAt
       ? `L’essai actuel se termine le ${formatDateParis(t.trialEndsAt)}. La durée choisie s’ajoute à cette date (ou part d’aujourd’hui si l’essai est terminé).`
       : "La durée choisie s’ajoute à la fin de l’essai.",
-  revoke: (t) => `${t.sellerName} perdra l’accès immédiatement. Les commandes déjà passées restent traitables.`,
+  revoke: (t) =>
+    `L’essai de ${t.sellerName} est révoqué immédiatement. Si le vendeur a un abonnement actif sur le store, son accès continue ; sinon il le perd. Les commandes déjà passées restent traitables.`,
   refuse: (t) => `La demande de ${t.sellerName} sera refusée. Elle ne pourra pas en refaire une.`,
 };
 

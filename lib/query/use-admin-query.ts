@@ -46,6 +46,13 @@ export interface UseAdminQueryOptions {
   searchDebounceMs?: number;
   /** When `false`, the hook holds off fetching (e.g. before auth is ready). */
   enabled?: boolean;
+  /**
+   * Default `true`: while a request for new params is in flight, the previous params' data stays in
+   * `data` (no flicker on plain lists). Set `false` when a row can be acted on: `data` is then
+   * `null` until the response for the CURRENT params has arrived, so a previous page or filter is
+   * never shown, nor acted on, under the new one. A refetch of the same params keeps its data.
+   */
+  keepPreviousData?: boolean;
 
   // --- Auth ------------------------------------------------------------------
   // By default (neither `token` nor `getToken` given) the hook routes through
@@ -76,6 +83,8 @@ export interface UseAdminQueryResult<TData> {
 }
 
 interface QueryState<TData> {
+  /** The params the data (or error) belongs to. */
+  key: string | null;
   data: TData | null;
   pagination: Pagination | null;
   isLoading: boolean;
@@ -94,6 +103,7 @@ export function useAdminQuery<TData = unknown>(
     params,
     searchDebounceMs = 300,
     enabled = true,
+    keepPreviousData = true,
     token,
     getToken,
   } = options;
@@ -128,7 +138,13 @@ export function useAdminQuery<TData = unknown>(
   const [refetchTick, setRefetchTick] = React.useState(0);
   const refetch = React.useCallback(() => setRefetchTick((t) => t + 1), []);
 
+  // What the data on screen must belong to: every param that changes the response.
+  const requestKey = JSON.stringify([path, page, limit, offset, debouncedSearch, serializedExtra]);
+  const requestKeyRef = React.useRef(requestKey);
+  requestKeyRef.current = requestKey;
+
   const [state, setState] = React.useState<QueryState<TData>>({
+    key: null,
     data: null,
     pagination: null,
     isLoading: enabled,
@@ -173,6 +189,7 @@ export function useAdminQuery<TData = unknown>(
       .then((res) => {
         if (controller.signal.aborted) return;
         setState({
+          key: requestKeyRef.current,
           data: res.data,
           pagination: res.pagination,
           isLoading: false,
@@ -217,9 +234,10 @@ export function useAdminQuery<TData = unknown>(
     refetchTick,
   ]);
 
+  const current = keepPreviousData || state.key === requestKey;
   return {
-    data: state.data,
-    pagination: state.pagination,
+    data: current ? state.data : null,
+    pagination: current ? state.pagination : null,
     isLoading: state.isLoading,
     isError: state.isError,
     error: state.error,

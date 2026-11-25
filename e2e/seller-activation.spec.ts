@@ -197,6 +197,10 @@ test.describe("Activation vendeurs (mocked API)", () => {
   test("revoke needs a reason: nothing is sent until one is typed", async ({ page }) => {
     const calls = await mockApi(page, "ADMIN");
     await page.goto("/seller-activation");
+    await page.getByRole("row", { name: /Both Bea/ }).getByRole("button", { name: "Révoquer" }).click();
+    // Revoking the trial must not claim the seller loses access when a store subscription keeps it.
+    await expect(page.getByRole("dialog")).toContainText("abonnement actif sur le store, son accès continue");
+    await page.getByRole("button", { name: "Annuler" }).click();
     await page.getByRole("row", { name: /Trial Tom/ }).getByRole("button", { name: "Révoquer" }).click();
     await page.getByRole("button", { name: /Confirmer : révoquer/ }).click();
     await expect(page.getByRole("alert")).toContainText("Le motif est obligatoire");
@@ -265,6 +269,51 @@ test.describe("Activation vendeurs (mocked API)", () => {
     // Page 2 is empty: the page goes back to 1 by itself.
     await expect(page.getByText("Page 1")).toBeVisible();
     await expect(page.getByText("Chez Rosa")).toBeVisible();
+  });
+
+  test("switching view never leaves the previous view's rows (and their buttons) on screen while loading", async ({ page }) => {
+    const calls = await mockApi(page, "ADMIN");
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    await page.goto("/seller-activation");
+    await page.getByRole("tab", { name: "Demandes en attente" }).click();
+    await expect(page.getByText("Pending Pat")).toBeVisible();
+    // The next view answers slowly.
+    await page.route(`${API}/v1/admin/seller-trials*`, async (route) => {
+      await gate;
+      return route.fallback();
+    });
+    await page.getByRole("tab", { name: "Prêts sans accès" }).click();
+    await expect(page.getByText("Pending Pat")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Refuser" })).toHaveCount(0);
+    release();
+    await expect(page.getByText("Chez Rosa")).toBeVisible();
+    expect(calls.trials).toBeGreaterThan(1);
+  });
+
+  test("an emptied last page steps back exactly one page (desktop)", async ({ page }) => {
+    await mockApi(page, "ADMIN");
+    const seen: number[] = [];
+    await page.route(`${API}/v1/admin/seller-activation*`, (route) => {
+      const offset = Number(new URL(route.request().url()).searchParams.get("offset") ?? "0");
+      seen.push(offset);
+      const names: Record<number, string> = { 0: "Page one seller", 20: "Page two seller" };
+      const sellers = names[offset] ? [row({ sellerId: `p${offset}`, displayName: names[offset], email: `p${offset}@example.fr` })] : [];
+      const data = { ...activation(sellers), pagination: { limit: 20, offset, hasMore: offset < 40 } };
+      return route.fulfill({ status: 200, headers: { "access-control-allow-origin": "*" }, contentType: "application/json", body: JSON.stringify({ success: true, data, meta }) });
+    });
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Page one seller")).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("button", { name: /Suivant|Page suivante/ }).click();
+    await expect(page.getByText("Page two seller")).toBeVisible();
+    await page.getByRole("button", { name: /Suivant|Page suivante/ }).click();
+    // Page 3 is empty: back to page 2, and it stays there (it must not skip on to page 1).
+    await expect(page.getByText("Page two seller")).toBeVisible();
+    await page.waitForTimeout(800);
+    await expect(page.getByText("Page two seller")).toBeVisible();
+    await expect(page.getByText("Page one seller")).toHaveCount(0);
+    // Page 1 was never fetched again once the admin had moved on (the initial load may run twice).
+    expect(seen.slice(seen.indexOf(20))).not.toContain(0);
   });
 
   test("test-account toggle calls the API and refetches", async ({ page }) => {
