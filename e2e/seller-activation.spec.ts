@@ -93,6 +93,8 @@ async function mockApi(page: Page, role: "ADMIN" | "MODERATOR", handlers: { post
           ? [{ sellerId: "s2", displayName: "Pending Pat", email: "pat@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T10:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, access: { active: false, source: null, endsAt: null }, ready: true, duplicates: [{ sellerId: "s9", displayName: "Pat bis", reasons: ["email", "phone"] }] },
               // Asked for a trial, then subscribed through the store: a grant could only fail.
               { sellerId: "s7", displayName: "Sub Sam", email: "sam@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T11:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, access: { active: true, source: "store", endsAt: FUTURE }, ready: true, duplicates: [] },
+              // Asked for a trial, then got suspended: a trial would run unusable, so only a refusal.
+              { sellerId: "s10", displayName: "Suspended Sol", email: "sol@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T13:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, access: { active: false, source: null, endsAt: null }, ready: true, suspended: true, duplicates: [] },
               // Asked for a trial, but onboarding is no longer complete: only a refusal makes sense.
               { sellerId: "s8", displayName: "Slipped Sue", email: "sue@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T12:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, access: { active: false, source: null, endsAt: null }, ready: false, duplicates: [] }]
           : [{ sellerId: "s1", displayName: "Chez Rosa", email: "rosa@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-01T10:00:00.000Z", requestState: "none", requestedAt: null, trialEndsAt: null, trialRevokedAt: null, duplicates: [] }];
@@ -174,6 +176,9 @@ test.describe("Activation vendeurs (mocked API)", () => {
     const sam = page.getByRole("row", { name: /Sub Sam/ });
     await expect(sam.getByRole("button", { name: "Refuser" })).toBeVisible();
     await expect(sam.getByRole("button", { name: "Accorder" })).toHaveCount(0);
+    const sol = page.getByRole("row", { name: /Suspended Sol/ });
+    await expect(sol.getByRole("button", { name: "Refuser" })).toBeVisible();
+    await expect(sol.getByRole("button", { name: "Accorder" })).toHaveCount(0);
     // ...and a request from a seller who is no longer ready cannot be granted either.
     const sue = page.getByRole("row", { name: /Slipped Sue/ });
     await expect(sue.getByRole("button", { name: "Refuser" })).toBeVisible();

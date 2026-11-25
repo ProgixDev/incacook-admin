@@ -66,6 +66,8 @@ export interface TrialListItem {
   access?: { active: boolean; source: AccessSource; endsAt: string | null };
   /** Onboarding complete now; null when it could not be read; absent on older servers (then unknown). */
   ready?: boolean | null;
+  /** The account is suspended (absent on servers that predate the field: no block). */
+  suspended?: boolean;
   duplicates: DuplicateHint[];
 }
 

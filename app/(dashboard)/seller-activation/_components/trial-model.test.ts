@@ -121,7 +121,7 @@ test("trial-list items carry their own trial dates", () => {
     requestState: "granted", requestedAt: null, trialEndsAt: FUTURE, trialRevokedAt: null, duplicates: [],
   };
   assert.deepEqual(factsFromTrialItem(item), {
-    requestState: "granted", accessActive: undefined, ready: undefined, trialEndsAt: FUTURE, trialRevokedAt: null,
+    requestState: "granted", accessActive: undefined, ready: undefined, trialEndsAt: FUTURE, trialRevokedAt: null, suspended: false,
   });
 });
 
@@ -205,4 +205,14 @@ test("a suspended seller is not offered a grant (the trial would run unusable) b
     row({ active: true, source: "platform_trial", endsAt: FUTURE }, "granted", { isSuspended: true, trialEndsAt: FUTURE }),
   );
   assert.deepEqual(availableActions(runningAndSuspended, NOW), ["extend", "revoke"]);
+});
+
+test("a suspended seller on the pending list is not offered a grant, only a refusal", () => {
+  const item: TrialListItem = {
+    sellerId: "s1", displayName: "Rosa", email: "r@x.fr", category: null, signedUpAt: PAST,
+    requestState: "pending", requestedAt: PAST, trialEndsAt: null, trialRevokedAt: null, duplicates: [],
+    access: { active: false, source: null, endsAt: null }, ready: true, suspended: true,
+  };
+  assert.deepEqual(availableActions(factsFromTrialItem(item), NOW), ["refuse"]);
+  assert.deepEqual(availableActions(factsFromTrialItem({ ...item, suspended: false }), NOW), ["grant", "refuse"]);
 });

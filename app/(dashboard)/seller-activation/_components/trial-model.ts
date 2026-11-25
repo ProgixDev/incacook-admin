@@ -50,6 +50,7 @@ export function factsFromTrialItem(item: TrialListItem): TrialFacts {
     ready: item.ready === undefined ? undefined : item.ready === true,
     trialEndsAt: item.trialEndsAt,
     trialRevokedAt: item.trialRevokedAt,
+    suspended: item.suspended === true,
   };
 }
 
