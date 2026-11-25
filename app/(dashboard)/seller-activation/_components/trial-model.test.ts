@@ -197,3 +197,12 @@ test("a pending request whose seller is no longer ready (or unreadable) cannot b
   // an older server without the field: no block
   assert.deepEqual(availableActions(factsFromTrialItem(base), NOW), ["grant", "refuse"]);
 });
+
+test("a suspended seller is not offered a grant (the trial would run unusable) but can still be refused or revoked", () => {
+  const suspended = factsFromActivationRow(row({}, "pending", { isSuspended: true }));
+  assert.deepEqual(availableActions(suspended, NOW), ["refuse"]);
+  const runningAndSuspended = factsFromActivationRow(
+    row({ active: true, source: "platform_trial", endsAt: FUTURE }, "granted", { isSuspended: true, trialEndsAt: FUTURE }),
+  );
+  assert.deepEqual(availableActions(runningAndSuspended, NOW), ["extend", "revoke"]);
+});

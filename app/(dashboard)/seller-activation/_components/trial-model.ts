@@ -25,6 +25,8 @@ export interface TrialFacts {
    * Undefined (the trial lists: ready sellers and pending requests) is not a block.
    */
   ready?: boolean;
+  /** Suspended sellers cannot publish or take orders: a new trial would run unusable, so no grant is offered. */
+  suspended?: boolean;
 }
 
 export function factsFromActivationRow(row: ActivationRow): TrialFacts {
@@ -36,6 +38,7 @@ export function factsFromActivationRow(row: ActivationRow): TrialFacts {
     trialEndsAt: row.trialEndsAt,
     trialRevokedAt: row.trialRevokedAt,
     ready: row.canList === true,
+    suspended: row.isSuspended === true,
   };
 }
 
@@ -59,7 +62,7 @@ export function availableActions(facts: TrialFacts, now: Date = new Date()): Tri
   const actions: TrialActionKind[] = [];
   const ends = facts.trialEndsAt ? new Date(facts.trialEndsAt).getTime() : null;
   const running = ends !== null && ends > now.getTime() && !facts.trialRevokedAt;
-  if (facts.accessActive !== true && facts.ready !== false) actions.push("grant");
+  if (facts.accessActive !== true && facts.ready !== false && facts.suspended !== true) actions.push("grant");
   if (ends !== null && !facts.trialRevokedAt) actions.push("extend");
   if (running) actions.push("revoke");
   if (facts.requestState === "pending") actions.push("refuse");
