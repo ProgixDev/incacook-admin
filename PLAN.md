@@ -217,7 +217,7 @@ Firebase data in the dashboard, automatic grants, changing server policy.
 `app/(dashboard)/` already has `sellers`, `subscriptions` and `platform-earnings` pages built on `useAdminQuery` / `useAdminMutation` and the central `lib/api` client; `platform-earnings` shows the full-Admin visibility pattern. Destructive actions elsewhere use a confirmation dialog.
 
 ## TASK-040 — "Activation vendeurs" page
-- status: planned
+- status: done (merged to staging; admin-staging.incacook.com)
 - depends: IncaCook-Server:TASK-045, IncaCook-Server:TASK-047
 ### Scope
 New dashboard page: four 30-day counters (signups, ready, with access, first listing); a table with one row per seller; filters "Prêts sans accès" and "Demandes en attente"; duplicate hints; buttons Accorder, Prolonger, Révoquer, Refuser with a confirmation dialog and a required reason for revoke and refuse; a test-account toggle. Full-Admin only.
@@ -235,8 +235,11 @@ Mocked component tests plus a Playwright smoke for navigation and role visibilit
 ### Verification
 `pnpm typecheck`, `pnpm lint --quiet`, `pnpm test`, existing Playwright smoke.
 
+### Notes (as built)
+Admin-only page (the nav entry is hidden for Moderators, and the server rejects them on the trial endpoints: `@Roles(Admin)`). The test-account toggle sends `includeTest=true` to `GET /v1/admin/seller-activation`, which includes those rows and counters. Grant is not offered to sellers who already have access, are not ready, or are suspended; action buttons lock while the list refreshes; stale-data conflicts close the dialog and reload (incacook-admin#33).
+
 ## TASK-041 — Show platform trials in sellers and subscriptions views
-- status: planned
+- status: done (merged to staging; admin-staging.incacook.com)
 - depends: IncaCook-Server:TASK-043
 ### Scope
 Show access source (store or essai plateforme) and end date in the sellers list/detail and the subscriptions view.
@@ -251,3 +254,6 @@ Both store and trial; revoked trial; expired trial.
 Component tests with the four states.
 ### Verification
 `pnpm typecheck`, `pnpm lint --quiet`, `pnpm test`.
+
+### Notes (as built)
+Rendered from the access and trial fields the server adds to the sellers and subscriptions lists (incacook-server#147, merged first); the server response is the verdict near expiry, not the browser clock (incacook-admin#34).
