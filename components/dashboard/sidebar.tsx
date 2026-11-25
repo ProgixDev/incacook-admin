@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutGrid,
+  BarChart3,
   Users,
   ShoppingBag,
   Store,
@@ -51,6 +52,7 @@ const NAV: { href: string; label: string; icon: typeof LayoutGrid; adminOnly?: b
   { href: "/boosts", label: "Mise à la Une", icon: Sparkles },
   { href: "/payouts", label: "Versements", icon: Wallet },
   { href: "/platform-earnings", label: "Revenus plateforme", icon: Landmark, adminOnly: true },
+  { href: "/analytics", label: "Analytics", icon: BarChart3, adminOnly: true },
   { href: "/geography", label: "Carte", icon: MapPinned },
   { href: "/notifications", label: "Notifications", icon: Megaphone },
   { href: "/legal", label: "Documents légaux", icon: FileText },
