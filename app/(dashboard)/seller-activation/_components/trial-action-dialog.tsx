@@ -25,6 +25,8 @@ export interface TrialActionTarget {
   sellerName: string;
   /** The trial end the admin is looking at (sent as `expectedEndsAt` when extending). */
   trialEndsAt: string | null;
+  /** What the existing grant gives, when known: extending a Premium grant needs a reason too. */
+  tier?: TrialTier;
 }
 
 const PREMIUM_GRANT_COPY =
@@ -79,11 +81,13 @@ export function TrialActionDialog({
 
   if (!target) return null;
   const needsDays = target.kind === "grant" || target.kind === "extend";
+  // A grant takes the plan chosen in the form; an extension carries the plan of the grant it extends.
+  const effectiveTier: TrialTier = target.kind === "grant" ? tier : (target.tier ?? "STANDARD");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!target) return;
-    const invalid = validateAction(target.kind, { days, reason, tier });
+    const invalid = validateAction(target.kind, { days, reason, tier: effectiveTier });
     setFormError(invalid);
     if (invalid) return;
     try {
@@ -144,7 +148,7 @@ export function TrialActionDialog({
             </label>
           )}
           <label className="flex flex-col gap-1 text-[12px] font-medium text-on-surface-variant">
-            {reasonRequired(target.kind, tier) ? "Motif (obligatoire)" : "Motif (facultatif)"}
+            {reasonRequired(target.kind, effectiveTier) ? "Motif (obligatoire)" : "Motif (facultatif)"}
             <textarea
               name="reason"
               value={reason}

@@ -79,6 +79,8 @@ async function mockApi(page: Page, role: "ADMIN" | "MODERATOR", handlers: { post
         row({ sellerId: "s1", displayName: "Chez Rosa", canList: true }),
         row({ sellerId: "s2", displayName: "A".repeat(120), email: "long@example.fr", nextStep: "kyc_id", canList: false, trialRequest: "pending" }),
         row({ sellerId: "s3", displayName: "Trial Tom", email: "tom@example.fr", access: { active: true, source: "platform_trial", endsAt: FUTURE }, trialEndsAt: FUTURE, trialRequest: "granted", listings: 2, orders: 1 }),
+        // An admin-granted PREMIUM period: extending it needs a reason, like granting it did.
+        row({ sellerId: "s6", displayName: "Gift Gina", email: "gina@example.fr", access: { active: true, source: "platform_trial", endsAt: FUTURE }, trialEndsAt: FUTURE, trialTier: "PREMIUM", trialRequest: "granted" }),
         // Store subscription overlapping a longer trial: the trial can still be extended or revoked.
         row({ sellerId: "s5", displayName: "Both Bea", email: "bea@example.fr", access: { active: true, source: "store", endsAt: LATER }, trialEndsAt: FUTURE, trialRequest: "granted" }),
         ...(includeTest ? [row({ sellerId: "s4", displayName: "QA bot", email: "qa@example.fr", isTestAccount: true })] : []),
@@ -222,6 +224,32 @@ test.describe("Activation vendeurs (mocked API)", () => {
     expect(calls.posts).toEqual([
       { url: "/admin/sellers/s1/trial/grant", body: { days: 90, tier: "PREMIUM", reason: "Partenaire fondateur" } },
     ]);
+  });
+
+  test("extending a Premium grant needs a reason, like granting one (a Standard extension does not)", async ({ page }) => {
+    const calls = await mockApi(page, "ADMIN");
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Gift Gina")).toBeVisible({ timeout: 30_000 });
+
+    // Standard trial: no reason asked.
+    await page.getByRole("row", { name: /Trial Tom/ }).getByRole("button", { name: "Prolonger" }).click();
+    await expect(page.getByRole("dialog")).toContainText("Motif (facultatif)");
+    await page.getByRole("button", { name: "Annuler" }).click();
+
+    // Premium grant: the reason is mandatory and nothing is sent without it.
+    await page.getByRole("row", { name: /Gift Gina/ }).getByRole("button", { name: "Prolonger" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toContainText("Motif (obligatoire)");
+    await page.getByRole("button", { name: /Confirmer : prolonger/ }).click();
+    await expect(dialog.getByRole("alert")).toContainText("Le motif est obligatoire pour un Premium offert");
+    expect(calls.posts).toEqual([]);
+    await dialog.getByLabel(/Motif/).fill("Partenariat prolongé");
+    await page.getByRole("button", { name: /Confirmer : prolonger/ }).click();
+    expect(calls.posts).toHaveLength(1);
+    expect(calls.posts[0]).toMatchObject({
+      url: "/admin/sellers/s6/trial/extend",
+      body: { days: 30, expectedEndsAt: FUTURE, reason: "Partenariat prolongé" },
+    });
   });
 
   test("a Premium grant is reported as Premium offert once the server answers", async ({ page }) => {

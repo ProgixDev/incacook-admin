@@ -20,6 +20,8 @@ export interface TrialFacts {
   /** The platform trial's own end (null when none). */
   trialEndsAt: string | null;
   trialRevokedAt: string | null;
+  /** What the grant gives; unknown (undefined) is treated as STANDARD. */
+  trialTier?: TrialTier;
   /**
    * Onboarding finished and approved. A grant before that would start the trial
    * before the seller can publish, so Accorder is only offered to ready sellers.
@@ -38,6 +40,7 @@ export function factsFromActivationRow(row: ActivationRow): TrialFacts {
     // subscription overlaps the trial, which must not be sent as the end to extend.
     trialEndsAt: row.trialEndsAt,
     trialRevokedAt: row.trialRevokedAt,
+    trialTier: row.trialTier,
     ready: row.canList === true,
     suspended: row.isSuspended === true,
   };
@@ -51,6 +54,7 @@ export function factsFromTrialItem(item: TrialListItem): TrialFacts {
     ready: item.ready === undefined ? undefined : item.ready === true,
     trialEndsAt: item.trialEndsAt,
     trialRevokedAt: item.trialRevokedAt,
+    trialTier: item.trialTier,
     suspended: item.suspended === true,
   };
 }
@@ -83,7 +87,7 @@ export const ACTION_LABEL: Record<TrialActionKind, string> = {
  * grant: it costs commission and boosts, so it must say why.
  */
 export function reasonRequired(kind: TrialActionKind, tier: TrialTier = "STANDARD"): boolean {
-  return kind === "revoke" || kind === "refuse" || (kind === "grant" && tier === "PREMIUM");
+  return kind === "revoke" || kind === "refuse" || ((kind === "grant" || kind === "extend") && tier === "PREMIUM");
 }
 
 export interface ActionInput {
@@ -103,7 +107,9 @@ export function validateAction(kind: TrialActionKind, input: ActionInput): strin
   }
   const reason = input.reason.trim();
   if (reasonRequired(kind, input.tier) && reason.length === 0) {
-    return kind === "grant" ? "Le motif est obligatoire pour un Premium offert." : "Le motif est obligatoire.";
+    return kind === "grant" || kind === "extend"
+      ? "Le motif est obligatoire pour un Premium offert."
+      : "Le motif est obligatoire.";
   }
   if (reason.length > MAX_REASON_LENGTH) {
     return `Le motif ne peut pas dépasser ${MAX_REASON_LENGTH} caractères.`;

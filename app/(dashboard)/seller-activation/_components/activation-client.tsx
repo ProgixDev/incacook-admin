@@ -153,7 +153,7 @@ function ActivationPanel() {
   function open(kind: TrialActionKind, sellerId: string, sellerName: string, facts: TrialFacts) {
     setNotice(null);
     setAlertMessage(null);
-    setTarget({ kind, sellerId, sellerName, trialEndsAt: facts.trialEndsAt });
+    setTarget({ kind, sellerId, sellerName, trialEndsAt: facts.trialEndsAt, tier: facts.trialTier });
   }
 
   /**
@@ -250,7 +250,7 @@ function ActivationPanel() {
       width: "110px",
     },
     { key: "onboarding", header: "Inscription", cell: (r) => <OnboardingCell row={r} />, width: "150px" },
-    { key: "access", header: "Accès", cell: (r) => <AccessBadge access={r.access} />, width: "190px" },
+    { key: "access", header: "Accès", cell: (r) => <AccessBadge access={r.access} tier={r.trialTier} />, width: "190px" },
     {
       key: "listings",
       header: "Annonces",

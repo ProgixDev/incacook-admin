@@ -31,6 +31,8 @@ export interface ActivationRow {
   /** The platform trial on its own (`access.endsAt` is the later end when a store subscription overlaps it). */
   trialEndsAt: string | null;
   trialRevokedAt: string | null;
+  /** What the grant gives (absent on servers that predate Premium grants: then STANDARD). */
+  trialTier?: TrialTier;
   listings: number;
   orders: number;
   trialRequest: RequestState;

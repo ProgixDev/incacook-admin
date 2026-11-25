@@ -59,3 +59,14 @@ test("onboarding cell: ready, first missing step, unreadable, waiting for valida
   assert.match(text(<OnboardingCell row={row({ canList: null, onboardingUnavailable: true })} />), /illisible/);
   assert.match(text(<OnboardingCell row={row({})} />), /Validation en cours/);
 });
+
+test("a Premium grant reads Premium offert in the access column; Standard (or no tier) keeps Essai offert", () => {
+  const end = "2027-01-10T00:00:00.000Z";
+  const access = { active: true, source: "platform_trial" as const, endsAt: end };
+  assert.match(text(<AccessBadge access={access} tier="PREMIUM" />), /Premium offert · jusqu’au 10\/01\/2027/);
+  assert.doesNotMatch(text(<AccessBadge access={access} tier="PREMIUM" />), /Essai/);
+  assert.match(text(<AccessBadge access={access} tier="STANDARD" />), /Essai offert/);
+  assert.match(text(<AccessBadge access={access} />), /Essai offert/);
+  // A store subscriber is never labelled by a grant's tier.
+  assert.match(text(<AccessBadge access={{ ...access, source: "store" }} tier="PREMIUM" />), /Abonné/);
+});
