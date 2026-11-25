@@ -43,3 +43,21 @@ test("French wording and Paris-time dates", () => {
   // 23:30 UTC on 31 Dec is already 1 Jan in Paris, whatever the machine's timezone
   assert.equal(formatTrialDate("2026-12-31T23:30:00.000Z"), "01/01/2027");
 });
+
+test("near expiry the server's verdict wins over the browser clock: a trial the response reports as the active source stays running", () => {
+  // The trial's end is already behind this browser's clock (clock ahead / response a moment old)...
+  const seller = {
+    platformTrialEndsAt: PAST,
+    access: { active: true, source: "platform_trial" as const, endsAt: PAST },
+  };
+  // ...but the server said access is active through the trial: badge and note agree with it.
+  assert.deepEqual(trialState(seller, NOW), { kind: "running", date: PAST });
+  assert.equal(isTrialOnly(seller), true);
+  // Without the server saying so, the clock still decides.
+  assert.equal(trialState({ platformTrialEndsAt: PAST, access: { active: false, source: null, endsAt: null } }, NOW)?.kind, "ended");
+  // A revocation is never overridden.
+  assert.equal(
+    trialState({ ...seller, platformTrialRevokedAt: "2026-12-01T00:00:00.000Z" }, NOW)?.kind,
+    "revoked",
+  );
+});

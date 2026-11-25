@@ -42,6 +42,9 @@ export function trialState(f: SellerAccessFields, now: Date = new Date()): Trial
   const ends = f.platformTrialEndsAt;
   if (!ends) return null;
   if (f.platformTrialRevokedAt) return { kind: "revoked", date: f.platformTrialRevokedAt };
+  // The server's own verdict wins over this browser's clock: when it reports the trial as the active
+  // source, it is running, so the badge and the note never contradict the response near expiry.
+  if (f.access?.active === true && f.access.source === "platform_trial") return { kind: "running", date: ends };
   return new Date(ends).getTime() > now.getTime()
     ? { kind: "running", date: ends }
     : { kind: "ended", date: ends };
