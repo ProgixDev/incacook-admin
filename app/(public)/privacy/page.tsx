@@ -146,7 +146,7 @@ export default function PrivacyPage() {
             </li>
             <li>
               <span className="font-medium text-on-surface">Firebase Analytics</span>{" "}
-              (Google) — mesure d&apos;audience anonyme, uniquement avec votre accord ;
+              (Google) — mesure d&apos;audience pseudonymisée, uniquement avec votre accord ;
             </li>
             <li>
               <span className="font-medium text-on-surface">Supabase</span> — authentification et

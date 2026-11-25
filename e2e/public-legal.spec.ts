@@ -32,6 +32,11 @@ test.describe("public legal pages (no backend, no auth)", () => {
     await expect(page.getByText("Firebase Analytics", { exact: true })).toBeVisible(); // processor list
     // Honest about what Firebase collects: pseudonymous, with an installation identifier.
     await expect(page.getByText(/pseudonymisée, pas anonyme/)).toBeVisible();
+    // ...and no other line of the page may call the measurement anonymous again (the processor list
+    // once said "mesure d'audience anonyme" next to this disclosure).
+    const text = (await page.locator("main").innerText()).toLowerCase();
+    expect(text.match(/mesure d.audience anonyme/g)).toBeNull();
+    expect(text).toMatch(/mesure d.audience pseudonymisée/);
     await expect(page.getByText(/identifiant technique/).first()).toBeVisible();
   });
 
