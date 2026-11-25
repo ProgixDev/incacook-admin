@@ -16,7 +16,7 @@ import { formatDateFr } from "@/lib/utils";
 import {
   ProviderBadge,
   STATUS_OPTIONS,
-  SubscriptionStatusBadge,
+  SubscriptionAccessCell,
   planLabel,
   type AdminSubscription,
   type AdminSubscriptionsListResponse,
@@ -55,7 +55,7 @@ export function SubscriptionsClient() {
         </div>
       ),
     },
-    { key: "status", header: "Statut", cell: (s) => <SubscriptionStatusBadge status={s.subscriptionStatus} /> },
+    { key: "status", header: "Statut", cell: (s) => <SubscriptionAccessCell sub={s} /> },
     {
       key: "plan",
       header: "Formule",

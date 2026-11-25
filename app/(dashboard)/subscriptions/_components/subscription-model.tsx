@@ -1,4 +1,6 @@
 import { Badge } from "@/components/ui/badge";
+import { TrialNote, TrialOnlyBadge } from "@/components/dashboard/trial-access-badge";
+import type { SellerAccessFields } from "@/lib/seller-access";
 
 export type SubscriptionStatus =
   | "NONE"
@@ -14,7 +16,7 @@ export type SubscriptionStatus =
 export type SubscriptionProvider = "stripe" | "revenuecat" | "none";
 export type SellerCategory = "FAIT_MAISON" | "TRAITEUR" | "RESTAURANT";
 
-export interface AdminSubscription {
+export interface AdminSubscription extends SellerAccessFields {
   sellerId: string;
   name: string;
   email: string;
@@ -63,6 +65,24 @@ export const STATUS_OPTIONS = (
 
 export function SubscriptionStatusBadge({ status }: { status: SubscriptionStatus }) {
   return <Badge variant={STATUS_VARIANT[status]}>{STATUS_LABEL[status]}</Badge>;
+}
+
+/**
+ * Status cell: the store status as before, except for a seller whose only access
+ * is the admin-granted trial, who reads "Essai offert" with its end date instead
+ * of "Aucun". Other trial states (under a subscription, ended, revoked) are notes.
+ */
+export function SubscriptionAccessCell({ sub }: { sub: AdminSubscription }) {
+  return (
+    <div>
+      {sub.access?.source === "platform_trial" ? (
+        <TrialOnlyBadge seller={sub} />
+      ) : (
+        <SubscriptionStatusBadge status={sub.subscriptionStatus} />
+      )}
+      <TrialNote seller={sub} />
+    </div>
+  );
 }
 
 const PROVIDER_LABEL: Record<SubscriptionProvider, string> = {

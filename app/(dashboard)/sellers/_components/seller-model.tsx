@@ -17,6 +17,8 @@
 import { Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { UserStatusBadge } from "@/components/dashboard/status-badge";
+import { TrialNote, TrialOnlyBadge } from "@/components/dashboard/trial-access-badge";
+import type { SellerAccessFields } from "@/lib/seller-access";
 
 /** Seller category as it comes off the wire (Prisma `SellerCategory` enum). */
 export type SellerCategory = "FAIT_MAISON" | "TRAITEUR" | "RESTAURANT";
@@ -37,7 +39,7 @@ export type SubscriptionStatus =
   | "INCOMPLETE_EXPIRED";
 
 /** One seller row as returned by `GET /v1/admin/sellers`. */
-export interface AdminSeller {
+export interface AdminSeller extends SellerAccessFields {
   id: string;
   name: string;
   email: string;
@@ -122,6 +124,21 @@ export function SellerTierBadge({ tier }: { tier: SubscriptionTier }) {
     return <Badge variant="info">{TIER_LABEL.standard}</Badge>;
   }
   return <Badge variant="neutral">{TIER_LABEL.free}</Badge>;
+}
+
+/**
+ * Subscription cell: the store tier exactly as before, except for a seller whose
+ * only access is the admin-granted trial, who reads "Essai offert" with its end
+ * date. Trials under a store subscription, ended or revoked ones are muted notes.
+ */
+export function SellerAccessCell({ seller }: { seller: AdminSeller }) {
+  const trialOnly = <TrialOnlyBadge seller={seller} />;
+  return (
+    <div>
+      {seller.access?.source === "platform_trial" ? trialOnly : <SellerTierBadge tier={seller.subscriptionTier} />}
+      <TrialNote seller={seller} />
+    </div>
+  );
 }
 
 /** Suspended / active state, reusing the shared status badge. */

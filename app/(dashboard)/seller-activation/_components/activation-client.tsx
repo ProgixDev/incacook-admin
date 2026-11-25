@@ -168,7 +168,11 @@ function ActivationPanel() {
       setAlertMessage(actionErrorMessage(code, "L’essai a été modifié entre-temps."));
     }
     if (code === ErrorCodes.TRIAL_ALREADY_ACTIVE && target) {
-      setKnownActive((prev) => new Set(prev).add(target.sellerId));
+      // Same reasoning: the dialog's confirm button would resend the rejected grant.
+      const sellerId = target.sellerId;
+      setKnownActive((prev) => new Set(prev).add(sellerId));
+      setTarget(null);
+      setAlertMessage(actionErrorMessage(code, "Ce vendeur a déjà accès à la plateforme."));
     }
     refetchAll();
   }

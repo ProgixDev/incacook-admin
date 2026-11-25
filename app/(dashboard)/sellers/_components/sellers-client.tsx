@@ -19,7 +19,7 @@ import {
   CATEGORY_OPTIONS,
   SellerCategoryBadge,
   SellerStatus,
-  SellerTierBadge,
+  SellerAccessCell,
   initialsOf,
   type AdminSeller,
   type AdminSellersListResponse,
@@ -134,8 +134,8 @@ export function SellersClient() {
     {
       key: "tier",
       header: "Abonnement",
-      cell: (s) => <SellerTierBadge tier={s.subscriptionTier} />,
-      width: "120px",
+      cell: (s) => <SellerAccessCell seller={s} />,
+      width: "190px",
     },
     {
       key: "status",

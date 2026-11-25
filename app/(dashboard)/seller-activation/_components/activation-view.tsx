@@ -96,7 +96,7 @@ export function DuplicateHints({ hints }: { hints: DuplicateHint[] }) {
   return (
     <ul className="flex max-w-[260px] flex-col gap-1">
       {hints.map((h) => (
-        <li key={h.sellerId} className="text-[11.5px] leading-snug text-warning">
+        <li key={h.sellerId} className="text-[11.5px] leading-snug text-warning [overflow-wrap:anywhere]">
           <span className="font-medium">{h.displayName ?? h.sellerId}</span>
           {" : "}
           {duplicateReasonLabel(h.reasons)}
