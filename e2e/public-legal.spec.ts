@@ -24,6 +24,37 @@ test.describe("public legal pages (no backend, no auth)", () => {
     ).toBeVisible();
     await expect(page.getByText("Stripe")).toBeVisible();
     await expect(page.getByText("Supabase")).toBeVisible();
+    // Analytics is disclosed: consent, anonymity, how to withdraw, and the processor.
+    await expect(
+      page.getByRole("heading", { name: /mesure d.audience/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/Rien n.est collecté avant que vous ayez accepté/),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Firebase Analytics", { exact: true }),
+    ).toBeVisible(); // processor list
+    // Honest about what Firebase collects: pseudonymous, with an installation identifier.
+    await expect(page.getByText(/pseudonymisée, pas anonyme/)).toBeVisible();
+    // ...and no other line of the page may call the measurement anonymous again (the processor list
+    // once said "mesure d'audience anonyme" next to this disclosure).
+    const text = (await page.locator("main").innerText()).toLowerCase();
+    expect(text.match(/mesure d.audience anonyme/g)).toBeNull();
+    // Nor may any line make a positive anonymity claim ("anonyme(s)" / "anonymement"); only the
+    // honest negation "pas anonyme" is allowed.
+    const positiveClaims = [...text.matchAll(/anonym\w*/g)].filter(
+      (m) => !/pas\s+$/.test(text.slice(Math.max(0, m.index - 6), m.index)),
+    );
+    expect(positiveClaims.map((m) => m[0])).toEqual([]);
+    expect(text).toMatch(/mesure d.audience pseudonymisée/);
+    await expect(page.getByText(/identifiant technique/).first()).toBeVisible();
+    // How to withdraw is a legal promise: both in-app paths stay on the page.
+    await expect(
+      page.getByText(/dans Profil, rubrique « Mesure d.audience »/),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/depuis l.écran d.accueil si vous n.avez pas de compte/),
+    ).toBeVisible();
   });
 
   test("/data-deletion leads with the in-app path and keeps the email fallback", async ({

@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Politique de confidentialité
           </h1>
-          <p className="text-sm text-on-surface-variant">Dernière mise à jour : 24 août 2026</p>
+          <p className="text-sm text-on-surface-variant">Dernière mise à jour : 25 novembre 2026</p>
         </header>
 
         <section className="space-y-3">
@@ -94,6 +94,34 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-3">
+          <h2 className="text-xl font-semibold">Mesure d&apos;audience (avec votre accord)</h2>
+          <p className="leading-7 text-on-surface-variant">
+            Avec votre accord, l&apos;application mobile mesure la manière dont elle est utilisée
+            afin de l&apos;améliorer : écrans et étapes d&apos;inscription vus, utilisation du
+            tutoriel, de la page d&apos;abonnement, de la demande d&apos;essai gratuit et de
+            l&apos;achat d&apos;abonnement. Ces mesures sont réalisées avec Firebase Analytics
+            (Google).
+          </p>
+          <p className="leading-7 text-on-surface-variant">
+            Cette mesure est pseudonymisée, pas anonyme : Firebase attribue à votre installation un
+            identifiant technique et collecte automatiquement des informations de base sur
+            l&apos;appareil et l&apos;usage (modèle, système et version, langue, pays ou région
+            approximatifs déduits de l&apos;adresse IP, début et durée des sessions, première
+            ouverture). Nous n&apos;envoyons ni votre nom, ni votre e-mail, ni votre téléphone, ni
+            votre adresse, et aucun identifiant utilisateur IncaCook n&apos;est associé aux mesures ;
+            seuls votre rôle (acheteur, vendeur ou livreur) et, pour un vendeur, sa catégorie leur
+            sont rattachés. Nous n&apos;utilisons pas l&apos;identifiant publicitaire.
+          </p>
+          <p className="leading-7 text-on-surface-variant">
+            Rien n&apos;est collecté avant que vous ayez accepté, ni si vous refusez. Vous pouvez
+            changer d&apos;avis à tout moment dans l&apos;application, dans Profil, rubrique
+            « Mesure d&apos;audience » (ou depuis l&apos;écran d&apos;accueil si vous n&apos;avez pas de
+            compte) : la collecte s&apos;arrête alors et les données de l&apos;installation sont
+            réinitialisées.
+          </p>
+        </section>
+
+        <section className="space-y-3">
           <h2 className="text-xl font-semibold">Nos prestataires techniques</h2>
           <p className="leading-7 text-on-surface-variant">
             Nous faisons appel aux prestataires suivants, qui traitent des données en notre nom et
@@ -115,6 +143,10 @@ export default function PrivacyPage() {
             <li>
               <span className="font-medium text-on-surface">Firebase Cloud Messaging</span>{" "}
               (Google) — envoi des notifications push liées à vos commandes et messages ;
+            </li>
+            <li>
+              <span className="font-medium text-on-surface">Firebase Analytics</span>{" "}
+              (Google) — mesure d&apos;audience pseudonymisée, uniquement avec votre accord ;
             </li>
             <li>
               <span className="font-medium text-on-surface">Supabase</span> — authentification et
