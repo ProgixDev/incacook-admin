@@ -1,6 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { barPercent, dailyTotal, formatCount, formatRate, shortDay, valueLabel } from "./analytics-model.ts";
+import {
+  barPercent,
+  dailyTotal,
+  formatCount,
+  formatRate,
+  outcomeCard,
+  shortDay,
+  valueLabel,
+} from "./analytics-model.ts";
 
 test("rates: French decimal comma, whole numbers from 10 %, a dash when there is none", () => {
   assert.equal(formatRate(null), "—");
@@ -28,13 +36,28 @@ test("bars: relative to the largest, a non-zero value always shows, zero never d
 test("parameter values get French labels, unknown ones are shown as logged", () => {
   assert.equal(valueLabel("sign_up", "method", "google"), "Google");
   assert.equal(valueLabel("role_selected", "role", "seller"), "Vendeur");
-  assert.equal(valueLabel("paywall_view", "source", "lapsed"), "Abonnement expiré");
+  assert.equal(
+    valueLabel("paywall_view", "source", "lapsed"),
+    "Abonnement expiré",
+  );
   assert.equal(valueLabel("tutorial_complete", "skipped", "1"), "Passé");
-  assert.equal(valueLabel("trial_request", "result", "not_eligible"), "Non éligible");
-  assert.equal(valueLabel("subscription_purchase", "result", "success"), "Réussi");
+  assert.equal(
+    valueLabel("trial_request", "result", "not_eligible"),
+    "Non éligible",
+  );
+  assert.equal(
+    valueLabel("subscription_purchase", "result", "success"),
+    "Réussi",
+  );
   // "result" means different things per event: the same word is labelled per event
-  assert.equal(valueLabel("subscription_purchase", "result", "requested"), "requested");
-  assert.equal(valueLabel("signup_step_view", "step", "basicInfo"), "basicInfo");
+  assert.equal(
+    valueLabel("subscription_purchase", "result", "requested"),
+    "requested",
+  );
+  assert.equal(
+    valueLabel("signup_step_view", "step", "basicInfo"),
+    "basicInfo",
+  );
 });
 
 test("daily totals and axis labels", () => {
@@ -46,4 +69,39 @@ test("daily totals and axis labels", () => {
   assert.equal(dailyTotal(daily, "subscriptionPurchase"), 4);
   assert.equal(shortDay("2026-11-25"), "25/11");
   assert.equal(shortDay("weird"), "weird");
+});
+
+const step = (events: number, succeededEvents: number | null) => ({
+  event: "subscription_purchase",
+  label: "x",
+  events,
+  succeededEvents,
+  users: events,
+  conversionFromPrevious: null,
+  conversionFromFirst: null,
+});
+const labels = {
+  success: "Abonnements achetés",
+  attempts: "Tentatives d’achat",
+};
+
+test("outcome card: successes under the success label when Google can tell", () => {
+  assert.deepEqual(outcomeCard(step(7, 2), labels), {
+    label: "Abonnements achetés",
+    value: 2,
+    hint: "sur 7 tentatives",
+  });
+  assert.deepEqual(outcomeCard(step(1, 1), labels), {
+    label: "Abonnements achetés",
+    value: 1,
+    hint: "sur 1 tentative",
+  });
+  assert.equal(outcomeCard(step(3, 0), labels).value, 0);
+});
+
+test("outcome card: never shows attempts under a success label", () => {
+  const unknown = outcomeCard(step(7, null), labels);
+  assert.equal(unknown.label, "Tentatives d’achat");
+  assert.equal(unknown.value, 7);
+  assert.equal(outcomeCard(undefined, labels).value, 0);
 });

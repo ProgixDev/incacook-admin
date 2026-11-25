@@ -4,7 +4,10 @@ import type { AnalyticsDaily, AnalyticsStep } from "./types";
 export function formatRate(rate: number | null): string {
   if (rate === null || !Number.isFinite(rate)) return "—";
   const pct = rate * 100;
-  const text = pct >= 10 || Number.isInteger(pct) ? String(Math.round(pct)) : pct.toFixed(1).replace(".", ",");
+  const text =
+    pct >= 10 || Number.isInteger(pct)
+      ? String(Math.round(pct))
+      : pct.toFixed(1).replace(".", ",");
   return `${text} %`;
 }
 
@@ -21,7 +24,13 @@ export function barPercent(value: number, max: number): number {
 
 /** French labels for the parameter values the app logs; anything else is shown as logged. */
 const VALUE_LABELS: Record<string, Record<string, string>> = {
-  method: { email: "E-mail", google: "Google", facebook: "Facebook", apple: "Apple", unknown: "Inconnue" },
+  method: {
+    email: "E-mail",
+    google: "Google",
+    facebook: "Facebook",
+    apple: "Apple",
+    unknown: "Inconnue",
+  },
   role: { buyer: "Acheteur", seller: "Vendeur", driver: "Livreur" },
   source: { gate: "Premier passage", lapsed: "Abonnement expiré" },
   skipped: { "1": "Passé", "0": "Terminé jusqu’au bout" },
@@ -44,16 +53,27 @@ const RESULT_LABELS: Record<string, Record<string, string>> = {
   },
 };
 
-export function valueLabel(event: string, parameter: string, value: string): string {
+export function valueLabel(
+  event: string,
+  parameter: string,
+  value: string,
+): string {
   if (parameter === "result") return RESULT_LABELS[event]?.[value] ?? value;
   return VALUE_LABELS[parameter]?.[value] ?? value;
 }
 
 /** The ranges the page offers, with their labels. */
-export const WINDOW_LABEL: Record<number, string> = { 7: "7 jours", 30: "30 jours", 90: "90 jours" };
+export const WINDOW_LABEL: Record<number, string> = {
+  7: "7 jours",
+  30: "30 jours",
+  90: "90 jours",
+};
 
 /** Sum of a daily column, for the total shown above the chart. */
-export function dailyTotal(daily: AnalyticsDaily[], key: keyof Omit<AnalyticsDaily, "date">): number {
+export function dailyTotal(
+  daily: AnalyticsDaily[],
+  key: keyof Omit<AnalyticsDaily, "date">,
+): number {
   return daily.reduce((sum, d) => sum + d[key], 0);
 }
 
@@ -66,4 +86,28 @@ export function shortDay(date: string): string {
 /** The step list as the page shows it: a step with no activity at all is flagged, not hidden. */
 export function stepHasActivity(step: AnalyticsStep): boolean {
   return step.events > 0 || step.users > 0;
+}
+
+/**
+ * A key-figure card for an event that fires on every ATTEMPT (trial request, purchase): the
+ * successful count when Google can tell, otherwise the attempts, labelled as such. Never
+ * attempts under a success label.
+ */
+export function outcomeCard(
+  step: AnalyticsStep | undefined,
+  labels: { success: string; attempts: string },
+): { label: string; value: number; hint: string } {
+  const attempts = step?.events ?? 0;
+  if (step && step.succeededEvents !== null) {
+    return {
+      label: labels.success,
+      value: step.succeededEvents,
+      hint: `sur ${attempts} tentative${attempts > 1 ? "s" : ""}`,
+    };
+  }
+  return {
+    label: labels.attempts,
+    value: attempts,
+    hint: "réussites non encore mesurables",
+  };
 }

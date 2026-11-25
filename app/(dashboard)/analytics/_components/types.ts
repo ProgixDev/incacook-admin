@@ -2,7 +2,10 @@
 export interface AnalyticsStep {
   event: string;
   label: string;
+  /** Every time the event fired: for trial_request and subscription_purchase that includes failures. */
   events: number;
+  /** The successful part of `events`; null when it is not an event with an outcome or the result dimension is not available yet. */
+  succeededEvents: number | null;
   users: number;
   conversionFromPrevious: number | null;
   conversionFromFirst: number | null;
