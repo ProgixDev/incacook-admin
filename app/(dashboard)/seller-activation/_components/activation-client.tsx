@@ -91,6 +91,12 @@ function ActivationPanel() {
   // Sellers the server said already have access (the trial lists do not carry that fact).
   const [knownActive, setKnownActive] = useState<ReadonlySet<string>>(new Set());
 
+  // The "already has access" hint is a patch for lists that do not say so: it belongs to the screen it
+  // was learned on, so it is forgotten as soon as the admin moves to another view or page.
+  useEffect(() => {
+    setKnownActive((prev) => (prev.size === 0 ? prev : new Set()));
+  }, [view, page, includeTest]);
+
   // The summary always runs (counters). In the "all" view it also pages the rows;
   // in the other views one row is enough.
   // keepPreviousData: false everywhere here: rows carry action buttons, so a previous view's or

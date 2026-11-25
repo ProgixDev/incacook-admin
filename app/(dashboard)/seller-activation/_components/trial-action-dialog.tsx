@@ -29,7 +29,7 @@ export interface TrialActionTarget {
 
 const COPY: Record<TrialActionKind, (t: TrialActionTarget) => string> = {
   grant: (t) =>
-    `${t.sellerName} pourra publier ses plats et recevoir des commandes pendant la durée choisie. Une notification et un e-mail lui sont envoyés, sans garantie de réception : préviens-le toi-même si besoin.`,
+    `${t.sellerName} pourra publier ses plats et recevoir des commandes pendant la durée choisie. Une notification et un e-mail lui sont envoyés au mieux (l’accès est accordé même si aucun n’arrive) : préviens-le toi-même si besoin.`,
   extend: (t) =>
     t.trialEndsAt
       ? `L’essai actuel se termine le ${formatDateParis(t.trialEndsAt)}. La durée choisie s’ajoute à cette date (ou part d’aujourd’hui si l’essai est terminé).`
@@ -97,8 +97,8 @@ export function TrialActionDialog({
   return (
     <Dialog open onOpenChange={(open) => !open && !mutation.isPending && onClose()}>
       <DialogContent className="w-[calc(100vw-2rem)] sm:w-full">
-        <DialogTitle>{`${ACTION_LABEL[target.kind]} · ${target.sellerName}`}</DialogTitle>
-        <DialogDescription>{COPY[target.kind](target)}</DialogDescription>
+        <DialogTitle className="[overflow-wrap:anywhere]">{`${ACTION_LABEL[target.kind]} · ${target.sellerName}`}</DialogTitle>
+        <DialogDescription className="[overflow-wrap:anywhere]">{COPY[target.kind](target)}</DialogDescription>
         <form onSubmit={submit} className="flex flex-col gap-3" noValidate>
           {needsDays && (
             <label className="flex flex-col gap-1 text-[12px] font-medium text-on-surface-variant">

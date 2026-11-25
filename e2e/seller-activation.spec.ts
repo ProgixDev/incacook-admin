@@ -339,6 +339,18 @@ test.describe("Activation vendeurs (mocked API)", () => {
     expect(seen.slice(seen.indexOf(20))).not.toContain(0);
   });
 
+  test("a long seller name does not overflow the opened dialog at 390 px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mockApi(page, "ADMIN");
+    await page.goto("/seller-activation");
+    await page.getByRole("button", { name: "Refuser" }).first().click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toContainText("A".repeat(20));
+    const overflow = await dialog.evaluate((el) => el.scrollWidth - el.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  });
+
   test("test-account toggle calls the API and refetches", async ({ page }) => {
     const calls = await mockApi(page, "ADMIN");
     await page.goto("/seller-activation");
