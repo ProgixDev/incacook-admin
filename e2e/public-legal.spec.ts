@@ -48,12 +48,12 @@ test.describe("public legal pages (no backend, no auth)", () => {
     expect(positiveClaims.map((m) => m[0])).toEqual([]);
     expect(text).toMatch(/mesure d.audience pseudonymisée/);
     await expect(page.getByText(/identifiant technique/).first()).toBeVisible();
-    // How to withdraw is a legal promise: both in-app paths stay on the page.
+    // How to withdraw is a legal promise: both in-app paths stay on the page (signed in, and as a guest without an account).
     await expect(
       page.getByText(/dans Profil, rubrique « Mesure d.audience »/),
     ).toBeVisible();
     await expect(
-      page.getByText(/depuis l.écran d.accueil si vous n.avez pas de compte/),
+      page.getByText(/sans compte, depuis l.onglet Profil en mode invité/),
     ).toBeVisible();
   });
 

@@ -115,8 +115,7 @@ export default function PrivacyPage() {
           <p className="leading-7 text-on-surface-variant">
             Rien n&apos;est collecté avant que vous ayez accepté, ni si vous refusez. Vous pouvez
             changer d&apos;avis à tout moment dans l&apos;application, dans Profil, rubrique
-            « Mesure d&apos;audience » (ou depuis l&apos;écran d&apos;accueil si vous n&apos;avez pas de
-            compte) : la collecte s&apos;arrête alors et les données de l&apos;installation sont
+            « Mesure d&apos;audience » (sans compte, depuis l&apos;onglet Profil en mode invité) : la collecte s&apos;arrête alors et les données de l&apos;installation sont
             réinitialisées.
           </p>
         </section>
