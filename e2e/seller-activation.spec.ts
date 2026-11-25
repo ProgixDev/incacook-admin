@@ -259,7 +259,9 @@ test.describe("Activation vendeurs (mocked API)", () => {
     const before = calls.activation;
     await page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
     await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
-    await expect(page.getByRole("dialog").getByRole("alert")).toContainText("vérifie son état avant de continuer");
+    // The rejected grant must not stay resendable: the dialog closes and the page says why.
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByRole("alert").filter({ hasText: "déjà accès" })).toContainText("vérifie son état avant de continuer");
     await expect.poll(() => calls.activation).toBeGreaterThan(before);
     // (The refetch shows what the server now says; a list row without access information is covered by the unit tests.)
   });
@@ -364,6 +366,19 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await expect(page.getByText("Page one seller")).toHaveCount(0);
     // Page 1 was never fetched again once the admin had moved on (the initial load may run twice).
     expect(seen.slice(seen.indexOf(20))).not.toContain(0);
+  });
+
+  test("a long duplicate name does not overflow the pending cards at 390 px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mockApi(page, "ADMIN");
+    await page.route(`${API}/v1/admin/seller-trials*`, (route) => {
+      const item = { sellerId: "d1", displayName: "Dup Dan", email: "dan@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T10:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, access: { active: false, source: null, endsAt: null }, ready: true, duplicates: [{ sellerId: "d2", displayName: "B".repeat(150), reasons: ["email"] }] };
+      return route.fulfill({ status: 200, headers: { "access-control-allow-origin": "*" }, contentType: "application/json", body: JSON.stringify({ success: true, data: [item], pagination: { hasMore: false, limit: 20 }, meta }) });
+    });
+    await page.goto("/seller-activation");
+    await page.getByRole("tab", { name: "Demandes en attente" }).click();
+    await expect(page.getByText("Dup Dan")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   });
 
   test("a long seller name does not overflow the opened dialog at 390 px", async ({ page }) => {
