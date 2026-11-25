@@ -15,12 +15,14 @@ export interface SellerAccessFields {
   /** The admin-granted trial on its own (null when none was ever granted). */
   platformTrialEndsAt?: string | null;
   platformTrialRevokedAt?: string | null;
+  /** What the grant gives: absent (older server) or STANDARD = access only; PREMIUM also gives Premium. */
+  platformTrialTier?: "STANDARD" | "PREMIUM";
 }
 
 export type TrialState =
-  | { kind: "running"; date: string }
-  | { kind: "ended"; date: string }
-  | { kind: "revoked"; date: string };
+  | { kind: "running"; date: string; premium: boolean }
+  | { kind: "ended"; date: string; premium: boolean }
+  | { kind: "revoked"; date: string; premium: boolean };
 
 /** Dates are French calendar dates in Paris time, like the sellers' own notifications. */
 export function formatTrialDate(date: string | Date): string {
@@ -41,13 +43,14 @@ export function formatTrialDate(date: string | Date): string {
 export function trialState(f: SellerAccessFields, now: Date = new Date()): TrialState | null {
   const ends = f.platformTrialEndsAt;
   if (!ends) return null;
-  if (f.platformTrialRevokedAt) return { kind: "revoked", date: f.platformTrialRevokedAt };
+  const premium = f.platformTrialTier === "PREMIUM";
+  if (f.platformTrialRevokedAt) return { kind: "revoked", date: f.platformTrialRevokedAt, premium };
   // The server's own verdict wins over this browser's clock: when it reports the trial as the active
   // source, it is running, so the badge and the note never contradict the response near expiry.
-  if (f.access?.active === true && f.access.source === "platform_trial") return { kind: "running", date: ends };
+  if (f.access?.active === true && f.access.source === "platform_trial") return { kind: "running", date: ends, premium };
   return new Date(ends).getTime() > now.getTime()
-    ? { kind: "running", date: ends }
-    : { kind: "ended", date: ends };
+    ? { kind: "running", date: ends, premium }
+    : { kind: "ended", date: ends, premium };
 }
 
 /** True when the trial is the only thing granting access (the store label would say "free"/"none"). */
@@ -55,15 +58,16 @@ export function isTrialOnly(f: SellerAccessFields): boolean {
   return f.access?.source === "platform_trial";
 }
 
-/** French sentence for a trial state, e.g. "Essai offert jusqu’au 03/01/2027". */
+/** French sentence for a trial state, e.g. "Essai offert jusqu’au 03/01/2027" or "Premium offert jusqu’au …". */
 export function trialText(state: TrialState): string {
   const d = formatTrialDate(state.date);
+  const noun = state.premium ? "Premium" : "Essai";
   switch (state.kind) {
     case "running":
-      return `Essai offert jusqu’au ${d}`;
+      return `${noun} offert jusqu’au ${d}`;
     case "ended":
-      return `Essai terminé le ${d}`;
+      return `${noun} terminé le ${d}`;
     case "revoked":
-      return `Essai révoqué le ${d}`;
+      return `${noun} révoqué le ${d}`;
   }
 }

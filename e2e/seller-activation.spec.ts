@@ -199,6 +199,57 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await expect.poll(() => calls.activation).toBeGreaterThan(before); // refetched, not assumed
   });
 
+  test("grant Premium: a plan choice, the reason becomes mandatory, and the body names the tier", async ({ page }) => {
+    const calls = await mockApi(page, "ADMIN");
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
+    const dialog = page.getByRole("dialog");
+    // Standard stays the default: the "2 mois offerts" are one click.
+    await expect(dialog.getByRole("radio", { name: /Essai gratuit/ })).toBeChecked();
+    await expect(dialog).toContainText("Motif (facultatif)");
+
+    await dialog.getByRole("radio", { name: /Premium offert/ }).check();
+    await expect(dialog).toContainText("Motif (obligatoire)");
+    await expect(dialog).toContainText("commission Premium");
+    await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
+    await expect(dialog.getByRole("alert")).toContainText("Le motif est obligatoire pour un Premium offert");
+    expect(calls.posts).toEqual([]); // nothing sent without a reason
+
+    await dialog.getByLabel(/Motif/).fill("Partenaire fondateur");
+    await dialog.getByLabel("Durée (jours)").fill("90");
+    await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
+    expect(calls.posts).toEqual([
+      { url: "/admin/sellers/s1/trial/grant", body: { days: 90, tier: "PREMIUM", reason: "Partenaire fondateur" } },
+    ]);
+  });
+
+  test("a Premium grant is reported as Premium offert once the server answers", async ({ page }) => {
+    await mockApi(page, "ADMIN", {
+      post: async (_path, route) => {
+        await ok(route, { sellerId: "s1", requestState: "granted", endsAt: FUTURE, accessActive: true, tier: "PREMIUM" });
+        return true;
+      },
+    });
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
+    await page.getByRole("radio", { name: /Premium offert/ }).check();
+    await page.getByLabel(/Motif/).fill("Test");
+    await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
+    await expect(page.getByRole("status")).toContainText("Premium offert à Chez Rosa");
+  });
+
+  test("a Standard grant sends no tier at all", async ({ page }) => {
+    const calls = await mockApi(page, "ADMIN");
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
+    await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
+    await expect(page.getByRole("status")).toContainText("Essai accordé à Chez Rosa");
+    expect(calls.posts).toEqual([{ url: "/admin/sellers/s1/trial/grant", body: { days: 60 } }]);
+  });
+
   test("buttons are locked while the list refreshes after an action (no second click on stale state)", async ({ page }) => {
     const calls = await mockApi(page, "ADMIN");
     let release!: () => void;

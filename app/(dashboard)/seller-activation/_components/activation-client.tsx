@@ -189,11 +189,12 @@ function ActivationPanel() {
     }
     setTarget(null);
     const end = result.endsAt ? ` jusqu’au ${formatDateParis(result.endsAt)}` : "";
+    const premium = result.tier === "PREMIUM";
     setNotice(
       {
-        grant: `Essai accordé à ${name}${end}.`,
-        extend: `Essai de ${name} prolongé${end}.`,
-        revoke: `Essai de ${name} révoqué.`,
+        grant: premium ? `Premium offert à ${name}${end}.` : `Essai accordé à ${name}${end}.`,
+        extend: premium ? `Premium offert de ${name} prolongé${end}.` : `Essai de ${name} prolongé${end}.`,
+        revoke: premium ? `Premium offert de ${name} révoqué.` : `Essai de ${name} révoqué.`,
         refuse: `Demande de ${name} refusée.`,
       }[kind],
     );

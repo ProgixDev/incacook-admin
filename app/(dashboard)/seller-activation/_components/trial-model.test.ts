@@ -4,6 +4,7 @@ import {
   actionErrorMessage,
   availableActions,
   buildActionBody,
+  reasonRequired,
   duplicateReasonLabel,
   factsFromActivationRow,
   factsFromTrialItem,
@@ -215,4 +216,31 @@ test("a suspended seller on the pending list is not offered a grant, only a refu
   };
   assert.deepEqual(availableActions(factsFromTrialItem(item), NOW), ["refuse"]);
   assert.deepEqual(availableActions(factsFromTrialItem({ ...item, suspended: false }), NOW), ["grant", "refuse"]);
+});
+
+test("a Premium grant needs a reason and names its tier; a Standard grant stays as it was", () => {
+  assert.equal(reasonRequired("grant"), false);
+  assert.equal(reasonRequired("grant", "STANDARD"), false);
+  assert.equal(reasonRequired("grant", "PREMIUM"), true);
+  assert.match(validateAction("grant", { days: "60", reason: "  ", tier: "PREMIUM" }) ?? "", /motif.*Premium offert/i);
+  assert.equal(validateAction("grant", { days: "60", reason: "Partenaire", tier: "PREMIUM" }), null);
+  assert.equal(validateAction("grant", { days: "60", reason: "", tier: "STANDARD" }), null);
+  assert.deepEqual(buildActionBody("grant", { days: "30", reason: " Partenaire ", tier: "PREMIUM" }, null), {
+    days: 30,
+    tier: "PREMIUM",
+    reason: "Partenaire",
+  });
+  // Standard sends no tier at all (servers without Premium grants reject unknown fields).
+  assert.deepEqual(buildActionBody("grant", { days: "60", reason: "", tier: "STANDARD" }, null), { days: 60 });
+  assert.deepEqual(buildActionBody("grant", { days: "60", reason: "" }, null), { days: 60 });
+  // The tier only matters for a grant.
+  assert.deepEqual(buildActionBody("extend", { days: "10", reason: "", tier: "PREMIUM" }, "2027-01-01T00:00:00.000Z"), {
+    days: 10,
+    expectedEndsAt: "2027-01-01T00:00:00.000Z",
+  });
+  assert.equal(reasonRequired("extend", "PREMIUM"), false);
+});
+
+test("the server's Premium-reason refusal has a French message", () => {
+  assert.match(actionErrorMessage("INCACOOK_TRIAL_PREMIUM_REASON_REQUIRED", "x"), /raison d’un Premium offert/);
 });
