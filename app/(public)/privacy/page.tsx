@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Politique de confidentialité
           </h1>
-          <p className="text-sm text-on-surface-variant">Dernière mise à jour : 24 août 2026</p>
+          <p className="text-sm text-on-surface-variant">Dernière mise à jour : 25 novembre 2026</p>
         </header>
 
         <section className="space-y-3">
@@ -94,6 +94,25 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-3">
+          <h2 className="text-xl font-semibold">Mesure d&apos;audience anonyme (avec votre accord)</h2>
+          <p className="leading-7 text-on-surface-variant">
+            Avec votre accord, l&apos;application mobile mesure de façon anonyme la manière dont
+            elle est utilisée afin de l&apos;améliorer : écrans et étapes d&apos;inscription vus,
+            utilisation du tutoriel, de la page d&apos;abonnement, de la demande d&apos;essai
+            gratuit et de l&apos;achat d&apos;abonnement. Ces mesures sont réalisées avec Firebase
+            Analytics (Google). Elles ne contiennent ni votre nom, ni votre e-mail, ni votre
+            téléphone, ni votre adresse, et ne sont rattachées à aucun identifiant utilisateur ;
+            seuls votre rôle (acheteur, vendeur ou livreur) et, pour un vendeur, sa catégorie
+            sont associés aux mesures. Nous n&apos;utilisons pas l&apos;identifiant publicitaire.
+          </p>
+          <p className="leading-7 text-on-surface-variant">
+            Rien n&apos;est collecté avant que vous ayez accepté, ni si vous refusez. Vous pouvez
+            changer d&apos;avis à tout moment dans l&apos;application, dans Profil, rubrique
+            « Mesure d&apos;audience anonyme » : la collecte s&apos;arrête alors immédiatement.
+          </p>
+        </section>
+
+        <section className="space-y-3">
           <h2 className="text-xl font-semibold">Nos prestataires techniques</h2>
           <p className="leading-7 text-on-surface-variant">
             Nous faisons appel aux prestataires suivants, qui traitent des données en notre nom et
@@ -115,6 +134,10 @@ export default function PrivacyPage() {
             <li>
               <span className="font-medium text-on-surface">Firebase Cloud Messaging</span>{" "}
               (Google) — envoi des notifications push liées à vos commandes et messages ;
+            </li>
+            <li>
+              <span className="font-medium text-on-surface">Firebase Analytics</span>{" "}
+              (Google) — mesure d&apos;audience anonyme, uniquement avec votre accord ;
             </li>
             <li>
               <span className="font-medium text-on-surface">Supabase</span> — authentification et
