@@ -237,6 +237,7 @@ Mocked component tests plus a Playwright smoke for navigation and role visibilit
 
 ### Notes (as built)
 Admin-only page (the nav entry is hidden for Moderators, and the server rejects them on the trial endpoints: `@Roles(Admin)`). The test-account toggle sends `includeTest=true` to `GET /v1/admin/seller-activation`, which includes those rows and counters. Grant is not offered to sellers who already have access, are not ready, or are suspended; action buttons lock while the list refreshes; stale-data conflicts close the dialog and reload (incacook-admin#33).
+Known limitation: `GET /v1/admin/seller-trials` (the "Prêts sans accès" and "Demandes en attente" lists) does not filter test accounts or accept `includeTest`, so a test seller can appear there while the toggle (which only applies to "Tous les vendeurs") is off. Follow-up: add `includeTest` to that endpoint and show the toggle in every view.
 
 ## TASK-041 — Show platform trials in sellers and subscriptions views
 - status: done (merged to staging; admin-staging.incacook.com)
@@ -257,3 +258,4 @@ Component tests with the four states.
 
 ### Notes (as built)
 Rendered from the access and trial fields the server adds to the sellers and subscriptions lists (incacook-server#147, merged first); the server response is the verdict near expiry, not the browser clock (incacook-admin#34).
+Known limitation: the subscriptions list's status filter is the store's `subscriptionStatus`, so a seller whose only access is a platform trial shows "Essai offert" in the unfiltered list but is not matched by the "Essai" filter. Follow-up: make the filter access-aware or add an access-source filter.
