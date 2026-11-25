@@ -117,7 +117,7 @@ function ActivationPanel() {
     params: {
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
-      extra: { filter: view === "all" ? "ready" : view },
+      extra: { filter: view === "all" ? "ready" : view, includeTest },
     },
   });
 
@@ -371,19 +371,18 @@ function ActivationPanel() {
             </Button>
           ))}
         </div>
-        {view === "all" && (
-          <label className="ml-auto flex items-center gap-2 text-[12px] text-on-surface-variant">
-            <input
-              type="checkbox"
-              checked={includeTest}
-              onChange={(e) => {
-                setIncludeTest(e.target.checked);
-                setPage(1);
-              }}
-            />
-            Inclure les comptes test
-          </label>
-        )}
+        {/* The same switch for every view: the counters, the table and both trial lists. */}
+        <label className="ml-auto flex items-center gap-2 text-[12px] text-on-surface-variant">
+          <input
+            type="checkbox"
+            checked={includeTest}
+            onChange={(e) => {
+              setIncludeTest(e.target.checked);
+              setPage(1);
+            }}
+          />
+          Inclure les comptes test
+        </label>
       </div>
 
       {alertMessage && (

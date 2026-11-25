@@ -393,6 +393,22 @@ test.describe("Activation vendeurs (mocked API)", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   });
 
+  test("the test-account switch applies to the trial lists too, not only the table", async ({ page }) => {
+    await mockApi(page, "ADMIN");
+    const seen: string[] = [];
+    await page.route(`${API}/v1/admin/seller-trials*`, (route) => {
+      seen.push(new URL(route.request().url()).searchParams.get("includeTest") ?? "absent");
+      return route.fallback();
+    });
+    await page.goto("/seller-activation");
+    await page.getByRole("tab", { name: "Demandes en attente" }).click();
+    await expect(page.getByText("Pending Pat")).toBeVisible();
+    // The switch is there in this view, and the list asked for "no test accounts".
+    expect(seen.at(-1)).toBe("false");
+    await page.getByLabel("Inclure les comptes test").check();
+    await expect.poll(() => seen.at(-1)).toBe("true");
+  });
+
   test("test-account toggle calls the API and refetches", async ({ page }) => {
     const calls = await mockApi(page, "ADMIN");
     await page.goto("/seller-activation");
