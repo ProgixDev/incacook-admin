@@ -26,10 +26,13 @@ test.describe("public legal pages (no backend, no auth)", () => {
     await expect(page.getByText("Supabase")).toBeVisible();
     // Analytics is disclosed: consent, anonymity, how to withdraw, and the processor.
     await expect(
-      page.getByRole("heading", { name: /mesure d.audience anonyme/i }),
+      page.getByRole("heading", { name: /mesure d.audience/i }),
     ).toBeVisible();
     await expect(page.getByText(/Rien n.est collecté avant que vous ayez accepté/)).toBeVisible();
     await expect(page.getByText("Firebase Analytics", { exact: true })).toBeVisible(); // processor list
+    // Honest about what Firebase collects: pseudonymous, with an installation identifier.
+    await expect(page.getByText(/pseudonymisée, pas anonyme/)).toBeVisible();
+    await expect(page.getByText(/identifiant technique/).first()).toBeVisible();
   });
 
   test("/data-deletion leads with the in-app path and keeps the email fallback", async ({
