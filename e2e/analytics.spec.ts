@@ -188,7 +188,10 @@ test.describe("Analytics (mocked API)", () => {
         await ok(
           route,
           funnel({
+            // What the server really sends while Google cannot provide the dimension:
+            // no successes AND no breakdowns.
             steps: funnel().steps.map((s) => ({ ...s, succeededEvents: null })),
+            breakdowns: null,
           }),
         );
         return true;
@@ -200,6 +203,9 @@ test.describe("Analytics (mocked API)", () => {
     await expect(key).toContainText("Tentatives d’achat");
     await expect(key).toContainText("Tentatives d’essai");
     await expect(key).not.toContainText("Abonnements achetés");
+    await expect(key).toContainText(/Tentatives d’essai\s*8(?!\d)/); // the attempts, as such
+    await expect(key).toContainText(/Tentatives d’achat\s*3(?!\d)/);
+    await expect(key).toContainText("réussites non encore mesurables");
   });
 
   test("a success count that covers only some attempts is labelled partial", async ({
@@ -210,7 +216,11 @@ test.describe("Analytics (mocked API)", () => {
         await ok(
           route,
           funnel({
-            // 8 trial requests, but only 5 have a recorded result (the rest predate the dimension).
+            // 8 trial requests, but only 5 have a recorded result (the rest predate the
+            // dimension); 4 of those 5 succeeded, and the server's succeededEvents says so.
+            steps: funnel().steps.map((s) =>
+              s.event === "trial_request" ? { ...s, succeededEvents: 4 } : s,
+            ),
             breakdowns: [
               {
                 event: "trial_request",
@@ -232,6 +242,7 @@ test.describe("Analytics (mocked API)", () => {
     const key = page.getByRole("region", { name: "Chiffres clés" });
     await expect(key).toContainText("Essais demandés (partiel)");
     await expect(key).toContainText("résultat connu pour 5 des 8 tentatives");
+    await expect(key).toContainText(/Essais demandés \(partiel\)\s*4(?!\d)/); // the 4 known successes, not 8 or 7
   });
 
   test("breakdowns use French labels and show an empty split as such", async ({
