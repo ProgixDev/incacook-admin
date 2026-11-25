@@ -40,6 +40,12 @@ test.describe("public legal pages (no backend, no auth)", () => {
     // once said "mesure d'audience anonyme" next to this disclosure).
     const text = (await page.locator("main").innerText()).toLowerCase();
     expect(text.match(/mesure d.audience anonyme/g)).toBeNull();
+    // Nor may any line make a positive anonymity claim ("anonyme(s)" / "anonymement"); only the
+    // honest negation "pas anonyme" is allowed.
+    const positiveClaims = [...text.matchAll(/anonym\w*/g)].filter(
+      (m) => !/pas\s+$/.test(text.slice(Math.max(0, m.index - 6), m.index)),
+    );
+    expect(positiveClaims.map((m) => m[0])).toEqual([]);
     expect(text).toMatch(/mesure d.audience pseudonymisée/);
     await expect(page.getByText(/identifiant technique/).first()).toBeVisible();
     // How to withdraw is a legal promise: both in-app paths stay on the page.
