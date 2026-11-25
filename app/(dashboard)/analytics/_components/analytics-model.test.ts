@@ -1,6 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { barPercent, dailyTotal, formatCount, formatRate, shortDay, valueLabel } from "./analytics-model.ts";
+import {
+  barPercent,
+  dailyTotal,
+  formatCount,
+  formatRate,
+  knownResults,
+  outcomeCard,
+  shortDay,
+  valueLabel,
+} from "./analytics-model.ts";
 
 test("rates: French decimal comma, whole numbers from 10 %, a dash when there is none", () => {
   assert.equal(formatRate(null), "—");
@@ -28,13 +37,28 @@ test("bars: relative to the largest, a non-zero value always shows, zero never d
 test("parameter values get French labels, unknown ones are shown as logged", () => {
   assert.equal(valueLabel("sign_up", "method", "google"), "Google");
   assert.equal(valueLabel("role_selected", "role", "seller"), "Vendeur");
-  assert.equal(valueLabel("paywall_view", "source", "lapsed"), "Abonnement expiré");
+  assert.equal(
+    valueLabel("paywall_view", "source", "lapsed"),
+    "Abonnement expiré",
+  );
   assert.equal(valueLabel("tutorial_complete", "skipped", "1"), "Passé");
-  assert.equal(valueLabel("trial_request", "result", "not_eligible"), "Non éligible");
-  assert.equal(valueLabel("subscription_purchase", "result", "success"), "Réussi");
+  assert.equal(
+    valueLabel("trial_request", "result", "not_eligible"),
+    "Non éligible",
+  );
+  assert.equal(
+    valueLabel("subscription_purchase", "result", "success"),
+    "Réussi",
+  );
   // "result" means different things per event: the same word is labelled per event
-  assert.equal(valueLabel("subscription_purchase", "result", "requested"), "requested");
-  assert.equal(valueLabel("signup_step_view", "step", "basicInfo"), "basicInfo");
+  assert.equal(
+    valueLabel("subscription_purchase", "result", "requested"),
+    "requested",
+  );
+  assert.equal(
+    valueLabel("signup_step_view", "step", "basicInfo"),
+    "basicInfo",
+  );
 });
 
 test("daily totals and axis labels", () => {
@@ -46,4 +70,72 @@ test("daily totals and axis labels", () => {
   assert.equal(dailyTotal(daily, "subscriptionPurchase"), 4);
   assert.equal(shortDay("2026-11-25"), "25/11");
   assert.equal(shortDay("weird"), "weird");
+});
+
+const step = (events: number, succeededEvents: number | null) => ({
+  event: "subscription_purchase",
+  label: "x",
+  events,
+  succeededEvents,
+  users: events,
+  conversionFromPrevious: null,
+  conversionFromFirst: null,
+});
+const labels = {
+  success: "Abonnements achetés",
+  attempts: "Tentatives d’achat",
+};
+
+test("outcome card: successes under the success label when Google can tell", () => {
+  assert.deepEqual(outcomeCard(step(7, 2), labels), {
+    label: "Abonnements achetés",
+    value: 2,
+    hint: "sur 7 tentatives",
+  });
+  assert.deepEqual(outcomeCard(step(1, 1), labels), {
+    label: "Abonnements achetés",
+    value: 1,
+    hint: "sur 1 tentative",
+  });
+  assert.equal(outcomeCard(step(3, 0), labels).value, 0);
+});
+
+test("outcome card: never shows attempts under a success label", () => {
+  const unknown = outcomeCard(step(7, null), labels);
+  assert.equal(unknown.label, "Tentatives d’achat");
+  assert.equal(unknown.value, 7);
+  assert.equal(outcomeCard(undefined, labels).value, 0);
+});
+
+test("outcome card: a success count that covers only some attempts is labelled partial", () => {
+  // 7 attempts, but only 4 have a result (the rest were logged before the dimension existed).
+  const card = outcomeCard(step(7, 2), labels, 4);
+  assert.equal(card.label, "Abonnements achetés (partiel)");
+  assert.equal(card.value, 2);
+  assert.equal(card.hint, "résultat connu pour 4 des 7 tentatives");
+  // Full coverage is not partial.
+  assert.equal(outcomeCard(step(7, 2), labels, 7).label, "Abonnements achetés");
+});
+
+test("known results: the sum of the result breakdown, null when it is unavailable", () => {
+  const breakdowns = [
+    {
+      event: "subscription_purchase",
+      parameter: "result",
+      label: "x",
+      values: [
+        { value: "success", events: 2 },
+        { value: "cancelled", events: 2 },
+      ],
+    },
+    {
+      event: "subscription_purchase",
+      parameter: "product",
+      label: "y",
+      values: [{ value: "premium", events: 9 }],
+    },
+  ];
+  assert.equal(knownResults(breakdowns, "subscription_purchase"), 4);
+  assert.equal(knownResults(breakdowns, "trial_request"), null);
+  assert.equal(knownResults(null, "subscription_purchase"), null);
 });

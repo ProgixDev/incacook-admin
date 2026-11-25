@@ -1,10 +1,17 @@
-import type { AnalyticsDaily, AnalyticsStep } from "./types";
+import type {
+  AnalyticsBreakdown,
+  AnalyticsDaily,
+  AnalyticsStep,
+} from "./types";
 
 /** « 42 % », « 3,5 % » (French decimal comma), « — » when there is no rate. */
 export function formatRate(rate: number | null): string {
   if (rate === null || !Number.isFinite(rate)) return "—";
   const pct = rate * 100;
-  const text = pct >= 10 || Number.isInteger(pct) ? String(Math.round(pct)) : pct.toFixed(1).replace(".", ",");
+  const text =
+    pct >= 10 || Number.isInteger(pct)
+      ? String(Math.round(pct))
+      : pct.toFixed(1).replace(".", ",");
   return `${text} %`;
 }
 
@@ -21,7 +28,13 @@ export function barPercent(value: number, max: number): number {
 
 /** French labels for the parameter values the app logs; anything else is shown as logged. */
 const VALUE_LABELS: Record<string, Record<string, string>> = {
-  method: { email: "E-mail", google: "Google", facebook: "Facebook", apple: "Apple", unknown: "Inconnue" },
+  method: {
+    email: "E-mail",
+    google: "Google",
+    facebook: "Facebook",
+    apple: "Apple",
+    unknown: "Inconnue",
+  },
   role: { buyer: "Acheteur", seller: "Vendeur", driver: "Livreur" },
   source: { gate: "Premier passage", lapsed: "Abonnement expiré" },
   skipped: { "1": "Passé", "0": "Terminé jusqu’au bout" },
@@ -44,16 +57,27 @@ const RESULT_LABELS: Record<string, Record<string, string>> = {
   },
 };
 
-export function valueLabel(event: string, parameter: string, value: string): string {
+export function valueLabel(
+  event: string,
+  parameter: string,
+  value: string,
+): string {
   if (parameter === "result") return RESULT_LABELS[event]?.[value] ?? value;
   return VALUE_LABELS[parameter]?.[value] ?? value;
 }
 
 /** The ranges the page offers, with their labels. */
-export const WINDOW_LABEL: Record<number, string> = { 7: "7 jours", 30: "30 jours", 90: "90 jours" };
+export const WINDOW_LABEL: Record<number, string> = {
+  7: "7 jours",
+  30: "30 jours",
+  90: "90 jours",
+};
 
 /** Sum of a daily column, for the total shown above the chart. */
-export function dailyTotal(daily: AnalyticsDaily[], key: keyof Omit<AnalyticsDaily, "date">): number {
+export function dailyTotal(
+  daily: AnalyticsDaily[],
+  key: keyof Omit<AnalyticsDaily, "date">,
+): number {
   return daily.reduce((sum, d) => sum + d[key], 0);
 }
 
@@ -66,4 +90,51 @@ export function shortDay(date: string): string {
 /** The step list as the page shows it: a step with no activity at all is flagged, not hidden. */
 export function stepHasActivity(step: AnalyticsStep): boolean {
   return step.events > 0 || step.users > 0;
+}
+
+/** How many attempts of an event have a known result: the sum of its `result` breakdown (null if unavailable). */
+export function knownResults(
+  breakdowns: AnalyticsBreakdown[] | null,
+  event: string,
+): number | null {
+  const b = breakdowns?.find(
+    (x) => x.event === event && x.parameter === "result",
+  );
+  return b ? b.values.reduce((sum, v) => sum + v.events, 0) : null;
+}
+
+/**
+ * A key-figure card for an event that fires on every ATTEMPT (trial request, purchase).
+ * - results known for every attempt: the successes, "sur N tentatives";
+ * - results known for only some (attempts logged before Google registered the `result`
+ *   dimension have none): the successes counted so far, labelled partial, with the coverage;
+ * - no result available: the attempts, labelled as attempts.
+ * Never attempts, nor a partial count, under a plain success label.
+ */
+export function outcomeCard(
+  step: AnalyticsStep | undefined,
+  labels: { success: string; attempts: string },
+  known: number | null = step?.events ?? null,
+): { label: string; value: number; hint: string } {
+  const attempts = step?.events ?? 0;
+  if (step && step.succeededEvents !== null) {
+    const plural = (n: number) => `${n} tentative${n > 1 ? "s" : ""}`;
+    if (known !== null && known < attempts) {
+      return {
+        label: `${labels.success} (partiel)`,
+        value: step.succeededEvents,
+        hint: `résultat connu pour ${known} des ${plural(attempts)}`,
+      };
+    }
+    return {
+      label: labels.success,
+      value: step.succeededEvents,
+      hint: `sur ${plural(attempts)}`,
+    };
+  }
+  return {
+    label: labels.attempts,
+    value: attempts,
+    hint: "réussites non encore mesurables",
+  };
 }
