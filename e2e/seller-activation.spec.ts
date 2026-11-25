@@ -291,6 +291,29 @@ test.describe("Activation vendeurs (mocked API)", () => {
     expect(calls.trials).toBeGreaterThan(1);
   });
 
+  test("coming back to a view does not show its old rows before the fresh answer", async ({ page }) => {
+    await mockApi(page, "ADMIN");
+    let calls = 0;
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    await page.route(`${API}/v1/admin/seller-trials*`, async (route) => {
+      calls += 1;
+      if (calls > 1) await gate; // the second visit to the view answers slowly
+      const item = { sellerId: "r1", displayName: "Ready Rita", email: "rita@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-01T10:00:00.000Z", requestState: "none", requestedAt: null, trialEndsAt: null, trialRevokedAt: null, access: { active: false, source: null, endsAt: null }, ready: true, duplicates: [] };
+      return route.fulfill({ status: 200, headers: { "access-control-allow-origin": "*" }, contentType: "application/json", body: JSON.stringify({ success: true, data: [item], pagination: { hasMore: false, limit: 20 }, meta }) });
+    });
+    await page.goto("/seller-activation");
+    await page.getByRole("tab", { name: "Prêts sans accès" }).click();
+    await expect(page.getByText("Ready Rita")).toBeVisible();
+    await page.getByRole("tab", { name: "Tous les vendeurs" }).click();
+    await expect(page.getByText("Chez Rosa")).toBeVisible();
+    await page.getByRole("tab", { name: "Prêts sans accès" }).click();
+    // Rita was granted elsewhere in the meantime: her saved row (and "Accorder") must not come back.
+    await expect(page.getByText("Ready Rita")).toHaveCount(0);
+    release();
+    await expect(page.getByText("Ready Rita")).toBeVisible();
+  });
+
   test("an emptied last page steps back exactly one page (desktop)", async ({ page }) => {
     await mockApi(page, "ADMIN");
     const seen: number[] = [];

@@ -140,8 +140,8 @@ export function useAdminQuery<TData = unknown>(
 
   // What the data on screen must belong to: every param that changes the response.
   const requestKey = JSON.stringify([path, page, limit, offset, debouncedSearch, serializedExtra]);
-  const requestKeyRef = React.useRef(requestKey);
-  requestKeyRef.current = requestKey;
+  const keepPreviousDataRef = React.useRef(keepPreviousData);
+  keepPreviousDataRef.current = keepPreviousData;
 
   const [state, setState] = React.useState<QueryState<TData>>({
     key: null,
@@ -153,13 +153,21 @@ export function useAdminQuery<TData = unknown>(
   });
 
   React.useEffect(() => {
+    // Without keepPreviousData, data that belongs to anything but the request starting now (or one
+    // that was switched off meanwhile) is dropped: coming back to an old query must not show its
+    // saved, possibly outdated, rows before the fresh response arrives.
+    const dropStale = (s: QueryState<TData>): Partial<QueryState<TData>> =>
+      keepPreviousDataRef.current || (enabled && s.key === requestKey)
+        ? {}
+        : { key: null, data: null, pagination: null };
+
     if (!enabled) {
-      setState((s) => ({ ...s, isLoading: false }));
+      setState((s) => ({ ...s, ...dropStale(s), isLoading: false }));
       return;
     }
 
     const controller = new AbortController();
-    setState((s) => ({ ...s, isLoading: true, isError: false, error: null }));
+    setState((s) => ({ ...s, ...dropStale(s), isLoading: true, isError: false, error: null }));
 
     const runGet = (authOpts: RequestOptions = {}) =>
       get<TData>(path, {
@@ -189,7 +197,8 @@ export function useAdminQuery<TData = unknown>(
       .then((res) => {
         if (controller.signal.aborted) return;
         setState({
-          key: requestKeyRef.current,
+          // The key captured when THIS request started, never the latest render's.
+          key: requestKey,
           data: res.data,
           pagination: res.pagination,
           isLoading: false,
@@ -232,6 +241,7 @@ export function useAdminQuery<TData = unknown>(
     token,
     enabled,
     refetchTick,
+    requestKey,
   ]);
 
   const current = keepPreviousData || state.key === requestKey;
