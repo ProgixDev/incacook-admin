@@ -19,7 +19,7 @@ export function TrialOnlyBadge({ seller, now }: { seller: SellerAccessFields; no
   if (!state || state.kind !== "running" || !isTrialOnly(seller)) return null;
   return (
     <div>
-      <Badge variant="info">Essai offert</Badge>
+      <Badge variant={state.premium ? "success" : "info"}>{state.premium ? "Premium offert" : "Essai offert"}</Badge>
       <div className="mt-0.5 text-[11px] leading-snug text-on-surface-variant">{trialText(state)}</div>
     </div>
   );

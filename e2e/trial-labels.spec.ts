@@ -31,10 +31,13 @@ const SELLERS = [
   seller({ id: "b", name: "Both Bea", subscriptionTier: "standard", subscriptionStatus: "ACTIVE", access: { active: true, source: "store", endsAt: LATER }, platformTrialEndsAt: FUTURE }),
   seller({ id: "r", name: "Revoked Rex", platformTrialEndsAt: FUTURE, platformTrialRevokedAt: "2026-12-01T00:00:00.000Z" }),
   seller({ id: "e", name: "Ended Eva", platformTrialEndsAt: "2026-01-10T00:00:00.000Z" }),
+  // An admin-granted PREMIUM period: the server reports the seller as Premium, and the label says it was offered.
+  seller({ id: "g", name: "Gift Gina", subscriptionTier: "premium", access: { active: true, source: "platform_trial", endsAt: FUTURE }, platformTrialEndsAt: FUTURE, platformTrialTier: "PREMIUM" }),
 ];
 const SUBS = [
   sub({ sellerId: "t", name: "Trial Tom", access: { active: true, source: "platform_trial", endsAt: FUTURE }, platformTrialEndsAt: FUTURE }),
   sub({ sellerId: "p", name: "Paid Pia", subscriptionStatus: "ACTIVE", access: { active: true, source: "store", endsAt: null } }),
+  sub({ sellerId: "g", name: "Gift Gina", isPremium: true, access: { active: true, source: "platform_trial", endsAt: FUTURE }, platformTrialEndsAt: FUTURE, platformTrialTier: "PREMIUM" }),
 ];
 
 const json = (route: Route, data: unknown) =>
@@ -79,6 +82,24 @@ test("sellers list: trial-only, store, store + trial, revoked and ended", async 
   await expect(row(/Revoked Rex/)).toContainText("Essai révoqué le 01/12/2026");
   await expect(row(/Ended Eva/)).toContainText("Essai terminé le 10/01/2026");
   await page.screenshot({ path: "test-results/sellers-trial-labels.png", fullPage: true });
+});
+
+test("sellers list: a Premium grant reads Premium offert, never Essai offert", async ({ page }) => {
+  await mock(page);
+  await page.goto("/sellers");
+  const gina = page.getByRole("row", { name: /Gift Gina/ });
+  await expect(gina).toContainText("Premium offert", { timeout: 30_000 });
+  await expect(gina).toContainText(/Premium offert jusqu’au/);
+  await expect(gina).not.toContainText("Essai");
+  await expect(gina).not.toContainText("Gratuit");
+});
+
+test("subscriptions list: a Premium grant reads Premium offert", async ({ page }) => {
+  await mock(page);
+  await page.goto("/subscriptions");
+  const gina = page.getByRole("row", { name: /Gift Gina/ });
+  await expect(gina).toContainText("Premium offert", { timeout: 30_000 });
+  await expect(gina).not.toContainText("Essai offert");
 });
 
 test("seller drawer shows the same label", async ({ page }) => {

@@ -4,6 +4,7 @@ import {
   actionErrorMessage,
   availableActions,
   buildActionBody,
+  reasonRequired,
   duplicateReasonLabel,
   factsFromActivationRow,
   factsFromTrialItem,
@@ -121,7 +122,7 @@ test("trial-list items carry their own trial dates", () => {
     requestState: "granted", requestedAt: null, trialEndsAt: FUTURE, trialRevokedAt: null, duplicates: [],
   };
   assert.deepEqual(factsFromTrialItem(item), {
-    requestState: "granted", accessActive: undefined, ready: undefined, trialEndsAt: FUTURE, trialRevokedAt: null, suspended: false,
+    requestState: "granted", accessActive: undefined, ready: undefined, trialEndsAt: FUTURE, trialRevokedAt: null, trialTier: undefined, suspended: false,
   });
 });
 
@@ -215,4 +216,49 @@ test("a suspended seller on the pending list is not offered a grant, only a refu
   };
   assert.deepEqual(availableActions(factsFromTrialItem(item), NOW), ["refuse"]);
   assert.deepEqual(availableActions(factsFromTrialItem({ ...item, suspended: false }), NOW), ["grant", "refuse"]);
+});
+
+test("a Premium grant needs a reason and names its tier; a Standard grant stays as it was", () => {
+  assert.equal(reasonRequired("grant"), false);
+  assert.equal(reasonRequired("grant", "STANDARD"), false);
+  assert.equal(reasonRequired("grant", "PREMIUM"), true);
+  assert.match(validateAction("grant", { days: "60", reason: "  ", tier: "PREMIUM" }) ?? "", /motif.*Premium offert/i);
+  assert.equal(validateAction("grant", { days: "60", reason: "Partenaire", tier: "PREMIUM" }), null);
+  assert.equal(validateAction("grant", { days: "60", reason: "", tier: "STANDARD" }), null);
+  assert.deepEqual(buildActionBody("grant", { days: "30", reason: " Partenaire ", tier: "PREMIUM" }, null), {
+    days: 30,
+    tier: "PREMIUM",
+    reason: "Partenaire",
+  });
+  // Standard sends no tier at all (servers without Premium grants reject unknown fields).
+  assert.deepEqual(buildActionBody("grant", { days: "60", reason: "", tier: "STANDARD" }, null), { days: 60 });
+  assert.deepEqual(buildActionBody("grant", { days: "60", reason: "" }, null), { days: 60 });
+  // The tier is only ever SENT with a grant (an extension keeps the grant's own tier)...
+  assert.deepEqual(buildActionBody("extend", { days: "10", reason: "", tier: "PREMIUM" }, "2027-01-01T00:00:00.000Z"), {
+    days: 10,
+    expectedEndsAt: "2027-01-01T00:00:00.000Z",
+  });
+  // ...but extending a Premium grant costs as much as granting it, so it needs a reason too.
+  assert.equal(reasonRequired("extend", "PREMIUM"), true);
+  assert.equal(reasonRequired("extend", "STANDARD"), false);
+  assert.equal(reasonRequired("extend"), false);
+  assert.match(validateAction("extend", { days: "10", reason: " ", tier: "PREMIUM" }) ?? "", /motif.*Premium offert/i);
+  assert.equal(validateAction("extend", { days: "10", reason: "Partenariat", tier: "PREMIUM" }), null);
+  assert.equal(validateAction("extend", { days: "10", reason: "", tier: "STANDARD" }), null);
+  assert.deepEqual(
+    buildActionBody("extend", { days: "10", reason: "Partenariat", tier: "PREMIUM" }, "2027-01-01T00:00:00.000Z"),
+    { days: 10, expectedEndsAt: "2027-01-01T00:00:00.000Z", reason: "Partenariat" },
+  );
+});
+
+test("the server's Premium-reason refusal has a French message", () => {
+  assert.match(actionErrorMessage("INCACOOK_TRIAL_PREMIUM_REASON_REQUIRED", "x"), /raison d’un Premium offert/);
+});
+
+test("the facts carry the tier of the grant, from both lists, so an extension knows it", () => {
+  const row = { ...({} as ActivationRow), trialTier: "PREMIUM" as const, access: { active: true, source: "platform_trial" as const, endsAt: null }, canList: true };
+  assert.equal(factsFromActivationRow(row as ActivationRow).trialTier, "PREMIUM");
+  const item = { requestState: "granted", trialTier: "PREMIUM", trialEndsAt: null, trialRevokedAt: null, duplicates: [] };
+  assert.equal(factsFromTrialItem(item as unknown as TrialListItem).trialTier, "PREMIUM");
+  assert.equal(factsFromTrialItem({ ...item, trialTier: undefined } as unknown as TrialListItem).trialTier, undefined);
 });

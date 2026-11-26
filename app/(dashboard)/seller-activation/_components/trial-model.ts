@@ -5,6 +5,7 @@ import type {
   RequestState,
   TrialActionKind,
   TrialListItem,
+  TrialTier,
 } from "./types";
 
 export const DEFAULT_TRIAL_DAYS = 60;
@@ -19,6 +20,8 @@ export interface TrialFacts {
   /** The platform trial's own end (null when none). */
   trialEndsAt: string | null;
   trialRevokedAt: string | null;
+  /** What the grant gives; unknown (undefined) is treated as STANDARD. */
+  trialTier?: TrialTier;
   /**
    * Onboarding finished and approved. A grant before that would start the trial
    * before the seller can publish, so Accorder is only offered to ready sellers.
@@ -37,6 +40,7 @@ export function factsFromActivationRow(row: ActivationRow): TrialFacts {
     // subscription overlaps the trial, which must not be sent as the end to extend.
     trialEndsAt: row.trialEndsAt,
     trialRevokedAt: row.trialRevokedAt,
+    trialTier: row.trialTier,
     ready: row.canList === true,
     suspended: row.isSuspended === true,
   };
@@ -50,6 +54,7 @@ export function factsFromTrialItem(item: TrialListItem): TrialFacts {
     ready: item.ready === undefined ? undefined : item.ready === true,
     trialEndsAt: item.trialEndsAt,
     trialRevokedAt: item.trialRevokedAt,
+    trialTier: item.trialTier,
     suspended: item.suspended === true,
   };
 }
@@ -77,14 +82,19 @@ export const ACTION_LABEL: Record<TrialActionKind, string> = {
   refuse: "Refuser",
 };
 
-/** Revoke and refuse need a written reason (kept in the audit trail). */
-export function reasonRequired(kind: TrialActionKind): boolean {
-  return kind === "revoke" || kind === "refuse";
+/**
+ * Revoke and refuse need a written reason (kept in the audit trail), and so does a Premium
+ * grant: it costs commission and boosts, so it must say why.
+ */
+export function reasonRequired(kind: TrialActionKind, tier: TrialTier = "STANDARD"): boolean {
+  return kind === "revoke" || kind === "refuse" || ((kind === "grant" || kind === "extend") && tier === "PREMIUM");
 }
 
 export interface ActionInput {
   days: string;
   reason: string;
+  /** What a grant gives; only read for `grant`. Defaults to STANDARD (the "2 mois offerts"). */
+  tier?: TrialTier;
 }
 
 /** Validation message for the confirmation form, or null when it can be sent. */
@@ -96,7 +106,11 @@ export function validateAction(kind: TrialActionKind, input: ActionInput): strin
     }
   }
   const reason = input.reason.trim();
-  if (reasonRequired(kind) && reason.length === 0) return "Le motif est obligatoire.";
+  if (reasonRequired(kind, input.tier) && reason.length === 0) {
+    return kind === "grant" || kind === "extend"
+      ? "Le motif est obligatoire pour un Premium offert."
+      : "Le motif est obligatoire.";
+  }
   if (reason.length > MAX_REASON_LENGTH) {
     return `Le motif ne peut pas dépasser ${MAX_REASON_LENGTH} caractères.`;
   }
@@ -112,6 +126,9 @@ export function buildActionBody(
   const reason = input.reason.trim();
   const body: Record<string, unknown> = {};
   if (kind === "grant" || kind === "extend") body.days = Number(input.days);
+  // Only a Premium grant names its tier: a Standard one is the server's default, and servers
+  // that predate Premium grants reject fields they do not know.
+  if (kind === "grant" && input.tier === "PREMIUM") body.tier = "PREMIUM";
   if (kind === "extend" && expectedEndsAt) body.expectedEndsAt = expectedEndsAt;
   if (reason) body.reason = reason;
   return body;
@@ -126,6 +143,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     "Ce vendeur n’a pas de demande en attente : elle a peut-être déjà été traitée par un autre administrateur.",
   [ErrorCodes.TRIAL_STALE]:
     "L’essai a été modifié entre-temps (par un autre administrateur ?). La liste a été rechargée : vérifie la nouvelle date avant de recommencer.",
+  [ErrorCodes.TRIAL_PREMIUM_REASON_REQUIRED]: "Indique la raison d’un Premium offert.",
   [ErrorCodes.FORBIDDEN]: "Action réservée aux administrateurs.",
 };
 

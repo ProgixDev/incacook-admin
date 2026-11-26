@@ -56,14 +56,19 @@ export function SellerCell({
   );
 }
 
-export function AccessBadge({ access }: { access: ActivationRow["access"] }) {
+export function AccessBadge({ access, tier }: { access: ActivationRow["access"]; tier?: ActivationRow["trialTier"] }) {
   if (!access.active) return <Badge variant="neutral">Aucun accès</Badge>;
   // The date is shown for a trial only. With a store subscription the server may
   // report a trial's end (when the store period end is unknown), which is not a
   // subscription end: no date rather than a wrong one.
   if (access.source === "platform_trial") {
     const end = access.endsAt ? ` · jusqu’au ${formatDateParis(access.endsAt)}` : "";
-    return <Badge variant="info">{`Essai offert${end}`}</Badge>;
+    // A Premium grant reads as such (the seller is Premium while it runs); no tier = an older server = Essai.
+    return tier === "PREMIUM" ? (
+      <Badge variant="success">{`Premium offert${end}`}</Badge>
+    ) : (
+      <Badge variant="info">{`Essai offert${end}`}</Badge>
+    );
   }
   return <Badge variant="success">Abonné</Badge>;
 }

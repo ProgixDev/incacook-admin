@@ -17,7 +17,7 @@ import {
   shouldRefetchAfterError,
   validateAction,
 } from "./trial-model";
-import type { TrialActionKind, TrialActionResult } from "./types";
+import type { TrialActionKind, TrialActionResult, TrialTier } from "./types";
 
 export interface TrialActionTarget {
   kind: TrialActionKind;
@@ -25,7 +25,12 @@ export interface TrialActionTarget {
   sellerName: string;
   /** The trial end the admin is looking at (sent as `expectedEndsAt` when extending). */
   trialEndsAt: string | null;
+  /** What the existing grant gives, when known: extending a Premium grant needs a reason too. */
+  tier?: TrialTier;
 }
+
+const PREMIUM_GRANT_COPY =
+  "Premium offert : en plus de l’accès, le vendeur profite pendant la durée choisie de la commission Premium (25 %), de sa commission offerte du mois et des mises à la Une. Cela te coûte de la commission : le motif est obligatoire. Impossible si le vendeur a déjà accès (abonnement ou période en cours).";
 
 const COPY: Record<TrialActionKind, (t: TrialActionTarget) => string> = {
   grant: (t) =>
@@ -55,6 +60,7 @@ export function TrialActionDialog({
 }) {
   const [days, setDays] = useState(String(DEFAULT_TRIAL_DAYS));
   const [reason, setReason] = useState("");
+  const [tier, setTier] = useState<TrialTier>("STANDARD");
   const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = useAdminMutation<TrialActionResult, { t: TrialActionTarget; body: Record<string, unknown> }>(
@@ -66,6 +72,7 @@ export function TrialActionDialog({
     if (target) {
       setDays(target.kind === "extend" ? "30" : String(DEFAULT_TRIAL_DAYS));
       setReason("");
+      setTier("STANDARD");
       setFormError(null);
       mutation.reset();
     }
@@ -74,17 +81,19 @@ export function TrialActionDialog({
 
   if (!target) return null;
   const needsDays = target.kind === "grant" || target.kind === "extend";
+  // A grant takes the plan chosen in the form; an extension carries the plan of the grant it extends.
+  const effectiveTier: TrialTier = target.kind === "grant" ? tier : (target.tier ?? "STANDARD");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!target) return;
-    const invalid = validateAction(target.kind, { days, reason });
+    const invalid = validateAction(target.kind, { days, reason, tier: effectiveTier });
     setFormError(invalid);
     if (invalid) return;
     try {
       const result = await mutation.mutate({
         t: target,
-        body: buildActionBody(target.kind, { days, reason }, target.trialEndsAt),
+        body: buildActionBody(target.kind, { days, reason, tier }, target.trialEndsAt),
       });
       onDone(target.kind, result);
     } catch (err) {
@@ -98,8 +107,33 @@ export function TrialActionDialog({
     <Dialog open onOpenChange={(open) => !open && !mutation.isPending && onClose()}>
       <DialogContent className="w-[calc(100vw-2rem)] sm:w-full">
         <DialogTitle className="[overflow-wrap:anywhere]">{`${ACTION_LABEL[target.kind]} · ${target.sellerName}`}</DialogTitle>
-        <DialogDescription className="[overflow-wrap:anywhere]">{COPY[target.kind](target)}</DialogDescription>
+        <DialogDescription className="[overflow-wrap:anywhere]">
+          {target.kind === "grant" && tier === "PREMIUM" ? PREMIUM_GRANT_COPY : COPY[target.kind](target)}
+        </DialogDescription>
         <form onSubmit={submit} className="flex flex-col gap-3" noValidate>
+          {target.kind === "grant" && (
+            <fieldset className="flex flex-col gap-1.5 text-[12px] font-medium text-on-surface-variant">
+              <legend className="mb-1">Ce que le vendeur reçoit</legend>
+              {(
+                [
+                  ["STANDARD", "Essai gratuit (accès à la plateforme)"],
+                  ["PREMIUM", "Premium offert (accès + commission Premium + mises à la Une)"],
+                ] as const
+              ).map(([value, label]) => (
+                <label key={value} className="flex items-start gap-2 text-[13px] font-normal text-on-surface">
+                  <input
+                    type="radio"
+                    name="tier"
+                    value={value}
+                    checked={tier === value}
+                    onChange={() => setTier(value)}
+                    className="mt-1"
+                  />
+                  {label}
+                </label>
+              ))}
+            </fieldset>
+          )}
           {needsDays && (
             <label className="flex flex-col gap-1 text-[12px] font-medium text-on-surface-variant">
               Durée (jours)
@@ -114,7 +148,7 @@ export function TrialActionDialog({
             </label>
           )}
           <label className="flex flex-col gap-1 text-[12px] font-medium text-on-surface-variant">
-            {reasonRequired(target.kind) ? "Motif (obligatoire)" : "Motif (facultatif)"}
+            {reasonRequired(target.kind, effectiveTier) ? "Motif (obligatoire)" : "Motif (facultatif)"}
             <textarea
               name="reason"
               value={reason}

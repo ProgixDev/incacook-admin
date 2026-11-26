@@ -2,6 +2,8 @@
 
 export type RequestState = "none" | "pending" | "granted" | "refused";
 export type AccessSource = "store" | "platform_trial" | null;
+/** What an admin-granted period gives: access only, or also Premium (commission, boosts). */
+export type TrialTier = "STANDARD" | "PREMIUM";
 
 export interface ActivationCounters {
   signups: number;
@@ -29,6 +31,8 @@ export interface ActivationRow {
   /** The platform trial on its own (`access.endsAt` is the later end when a store subscription overlaps it). */
   trialEndsAt: string | null;
   trialRevokedAt: string | null;
+  /** What the grant gives (absent on servers that predate Premium grants: then STANDARD). */
+  trialTier?: TrialTier;
   listings: number;
   orders: number;
   trialRequest: RequestState;
@@ -62,6 +66,8 @@ export interface TrialListItem {
   requestedAt: string | null;
   trialEndsAt: string | null;
   trialRevokedAt: string | null;
+  /** What the grant gives (absent on servers that predate Premium grants: then STANDARD). */
+  trialTier?: TrialTier;
   /** Access today. Absent on servers older than the access field: then it is unknown. */
   access?: { active: boolean; source: AccessSource; endsAt: string | null };
   /** Onboarding complete now; null when it could not be read; absent on older servers (then unknown). */
@@ -77,6 +83,7 @@ export interface TrialActionResult {
   requestState: RequestState;
   endsAt: string | null;
   accessActive: boolean;
+  tier?: TrialTier;
 }
 
 export type TrialActionKind = "grant" | "extend" | "revoke" | "refuse";
