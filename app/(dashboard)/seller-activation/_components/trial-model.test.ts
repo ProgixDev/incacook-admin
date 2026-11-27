@@ -122,8 +122,17 @@ test("trial-list items carry their own trial dates", () => {
     requestState: "granted", requestedAt: null, trialEndsAt: FUTURE, trialRevokedAt: null, duplicates: [],
   };
   assert.deepEqual(factsFromTrialItem(item), {
-    requestState: "granted", accessActive: undefined, ready: undefined, trialEndsAt: FUTURE, trialRevokedAt: null, trialTier: undefined, suspended: false,
+    requestState: "granted", accessActive: undefined, ready: undefined, trialEndsAt: FUTURE, trialRevokedAt: null, trialTier: undefined, suspended: false, offeredDays: null,
   });
+});
+
+test("a pending seller carries the length the seller was offered (the default of a grant to them)", () => {
+  const item: TrialListItem = {
+    sellerId: "s1", displayName: null, email: "r@x.fr", category: null, signedUpAt: PAST,
+    requestState: "pending", requestedAt: PAST, requestSource: "auto", offeredDays: 45,
+    trialEndsAt: null, trialRevokedAt: null, duplicates: [],
+  };
+  assert.equal(factsFromTrialItem(item).offeredDays, 45);
 });
 
 test("a pending seller who subscribed meanwhile is not offered a grant (list access), only a refusal", () => {
@@ -261,4 +270,16 @@ test("the facts carry the tier of the grant, from both lists, so an extension kn
   const item = { requestState: "granted", trialTier: "PREMIUM", trialEndsAt: null, trialRevokedAt: null, duplicates: [] };
   assert.equal(factsFromTrialItem(item as unknown as TrialListItem).trialTier, "PREMIUM");
   assert.equal(factsFromTrialItem({ ...item, trialTier: undefined } as unknown as TrialListItem).trialTier, undefined);
+});
+
+test("a row of the full list carries the length its pending request was made under", () => {
+  const row = {
+    sellerId: "s1", displayName: null, email: "r@x.fr", category: null, signedUpAt: PAST,
+    kycState: "APPROVED", nextStep: null, canList: true, onboardingUnavailable: false,
+    isTestAccount: false, isSuspended: false,
+    access: { active: false, source: null, endsAt: null }, trialEndsAt: null, trialRevokedAt: null,
+    listings: 0, orders: 0, trialRequest: "pending", requestSource: "auto", offeredDays: 45,
+  } as unknown as ActivationRow;
+  assert.equal(factsFromActivationRow(row).offeredDays, 45);
+  assert.equal(factsFromActivationRow({ ...row, offeredDays: undefined }).offeredDays, null);
 });
