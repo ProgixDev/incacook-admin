@@ -24,7 +24,7 @@ test("warns when onboarding states were unreadable or the cohort was capped", ()
 
 test("labels the access source: trial, store, none", () => {
   const end = "2027-01-10T00:00:00.000Z";
-  assert.match(text(<AccessBadge access={{ active: true, source: "platform_trial", endsAt: end }} />), /Essai offert · jusqu’au 10\/01\/2027/);
+  assert.match(text(<AccessBadge access={{ active: true, source: "platform_trial", endsAt: end }} />), /Essai offert jusqu’au 10\/01\/2027/);
   // A store subscriber never shows a date: the server's endsAt can be a trial's end then.
   const store = text(<AccessBadge access={{ active: true, source: "store", endsAt: end }} />);
   assert.match(store, /Abonné/);
@@ -63,10 +63,17 @@ test("onboarding cell: ready, first missing step, unreadable, waiting for valida
 test("a Premium grant reads Premium offert in the access column; Standard (or no tier) keeps Essai offert", () => {
   const end = "2027-01-10T00:00:00.000Z";
   const access = { active: true, source: "platform_trial" as const, endsAt: end };
-  assert.match(text(<AccessBadge access={access} tier="PREMIUM" />), /Premium offert · jusqu’au 10\/01\/2027/);
+  assert.match(text(<AccessBadge access={access} tier="PREMIUM" />), /Premium offert jusqu’au 10\/01\/2027/);
   assert.doesNotMatch(text(<AccessBadge access={access} tier="PREMIUM" />), /Essai/);
   assert.match(text(<AccessBadge access={access} tier="STANDARD" />), /Essai offert/);
   assert.match(text(<AccessBadge access={access} />), /Essai offert/);
   // A store subscriber is never labelled by a grant's tier.
   assert.match(text(<AccessBadge access={{ ...access, source: "store" }} tier="PREMIUM" />), /Abonné/);
+});
+
+test("the end date sits outside the access pill, so a long label never wraps inside it", () => {
+  const access = { active: true, source: "platform_trial" as const, endsAt: "2027-01-10T00:00:00.000Z" };
+  const html = renderToStaticMarkup(<AccessBadge access={access} tier="PREMIUM" />);
+  assert.match(html, /<span[^>]*whitespace-nowrap[^>]*>Premium offert<\/span>/);
+  assert.doesNotMatch(html, /<span[^>]*whitespace-nowrap[^>]*>[^<]*jusqu/);
 });

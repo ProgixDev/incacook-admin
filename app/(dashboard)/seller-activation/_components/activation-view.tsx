@@ -62,12 +62,19 @@ export function AccessBadge({ access, tier }: { access: ActivationRow["access"];
   // report a trial's end (when the store period end is unknown), which is not a
   // subscription end: no date rather than a wrong one.
   if (access.source === "platform_trial") {
-    const end = access.endsAt ? ` · jusqu’au ${formatDateParis(access.endsAt)}` : "";
     // A Premium grant reads as such (the seller is Premium while it runs); no tier = an older server = Essai.
-    return tier === "PREMIUM" ? (
-      <Badge variant="success">{`Premium offert${end}`}</Badge>
-    ) : (
-      <Badge variant="info">{`Essai offert${end}`}</Badge>
+    // The end date sits under the pill, not inside it: a long pill wraps and breaks the row.
+    return (
+      <div className="flex flex-col items-start gap-0.5">
+        {tier === "PREMIUM" ? (
+          <Badge variant="success">Premium offert</Badge>
+        ) : (
+          <Badge variant="info">Essai offert</Badge>
+        )}
+        {access.endsAt && (
+          <span className="text-[11px] text-on-surface-variant">jusqu’au {formatDateParis(access.endsAt)}</span>
+        )}
+      </div>
     );
   }
   return <Badge variant="success">Abonné</Badge>;

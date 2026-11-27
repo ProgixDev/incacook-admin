@@ -211,16 +211,20 @@ function ActivationPanel() {
     }
   }
 
-  function actionButtons(sellerId: string, name: string, facts: TrialFacts) {
+  function actionButtons(sellerId: string, name: string, facts: TrialFacts, emptyDash = true) {
     // A conflict answer fills in what a list without access information could not know.
     const known = facts.accessActive === undefined && knownActive.has(sellerId);
     const actions = availableActions(known ? { ...facts, accessActive: true } : facts);
-    if (actions.length === 0) return <span className="text-[12px] text-on-surface-variant">—</span>;
+    // A row with nothing to do shows no placeholder when other controls sit under it.
+    if (actions.length === 0) {
+      return emptyDash ? <span className="text-[12px] text-on-surface-variant">—</span> : null;
+    }
     return (
       <div className="flex flex-wrap gap-1.5">
         {actions.map((kind) => (
           <Button
             key={kind}
+            className="whitespace-nowrap"
             size="sm"
             variant={kind === "grant" ? "default" : "outline"}
             disabled={refreshing}
@@ -271,7 +275,7 @@ function ActivationPanel() {
       header: "Actions",
       cell: (r) => (
         <div className="flex flex-col gap-1.5">
-          {actionButtons(r.sellerId, nameOf(r.displayName, r.email), factsFromActivationRow(r))}
+          {actionButtons(r.sellerId, nameOf(r.displayName, r.email), factsFromActivationRow(r), false)}
           <button
             type="button"
             className="w-fit text-left text-[11.5px] text-on-surface-variant underline-offset-2 hover:underline disabled:opacity-50"
