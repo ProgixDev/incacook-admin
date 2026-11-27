@@ -25,6 +25,7 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { DataTableError } from "@/components/dashboard/data-table-states";
 import { useAdminQuery } from "@/lib/query";
+import { isFullAdminRole, useAuth } from "@/lib/auth";
 import { cn, formatEur, formatNum } from "@/lib/utils";
 import { TodoSection } from "./todo-section";
 import {
@@ -111,6 +112,7 @@ const eur = (cents: number | undefined | null) => formatEur((cents ?? 0) / 100);
 const num = (v: number | undefined | null) => (v == null ? "—" : formatNum(v));
 
 export function OverviewClient() {
+  const { user } = useAuth();
   const [period, setPeriod] = useState<PeriodKey>("last30Days");
   const rangeParams = { extra: { range: period } };
 
@@ -170,7 +172,8 @@ export function OverviewClient() {
   return (
     <>
       {/* What needs an admin now: independent of the period below */}
-      <TodoSection />
+      {/* The counts come from an admin-only endpoint: a moderator would only ever see an error. */}
+      {user && isFullAdminRole(user.role) && <TodoSection />}
 
       {/* Period selector */}
       <div className="mb-4 flex flex-wrap items-center gap-1.5">

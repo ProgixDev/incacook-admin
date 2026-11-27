@@ -248,28 +248,34 @@ function ActivationPanel({ initialView }: { initialView: View }) {
       ),
     },
     {
-      key: "signup",
-      header: "Inscrit le",
-      cell: (r) => <span className="text-[13px] text-on-surface-variant">{formatDateParis(r.signedUpAt)}</span>,
-      width: "110px",
+      key: "onboarding",
+      header: "Inscription",
+      // The signup date sits under the state: one column less, so Actions fits at 1280 px.
+      cell: (r) => (
+        <div className="flex flex-col items-start gap-0.5">
+          <OnboardingCell row={r} />
+          <span className="text-[11px] text-on-surface-variant">inscrit le {formatDateParis(r.signedUpAt)}</span>
+        </div>
+      ),
+      width: "150px",
     },
-    { key: "onboarding", header: "Inscription", cell: (r) => <OnboardingCell row={r} />, width: "150px" },
     { key: "access", header: "Accès", cell: (r) => <AccessBadge access={r.access} tier={r.trialTier} />, width: "140px" },
     {
-      key: "listings",
-      header: "Annonces",
-      align: "right",
-      cell: (r) => <span className="text-[13px] tabular-nums">{r.listings}</span>,
-      width: "90px",
+      key: "activity",
+      header: "Activité",
+      cell: (r) => (
+        <div className="flex flex-col text-[12px] tabular-nums text-on-surface">
+          <span>
+            {r.listings} annonce{r.listings > 1 ? "s" : ""}
+          </span>
+          <span className="text-on-surface-variant">
+            {r.orders} commande{r.orders > 1 ? "s" : ""}
+          </span>
+        </div>
+      ),
+      width: "110px",
     },
-    {
-      key: "orders",
-      header: "Commandes",
-      align: "right",
-      cell: (r) => <span className="text-[13px] tabular-nums">{r.orders}</span>,
-      width: "100px",
-    },
-    { key: "request", header: "Demande", cell: (r) => <RequestBadge state={r.trialRequest} />, width: "160px" },
+    { key: "request", header: "Demande", cell: (r) => <RequestBadge state={r.trialRequest} />, width: "140px" },
     {
       key: "actions",
       header: "Actions",
@@ -286,7 +292,7 @@ function ActivationPanel({ initialView }: { initialView: View }) {
           </button>
         </div>
       ),
-      width: "260px",
+      width: "230px",
     },
   ];
 

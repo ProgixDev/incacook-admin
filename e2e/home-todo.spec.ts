@@ -23,7 +23,12 @@ const ok = (route: Route, data: unknown, extra: Record<string, unknown> = {}) =>
 
 type Todo = Record<string, number | null>;
 
-async function mockApi(page: Page, todo: Todo | "error") {
+async function mockApi(
+  page: Page,
+  todo: Todo | "error",
+  role: "ADMIN" | "MODERATOR" = "ADMIN",
+) {
+  let todoCalls = 0;
   await page.route(`${API}/**`, async (route) => {
     const req = route.request();
     const path = new URL(req.url()).pathname.replace(/^\/v1/, "");
@@ -42,7 +47,7 @@ async function mockApi(page: Page, todo: Todo | "error") {
         id: "admin-1",
         email: "admin@incacook.test",
         phone: null,
-        role: "ADMIN",
+        role,
         firstName: "Ad",
         lastName: "Min",
         avatarPath: null,
@@ -52,6 +57,7 @@ async function mockApi(page: Page, todo: Todo | "error") {
       });
     }
     if (path === "/admin/todo") {
+      todoCalls += 1;
       if (todo === "error") {
         return route.fulfill({
           status: 500,
@@ -98,6 +104,7 @@ async function mockApi(page: Page, todo: Todo | "error") {
       String(Math.floor(Date.now() / 1000) + 86_400),
     );
   });
+  return () => todoCalls;
 }
 
 const all0 = {
@@ -185,5 +192,22 @@ test.describe("Home: À traiter (mocked API)", () => {
     await expect(
       page.getByRole("tab", { name: "Tous les vendeurs" }),
     ).toHaveAttribute("aria-selected", "true");
+  });
+
+  test("a moderator does not get the list (admin-only endpoint): no section, no request", async ({
+    page,
+  }) => {
+    const todoCalls = await mockApi(page, all0, "MODERATOR");
+    await page.goto("/dashboard");
+    await expect(
+      page.getByRole("heading", { name: "Vue d'ensemble" }),
+    ).toBeVisible();
+    await expect(page.getByRole("region", { name: "À traiter" })).toHaveCount(
+      0,
+    );
+    await expect(
+      page.getByText("La liste « À traiter » est indisponible."),
+    ).toHaveCount(0);
+    expect(todoCalls()).toBe(0);
   });
 });
