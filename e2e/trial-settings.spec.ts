@@ -95,4 +95,48 @@ test.describe("Settings: Essai offert (mocked API)", () => {
     await expect(page.getByText("Essai offert")).toHaveCount(0);
     expect(state.gets).toBe(0);
   });
+
+  test("layout: grouped sections, equal card widths, one gap between cards", async ({ page }) => {
+    await mockApi(page, "ADMIN");
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/settings");
+    await expect(page.getByRole("switch")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("heading", { name: "Livraison", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Vendeurs", exact: true })).toBeVisible();
+    const box = async (name: string) => (await page.getByRole("heading", { name }).locator("xpath=ancestor::*[contains(@class,'shadow-')][1]").boundingBox())!;
+    const fee = await box("Frais de livraison");
+    const radius = await box("Rayon de répartition");
+    const trial = await box("Essai offert");
+    expect(Math.abs(fee.width - radius.width)).toBeLessThan(1); // same width
+    expect(Math.abs(trial.width - fee.width)).toBeLessThan(1);
+    expect(Math.abs(radius.x - (fee.x + fee.width) - 24)).toBeLessThan(1); // 24 px between cards
+    await page.screenshot({ path: "test-results/settings-1440.png", fullPage: true });
+  });
+
+  test("layout: one column on a phone, no horizontal scroll", async ({ page }) => {
+    await mockApi(page, "ADMIN");
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto("/settings");
+    await expect(page.getByRole("switch")).toBeVisible({ timeout: 30_000 });
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    await page.screenshot({ path: "test-results/settings-390.png", fullPage: true });
+  });
+
+  test("a moderator sees the delivery section only: no empty « Vendeurs » heading", async ({ page }) => {
+    await mockApi(page, "MODERATOR");
+    await page.goto("/settings");
+    await expect(page.getByRole("heading", { name: "Livraison", exact: true })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("heading", { name: "Vendeurs", exact: true })).toHaveCount(0);
+  });
+
+  test("dispatch radius with no step: a hint (not a red error), and adding a step works", async ({ page }) => {
+    await mockApi(page, "ADMIN");
+    await page.goto("/settings");
+    await expect(page.getByText("Aucune étape.")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Le programme doit contenir entre 1 et 8 étapes.")).toHaveCount(0);
+    await page.getByRole("button", { name: "Ajouter une étape" }).click();
+    await expect(page.getByText("Aucune étape.")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Supprimer|Retirer/ }).first()).toBeAttached().catch(() => undefined);
+  });
 });

@@ -271,3 +271,15 @@ test("the facts carry the tier of the grant, from both lists, so an extension kn
   assert.equal(factsFromTrialItem(item as unknown as TrialListItem).trialTier, "PREMIUM");
   assert.equal(factsFromTrialItem({ ...item, trialTier: undefined } as unknown as TrialListItem).trialTier, undefined);
 });
+
+test("a row of the full list carries the length its pending request was made under", () => {
+  const row = {
+    sellerId: "s1", displayName: null, email: "r@x.fr", category: null, signedUpAt: PAST,
+    kycState: "APPROVED", nextStep: null, canList: true, onboardingUnavailable: false,
+    isTestAccount: false, isSuspended: false,
+    access: { active: false, source: null, endsAt: null }, trialEndsAt: null, trialRevokedAt: null,
+    listings: 0, orders: 0, trialRequest: "pending", requestSource: "auto", offeredDays: 45,
+  } as unknown as ActivationRow;
+  assert.equal(factsFromActivationRow(row).offeredDays, 45);
+  assert.equal(factsFromActivationRow({ ...row, offeredDays: undefined }).offeredDays, null);
+});

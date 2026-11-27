@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, ShieldAlert, Trash2 } from "lucide-react";
+import { Plus, Radar, ShieldAlert, Trash2 } from "lucide-react";
 import { patch } from "@/lib/api";
 import { useAdminMutation, useAdminQuery } from "@/lib/query";
 import { useAuth, isFullAdminRole } from "@/lib/auth";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { DataTableError } from "@/components/dashboard/data-table-states";
 import { formatDateTimeFr } from "@/lib/utils";
+import { SETTINGS_CARD } from "./settings-ui";
 import {
   parseDispatchRadiusSteps,
   type DispatchRadiusInputRow,
@@ -98,6 +99,10 @@ function DispatchRadiusEditor() {
 
   function addRow() {
     if (rows.length >= 8) return;
+    if (rows.length === 0) {
+      setRows([{ ...DEFAULT_ROW }]); // nothing to extend: start from the first step
+      return;
+    }
     const next = rows.map((row) => ({ ...row }));
     const last = next[next.length - 1];
     if (!last.radius.trim()) {
@@ -119,10 +124,13 @@ function DispatchRadiusEditor() {
   }
 
   return (
-    <div className="max-w-3xl">
-      <Card>
+    <div>
+      <Card className={SETTINGS_CARD}>
         <CardHeader>
-          <CardTitle>Rayon de répartition</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Radar className="h-5 w-5 text-primary" />
+            Rayon de répartition
+          </CardTitle>
           <CardDescription>Élargissement progressif du rayon de recherche des livreurs.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -133,7 +141,7 @@ function DispatchRadiusEditor() {
           ) : query.data ? (
             <div className="flex flex-col gap-5">
               {(query.data.isDefault || (query.data.steps.length === 1 && query.data.steps[0]?.radiusMeters === null)) && (
-                <p className="rounded-md border border-outline-variant bg-surface-container-low p-3 text-sm text-on-surface" role="status">
+                <p className="rounded-sm border border-outline-variant bg-surface p-3 text-sm text-on-surface" role="status">
                   {OPEN_MESSAGE}
                 </p>
               )}
@@ -143,9 +151,15 @@ function DispatchRadiusEditor() {
                   {query.data.updatedById ? ` · Administrateur ${query.data.updatedById}` : ""}
                 </p>
               )}
+              {rows.length === 0 && (
+                <p className="rounded-sm border border-dashed border-outline-variant px-3 py-4 text-center text-sm text-on-surface-variant">
+                  Aucune étape. Ajoute une étape pour limiter le rayon de recherche des livreurs.
+                </p>
+              )}
+              {rows.length > 0 && (
               <div className="flex flex-col gap-3">
                 {rows.map((row, index) => (
-                  <div key={index} className="grid gap-3 rounded-md border border-outline-variant p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                  <div key={index} className="grid gap-3 rounded-sm border border-outline-variant bg-surface p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
                     <label className="flex flex-col gap-1 text-xs font-medium text-on-surface-variant">
                       Délai (minutes:secondes)
                       <Input aria-label={`Délai étape ${index + 1}`} value={row.delay} placeholder="00:00" onChange={(event) => {
@@ -167,10 +181,12 @@ function DispatchRadiusEditor() {
                   </div>
                 ))}
               </div>
+              )}
               <p className="text-[11px] text-on-surface-variant">
                 Délais croissants, rayons croissants jusqu’à 200 km. Le dernier délai doit précéder le délai sans livreur ({query.data.noDriverTimeoutSeconds}s).
               </p>
-              {validation.error && <p role="alert" className="text-sm text-error">{validation.error}</p>}
+              {/* Nothing to validate until there is a step: an empty list is a state, not an error. */}
+              {rows.length > 0 && validation.error && <p role="alert" className="text-sm text-error">{validation.error}</p>}
               {save.error && <p role="alert" className="text-sm text-error">{save.error.message}{save.error.correlationId ? ` (réf. ${save.error.correlationId})` : ""}</p>}
               {saved && <p role="status" className="text-sm text-success">Rayon enregistré.</p>}
               <div className="flex flex-wrap gap-2">

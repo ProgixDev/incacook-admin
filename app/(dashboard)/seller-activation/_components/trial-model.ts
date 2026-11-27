@@ -45,6 +45,9 @@ export function factsFromActivationRow(row: ActivationRow): TrialFacts {
     trialTier: row.trialTier,
     ready: row.canList === true,
     suspended: row.isSuspended === true,
+    // A pending request keeps the length the seller was shown: carried here too, so a grant
+    // from the full list proposes the same number as one from the pending list.
+    offeredDays: row.offeredDays ?? null,
   };
 }
 

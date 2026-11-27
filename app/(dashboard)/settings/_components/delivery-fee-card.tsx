@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { DataTableError } from "@/components/dashboard/data-table-states";
 import { formatDateTimeFr, formatEur, formatEurFromCents } from "@/lib/utils";
+import { SETTINGS_CARD } from "./settings-ui";
 
 /** Shape returned by `GET /v1/admin/settings/delivery-fee`. */
 interface DeliveryFeeSettings {
@@ -84,8 +85,8 @@ export function DeliveryFeeCard() {
   }
 
   return (
-    <div className="max-w-xl">
-      <Card>
+    <div>
+      <Card className={SETTINGS_CARD}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Truck className="h-5 w-5 text-primary" />
@@ -140,7 +141,7 @@ export function DeliveryFeeCard() {
                       setEuros(e.target.value);
                       setSaved(false);
                     }}
-                    className="pr-8"
+                    className="rounded-sm pr-8"
                   />
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-on-surface-variant">
                     €
@@ -154,7 +155,7 @@ export function DeliveryFeeCard() {
               {save.error && (
                 <p
                   role="alert"
-                  className="rounded-md border border-error/40 bg-error/5 px-3 py-2 text-sm text-error"
+                  className="rounded-sm border border-error/40 bg-error/5 px-3 py-2 text-sm text-error"
                 >
                   {save.error.message}
                   {save.error.correlationId
@@ -166,7 +167,7 @@ export function DeliveryFeeCard() {
               {saved && !save.isPending && (
                 <div
                   role="status"
-                  className="flex items-center gap-2 rounded-md border border-success/40 bg-success/5 px-3 py-2 text-sm text-on-surface"
+                  className="flex items-center gap-2 rounded-sm border border-success/40 bg-success/5 px-3 py-2 text-sm text-on-surface"
                 >
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
                   Frais de livraison enregistré.

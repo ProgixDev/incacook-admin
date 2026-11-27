@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTableError } from "@/components/dashboard/data-table-states";
+import { SETTINGS_CARD } from "./settings-ui";
 import { parseTrialDays, trialSettingsChanges, type SellerTrialSettings } from "./trial-settings";
 
 /**
@@ -64,8 +65,8 @@ export function TrialSettingsCard() {
   }
 
   return (
-    <div className="max-w-xl">
-      <Card>
+    <div>
+      <Card className={SETTINGS_CARD}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Gift className="h-5 w-5 text-primary" />
@@ -122,6 +123,7 @@ export function TrialSettingsCard() {
                     setDays(e.target.value);
                     setSaved(false);
                   }}
+                  className="rounded-sm"
                 />
                 <p className="text-[11px] text-on-surface-variant">
                   Entre {data?.minDays ?? 7} et {data?.maxDays ?? 365} jours.
@@ -146,7 +148,7 @@ export function TrialSettingsCard() {
               )}
 
               {save.error && (
-                <p role="alert" className="rounded-md border border-error/40 bg-error/5 px-3 py-2 text-sm text-error">
+                <p role="alert" className="rounded-sm border border-error/40 bg-error/5 px-3 py-2 text-sm text-error">
                   {save.error.message}
                   {save.error.correlationId ? ` (réf. ${save.error.correlationId})` : ""}
                 </p>
@@ -155,7 +157,7 @@ export function TrialSettingsCard() {
               {saved && !save.isPending && (
                 <div
                   role="status"
-                  className="flex items-center gap-2 rounded-md border border-success/40 bg-success/5 px-3 py-2 text-sm text-on-surface"
+                  className="flex items-center gap-2 rounded-sm border border-success/40 bg-success/5 px-3 py-2 text-sm text-on-surface"
                 >
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
                   Réglage enregistré.

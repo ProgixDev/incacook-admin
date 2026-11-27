@@ -56,7 +56,11 @@ const fail = (route: Route, status: number, code: string, message: string) =>
 
 interface Calls { activation: number; trials: number; posts: Array<{ url: string; body: Record<string, unknown> }>; patches: string[] }
 
-async function mockApi(page: Page, role: "ADMIN" | "MODERATOR", handlers: { post?: (url: string, route: Route) => Promise<boolean> } = {}) {
+async function mockApi(
+  page: Page,
+  role: "ADMIN" | "MODERATOR",
+  handlers: { post?: (url: string, route: Route) => Promise<boolean>; settings?: number | "error" } = {},
+) {
   const calls: Calls = { activation: 0, trials: 0, posts: [], patches: [] };
   await page.route(`${API}/**`, async (route) => {
     const req = route.request();
@@ -71,6 +75,10 @@ async function mockApi(page: Page, role: "ADMIN" | "MODERATOR", handlers: { post
 
     if (path === "/users/me") {
       return ok(route, { id: "admin-1", email: "admin@incacook.test", phone: null, role, firstName: "Ad", lastName: "Min", avatarPath: null, emailVerified: true, phoneVerified: false, createdAt: "2026-01-01T00:00:00.000Z" });
+    }
+    if (path === "/admin/settings/seller-trial") {
+      if (handlers.settings === "error") return fail(route, 500, "INTERNAL", "boom");
+      return ok(route, { autoRequest: false, days: handlers.settings ?? 60, minDays: 7, maxDays: 365, updatedAt: null, updatedById: null });
     }
     if (path === "/admin/seller-activation") {
       calls.activation += 1;
@@ -92,7 +100,7 @@ async function mockApi(page: Page, role: "ADMIN" | "MODERATOR", handlers: { post
       const filter = url.searchParams.get("filter");
       const items =
         filter === "pending"
-          ? [{ sellerId: "s2", displayName: "Pending Pat", email: "pat@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T10:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, access: { active: false, source: null, endsAt: null }, ready: true, duplicates: [{ sellerId: "s9", displayName: "Pat bis", reasons: ["email", "phone"] }] },
+          ? [{ sellerId: "s2", displayName: "Pending Pat", email: "pat@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T10:00:00.000Z", requestSource: "auto", offeredDays: 45, trialEndsAt: null, trialRevokedAt: null, access: { active: false, source: null, endsAt: null }, ready: true, duplicates: [{ sellerId: "s9", displayName: "Pat bis", reasons: ["email", "phone"] }] },
               // Asked for a trial, then subscribed through the store: a grant could only fail.
               { sellerId: "s7", displayName: "Sub Sam", email: "sam@example.fr", category: "FAIT_MAISON", signedUpAt: "2026-12-02T10:00:00.000Z", requestState: "pending", requestedAt: "2026-12-03T11:00:00.000Z", trialEndsAt: null, trialRevokedAt: null, access: { active: true, source: "store", endsAt: FUTURE }, ready: true, duplicates: [] },
               // Asked for a trial, then got suspended: a trial would run unusable, so only a refusal.
@@ -201,6 +209,46 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await expect(page.getByRole("status")).toContainText("Essai accordé à Chez Rosa");
     expect(calls.posts).toEqual([{ url: "/admin/sellers/s1/trial/grant", body: { days: 60 } }]);
     await expect.poll(() => calls.activation).toBeGreaterThan(before); // refetched, not assumed
+  });
+
+  test("grant: a seller who never asked gets the configured default, not a hard-coded 60", async ({ page }) => {
+    await mockApi(page, "ADMIN", { settings: 30 });
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
+    await expect(page.getByLabel("Durée (jours)")).toHaveValue("30");
+  });
+
+  test("grant: a pending request proposes the length the seller was shown, even after the dialog is closed and reopened", async ({ page }) => {
+    await mockApi(page, "ADMIN", { settings: 30 });
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("tab", { name: "Demandes en attente" }).click();
+    const row = page.getByText("Pending Pat").first();
+    await expect(row).toBeVisible();
+    await expect(page.getByText("demande automatique").first()).toBeVisible();
+    await expect(page.getByText("annoncé : 45 jours").first()).toBeVisible();
+    const open = () => page.getByRole("button", { name: "Accorder" }).first().click();
+    await open();
+    await expect(page.getByLabel("Durée (jours)")).toHaveValue("45");
+    await page.getByRole("button", { name: "Annuler" }).click();
+    await open();
+    await expect(page.getByLabel("Durée (jours)")).toHaveValue("45");
+  });
+
+  test("grant: when the default cannot be read nothing is guessed: empty field, a message, no confirmation until a number is typed", async ({ page }) => {
+    const calls = await mockApi(page, "ADMIN", { settings: "error" });
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByText("Durée par défaut illisible : saisis le nombre de jours.")).toBeVisible({ timeout: 30_000 });
+    await expect(dialog.getByLabel("Durée (jours)")).toHaveValue("");
+    await expect(page.getByRole("button", { name: /Confirmer : accorder/ })).toBeDisabled();
+    await dialog.getByLabel("Durée (jours)").fill("40");
+    await page.getByRole("button", { name: /Confirmer : accorder/ }).click();
+    await expect(page.getByRole("status")).toContainText("Essai accordé à Chez Rosa");
+    expect(calls.posts).toEqual([{ url: "/admin/sellers/s1/trial/grant", body: { days: 40 } }]);
   });
 
   test("grant Premium: a plan choice, the reason becomes mandatory, and the body names the tier", async ({ page }) => {

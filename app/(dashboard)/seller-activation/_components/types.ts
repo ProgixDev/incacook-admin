@@ -36,6 +36,10 @@ export interface ActivationRow {
   listings: number;
   orders: number;
   trialRequest: RequestState;
+  /** How the latest request was made (the seller tapped it, or it was sent for them); null without a request. */
+  requestSource?: "manual" | "auto" | null;
+  /** The length (days) the seller was shown when they asked: a grant defaults to it. */
+  offeredDays?: number | null;
 }
 
 /** `data` of `GET /v1/admin/seller-activation`. */

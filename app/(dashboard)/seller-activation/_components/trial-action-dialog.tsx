@@ -11,7 +11,6 @@ import {
   ACTION_LABEL,
   actionErrorMessage,
   buildActionBody,
-  DEFAULT_TRIAL_DAYS,
   MAX_REASON_LENGTH,
   reasonRequired,
   shouldRefetchAfterError,
@@ -60,10 +59,10 @@ export function TrialActionDialog({
   /** Called when the server says the data on screen is out of date, with its error code. */
   onStale: (code: string) => void;
 }) {
-  const [days, setDays] = useState(String(DEFAULT_TRIAL_DAYS));
+  const [days, setDays] = useState("");
   // The configured default, for a grant that has no request to take its length from. Set by the
   // server's setting; the admin can always type another number.
-  const live = useAdminQuery<{ days: number }>({
+  const live = useAdminQuery<{ days: number | null }>({
     path: "/admin/settings/seller-trial",
     enabled: !!target && target.kind === "grant" && target.defaultDays == null,
   });
@@ -76,10 +75,14 @@ export function TrialActionDialog({
     ({ t, body }, opts) => post(`/admin/sellers/${encodeURIComponent(t.sellerId)}/trial/${t.kind}`, body, opts),
   );
 
+  // The length a grant proposes: what the seller was shown when they asked, else the configured
+  // default; null until known (never a silent 60). An extension starts at 30 days.
+  const proposed =
+    target?.kind === "extend" ? 30 : target ? (target.defaultDays ?? live.data?.days ?? null) : null;
+
   // Start every opening from a clean form.
   useEffect(() => {
     if (target) {
-      setDays(target.kind === "extend" ? "30" : String(target.defaultDays ?? DEFAULT_TRIAL_DAYS));
       setDaysTouched(false);
       setReason("");
       setTier("STANDARD");
@@ -89,16 +92,18 @@ export function TrialActionDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target?.sellerId, target?.kind]);
 
-  // The live default arrives after the dialog opened: use it unless the admin already typed.
+  // The proposed length fills the field when the dialog opens, and again when the configured
+  // default arrives late (or a reopened dialog finds it already loaded): unless the admin typed.
   useEffect(() => {
-    if (target?.kind === "grant" && target.defaultDays == null && live.data && !daysTouched) {
-      setDays(String(live.data.days));
-    }
+    if (target && !daysTouched && proposed !== null) setDays(String(proposed));
+    if (target && !daysTouched && proposed === null) setDays("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live.data?.days]);
+  }, [target?.sellerId, target?.kind, proposed, daysTouched]);
 
   if (!target) return null;
   const needsDays = target.kind === "grant" || target.kind === "extend";
+  // A grant needs a number the admin can see: it is loading, failed to load, or typed.
+  const waitingForDefault = target.kind === "grant" && proposed === null && !daysTouched;
   // A grant takes the plan chosen in the form; an extension carries the plan of the grant it extends.
   const effectiveTier: TrialTier = target.kind === "grant" ? tier : (target.tier ?? "STANDARD");
 
@@ -166,6 +171,17 @@ export function TrialActionDialog({
                 className="w-32"
                 aria-invalid={formError?.includes("durée") || undefined}
               />
+              {target.kind === "grant" && target.defaultDays != null && (
+                <span className="text-[11px] font-normal">Durée annoncée au vendeur à sa demande.</span>
+              )}
+              {waitingForDefault && !live.isError && (
+                <span role="status" className="text-[11px] font-normal">Chargement de la durée par défaut…</span>
+              )}
+              {waitingForDefault && live.isError && (
+                <span role="alert" className="text-[11px] font-normal text-error">
+                  Durée par défaut illisible : saisis le nombre de jours.
+                </span>
+              )}
             </label>
           )}
           <label className="flex flex-col gap-1 text-[12px] font-medium text-on-surface-variant">
@@ -188,7 +204,7 @@ export function TrialActionDialog({
             <Button type="button" variant="outline" onClick={onClose} disabled={mutation.isPending}>
               Annuler
             </Button>
-            <Button type="submit" disabled={mutation.isPending}>
+            <Button type="submit" disabled={mutation.isPending || (needsDays && days.trim() === "")}>
               {mutation.isPending ? "Envoi…" : `Confirmer : ${ACTION_LABEL[target.kind].toLowerCase()}`}
             </Button>
           </div>
