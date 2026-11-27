@@ -51,6 +51,8 @@ export interface KycDocumentDetail {
   fileUrl: string;
   rejectionReason: string | null;
   submittedAt: string;
+  /** Submission counter (1, +1 per replacement). Send it back with approve/reject. */
+  revision: number;
   reviewedAt: string | null;
   reviewerId: string | null;
   metadata: Record<string, unknown> | null;

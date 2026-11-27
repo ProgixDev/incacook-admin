@@ -10,13 +10,14 @@ import {
   ShieldAlert,
   XCircle,
 } from "lucide-react";
-import { post } from "@/lib/api";
+import { ApiError, post } from "@/lib/api";
 import { useAdminQuery, useAdminMutation } from "@/lib/query";
 import { Drawer, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatDateTimeFr } from "@/lib/utils";
+import { revisionToSend } from "./review-revision";
 import {
   DOC_TYPE_LABEL,
   REVIEW_STATE_LABEL,
@@ -40,15 +41,22 @@ export function KycDocumentDrawer({ documentId, onClose, onReviewed }: Props) {
     useAdminQuery<KycDocumentDetail>({
       path: documentId ? `/admin/kyc/documents/${documentId}` : "",
       enabled: open,
+      // A document is decided from this data: never keep the previous document's (and its
+      // revision) on screen while the next one loads.
+      keepPreviousData: false,
     });
 
-  const approve = useAdminMutation<KycActionResult, string>((id, opts) =>
-    post(`/admin/kyc/documents/${id}/approve`, undefined, opts),
+  // Both decisions send the `revision` of the file on screen: if the person replaced it
+  // since the drawer opened, the server answers 409 instead of deciding a file nobody saw.
+  const approve = useAdminMutation<KycActionResult, { id: string; revision: number }>(
+    ({ id, revision }, opts) => post(`/admin/kyc/documents/${id}/approve`, { revision }, opts),
   );
 
-  const reject = useAdminMutation<KycActionResult, { id: string; rejectionReason: string }>(
-    ({ id, rejectionReason }, opts) =>
-      post(`/admin/kyc/documents/${id}/reject`, { rejectionReason }, opts),
+  const reject = useAdminMutation<
+    KycActionResult,
+    { id: string; rejectionReason: string; revision: number }
+  >(({ id, rejectionReason, revision }, opts) =>
+    post(`/admin/kyc/documents/${id}/reject`, { rejectionReason, revision }, opts),
   );
 
   const [rejectMode, setRejectMode] = useState(false);
@@ -66,17 +74,20 @@ export function KycDocumentDrawer({ documentId, onClose, onReviewed }: Props) {
   }, [documentId]);
 
   async function handleApprove() {
-    if (!documentId) return;
+    const revision = revisionToSend(data, documentId);
+    if (!documentId || revision === null) return;
     try {
-      await approve.mutate(documentId);
+      await approve.mutate({ id: documentId, revision });
       onReviewed();
-    } catch {
-      // error surfaced via approve.error
+    } catch (e) {
+      // error surfaced via approve.error; a 409 means the file changed: show the new one
+      if (e instanceof ApiError && e.statusCode === 409) void refetch();
     }
   }
 
   async function handleReject() {
-    if (!documentId) return;
+    const revision = revisionToSend(data, documentId);
+    if (!documentId || revision === null) return;
     const trimmed = reason.trim();
     if (trimmed.length < 3) {
       setReasonError("La raison doit comporter au moins 3 caractères.");
@@ -84,10 +95,11 @@ export function KycDocumentDrawer({ documentId, onClose, onReviewed }: Props) {
     }
     setReasonError(null);
     try {
-      await reject.mutate({ id: documentId, rejectionReason: trimmed });
+      await reject.mutate({ id: documentId, rejectionReason: trimmed, revision });
       onReviewed();
-    } catch {
-      // error surfaced via reject.error
+    } catch (e) {
+      // error surfaced via reject.error; a 409 means the file changed: show the new one
+      if (e instanceof ApiError && e.statusCode === 409) void refetch();
     }
   }
 
