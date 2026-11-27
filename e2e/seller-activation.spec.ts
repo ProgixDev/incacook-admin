@@ -519,4 +519,17 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await page.goto("/seller-activation");
     await expect(page.getByText("Aucun vendeur.")).toBeVisible({ timeout: 30_000 });
   });
+
+  test("at 1280 px the whole table fits: the Actions column needs no horizontal scroll", async ({ page }) => {
+    await mockApi(page, "ADMIN");
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    const fits = await page.locator("table").first().evaluate((t) => {
+      const box = t.parentElement as HTMLElement; // the overflow-x-auto wrapper
+      return box.scrollWidth <= box.clientWidth + 1;
+    });
+    expect(fits).toBe(true);
+    await expect(page.getByRole("columnheader", { name: "Actions" })).toBeInViewport();
+  });
 });

@@ -45,7 +45,7 @@ export function SellerCell({
   isSuspended?: boolean;
 }) {
   return (
-    <div className="min-w-0 max-w-[260px]">
+    <div className="min-w-0 max-w-[220px]">
       <div className="flex items-center gap-1.5">
         <span className="truncate text-[13px] font-medium text-on-surface">{name ?? "Sans nom"}</span>
         {isTestAccount && <Badge variant="neutral">Test</Badge>}
