@@ -26,7 +26,9 @@ export function trialSettingsChanges(
   if (form.autoRequest !== saved.autoRequest) changes.autoRequest = form.autoRequest;
   const typed = form.days.trim();
   if (typed === "" && saved.days === null) {
-    // The stored length is invalid and untouched: the switch can still be saved on its own.
+    // The stored length is invalid and untouched: the switch can still be turned OFF on its own,
+    // but never ON, which would send requests that advertise no length.
+    if (form.autoRequest) return null;
   } else {
     const days = parseTrialDays(form.days, saved.minDays, saved.maxDays);
     if (days === null) return null; // an invalid or empty length blocks the save

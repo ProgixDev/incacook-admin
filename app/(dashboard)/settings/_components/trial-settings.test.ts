@@ -31,7 +31,12 @@ describe("trialSettingsChanges", () => {
     const broken = { autoRequest: false, days: null, minDays: 7, maxDays: 365 };
     assert.equal(trialSettingsChanges(broken, { autoRequest: false, days: "" }), null); // nothing changed
     // ... but the switch alone can still be saved while the stored length is invalid and untouched
-    assert.deepEqual(trialSettingsChanges(broken, { autoRequest: true, days: "" }), { autoRequest: true });
+    // ... only to turn it OFF: switching it ON would send requests that advertise no length
+    assert.equal(trialSettingsChanges(broken, { autoRequest: true, days: "" }), null);
+    assert.deepEqual(
+      trialSettingsChanges({ ...broken, autoRequest: true }, { autoRequest: false, days: "" }),
+      { autoRequest: false },
+    );
     assert.equal(trialSettingsChanges(broken, { autoRequest: true, days: "3" }), null); // a typed bad length blocks
     assert.deepEqual(trialSettingsChanges(broken, { autoRequest: false, days: "60" }), { days: 60 });
   });
