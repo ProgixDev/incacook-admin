@@ -122,7 +122,7 @@ test.describe("Home: À traiter (mocked API)", () => {
     await page.goto("/dashboard");
     const todo = page.getByRole("region", { name: "À traiter" });
     await expect(
-      todo.getByRole("link", { name: /Identités à vérifier/ }),
+      todo.getByRole("link", { name: /Vérifications KYC/ }),
     ).toHaveAttribute("href", "/kyc");
     await expect(
       todo.getByRole("link", { name: /Demandes d’essai offert/ }),
@@ -155,7 +155,7 @@ test.describe("Home: À traiter (mocked API)", () => {
       todo.getByRole("link", { name: /Signalements/ }),
     ).toBeVisible();
     await expect(
-      todo.getByText(/Compteur indisponible : Identités à vérifier/),
+      todo.getByText(/Compteur indisponible : Vérifications KYC/),
     ).toBeVisible();
     await expect(page.getByText("Rien à traiter pour le moment.")).toHaveCount(
       0,

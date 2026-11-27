@@ -26,8 +26,8 @@ const QUEUES: {
 }[] = [
   {
     key: "kycPeople",
-    label: "Identités à vérifier",
-    hint: "personnes en attente de validation",
+    label: "Vérifications KYC",
+    hint: "personnes avec des pièces à vérifier",
     href: "/kyc",
   },
   {
@@ -67,6 +67,8 @@ export interface TodoView {
   items: TodoItem[];
   /** Labels of the queues whose count could not be read. */
   unavailable: string[];
+  /** True only when every count was read and nothing is waiting: the one case that may say "all clear". */
+  allClear: boolean;
 }
 
 /** Only what needs doing is listed; a count that failed is reported apart, never as "nothing to do". */
@@ -78,5 +80,9 @@ export function todoView(data: TodoResponse): TodoView {
     if (count === null || count === undefined) unavailable.push(q.label);
     else if (count > 0) items.push({ ...q, count });
   }
-  return { items, unavailable };
+  return {
+    items,
+    unavailable,
+    allClear: items.length === 0 && unavailable.length === 0,
+  };
 }

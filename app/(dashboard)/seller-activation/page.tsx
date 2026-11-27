@@ -14,7 +14,7 @@ export default async function SellerActivationPage({
       title="Activation vendeurs"
       subtitle="Entonnoir d'activation des 30 derniers jours et essais offerts"
     >
-      <ActivationClient initialView={initialView} />
+      <ActivationClient key={initialView} initialView={initialView} />
     </PageShell>
   );
 }

@@ -42,7 +42,7 @@ export function TodoSection() {
     );
   }
 
-  const { items, unavailable } = todoView(todo.data);
+  const { items, unavailable, allClear } = todoView(todo.data);
 
   return (
     <section
@@ -52,12 +52,12 @@ export function TodoSection() {
       <h2 className="px-4 pt-3 text-[10.5px] font-semibold uppercase tracking-wider text-on-surface-variant">
         À traiter
       </h2>
-      {items.length === 0 ? (
+      {allClear ? (
         <p className="flex items-center gap-2 px-4 py-3 text-[13px] text-on-surface-variant">
           <CheckCircle2 className="h-4 w-4 text-success" aria-hidden />
           Rien à traiter pour le moment.
         </p>
-      ) : (
+      ) : items.length === 0 ? null : (
         <ul className="divide-y divide-outline-variant/60 pt-1">
           {items.map((it) => (
             <li key={it.key}>

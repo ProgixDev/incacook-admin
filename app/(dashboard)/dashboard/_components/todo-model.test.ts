@@ -14,7 +14,11 @@ const none: TodoResponse = {
 
 describe("todoView", () => {
   it("lists nothing when nothing is waiting", () => {
-    assert.deepEqual(todoView(none), { items: [], unavailable: [] });
+    assert.deepEqual(todoView(none), {
+      items: [],
+      unavailable: [],
+      allClear: true,
+    });
   });
 
   it("lists only the queues with something to do, people first", () => {
@@ -54,10 +58,22 @@ describe("todoView", () => {
 
   it("reports an unreadable count apart, never as nothing to do", () => {
     const v = todoView({ ...none, kycPeople: null, reports: 4 });
-    assert.deepEqual(v.unavailable, ["Identités à vérifier"]);
+    assert.deepEqual(v.unavailable, ["Vérifications KYC"]);
+    assert.equal(v.allClear, false);
     assert.deepEqual(
       v.items.map((i) => i.key),
       ["reports"],
     );
+  });
+
+  it("is never all clear while a count is unreadable, even if every readable count is zero", () => {
+    const v = todoView({ ...none, kycPeople: null });
+    assert.deepEqual(v.items, []);
+    assert.deepEqual(v.unavailable, ["Vérifications KYC"]);
+    assert.equal(v.allClear, false);
+  });
+
+  it("is not all clear while something is waiting", () => {
+    assert.equal(todoView({ ...none, reports: 1 }).allClear, false);
   });
 });
