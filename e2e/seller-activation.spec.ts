@@ -137,7 +137,9 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await expect(funnel).toContainText("3");
     await expect(page.getByText("Chez Rosa")).toBeVisible();
     await expect(page.getByText("Pièce d’identité")).toBeVisible(); // first incomplete step
-    await expect(page.getByText(/Essai offert · jusqu’au/)).toBeVisible();
+    // The pill and its end date are separate elements (a long pill wraps and breaks the row).
+    await expect(page.getByText("Essai offert", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(/^jusqu’au /).first()).toBeVisible();
     await expect(page.getByText("QA bot")).toHaveCount(0); // test account excluded by default
     await page.getByLabel("Inclure les comptes test").check();
     await expect(page.getByText("QA bot")).toBeVisible();
