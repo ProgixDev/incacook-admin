@@ -26,4 +26,10 @@ describe("trialSettingsChanges", () => {
     assert.deepEqual(trialSettingsChanges(saved, { autoRequest: false, days: "45" }), { days: 45 });
     assert.deepEqual(trialSettingsChanges(saved, { autoRequest: true, days: "45" }), { autoRequest: true, days: 45 });
   });
+
+  it("an invalid stored length (null) needs a valid one typed, whatever the switch says", () => {
+    const broken = { autoRequest: false, days: null, minDays: 7, maxDays: 365 };
+    assert.equal(trialSettingsChanges(broken, { autoRequest: false, days: "" }), null);
+    assert.deepEqual(trialSettingsChanges(broken, { autoRequest: false, days: "60" }), { days: 60 });
+  });
 });

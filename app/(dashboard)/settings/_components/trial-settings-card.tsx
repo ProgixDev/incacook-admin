@@ -35,7 +35,8 @@ export function TrialSettingsCard() {
   if (data && key !== seeded) {
     setSeeded(key);
     setAutoRequest(data.autoRequest);
-    setDays(String(data.days));
+    // An invalid stored length (null) leaves the field empty: the admin must type a new one.
+    setDays(data.days === null ? "" : String(data.days));
   }
 
   const save = useAdminMutation<SellerTrialSettings, { autoRequest?: boolean; days?: number }>(
@@ -131,6 +132,12 @@ export function TrialSettingsCard() {
                   envoyée garde la durée annoncée au vendeur.
                 </p>
               </div>
+
+              {data && data.days === null && (
+                <p role="alert" className="-mt-2 text-[12px] text-error">
+                  La durée enregistrée est invalide : aucune durée n’est annoncée aux vendeurs. Saisis-en une.
+                </p>
+              )}
 
               {data?.updatedAt && (
                 <p className="-mt-2 text-[11px] text-on-surface-variant">

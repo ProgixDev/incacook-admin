@@ -1,7 +1,8 @@
 /** `GET|PATCH /v1/admin/settings/seller-trial`. */
 export interface SellerTrialSettings {
   autoRequest: boolean;
-  days: number;
+  /** null: the stored length is invalid, the admin must set a new one. */
+  days: number | null;
   minDays: number;
   maxDays: number;
   updatedAt: string | null;
