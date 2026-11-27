@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ApiError, post } from "@/lib/api";
-import { useAdminMutation } from "@/lib/query";
+import { useAdminMutation, useAdminQuery } from "@/lib/query";
 import { formatDateParis } from "./dates";
 import {
   ACTION_LABEL,
@@ -27,6 +27,8 @@ export interface TrialActionTarget {
   trialEndsAt: string | null;
   /** What the existing grant gives, when known: extending a Premium grant needs a reason too. */
   tier?: TrialTier;
+  /** The length (days) the seller was offered when they asked, for a grant to a pending request. */
+  defaultDays?: number | null;
 }
 
 const PREMIUM_GRANT_COPY =
@@ -59,6 +61,13 @@ export function TrialActionDialog({
   onStale: (code: string) => void;
 }) {
   const [days, setDays] = useState(String(DEFAULT_TRIAL_DAYS));
+  // The configured default, for a grant that has no request to take its length from. Set by the
+  // server's setting; the admin can always type another number.
+  const live = useAdminQuery<{ days: number }>({
+    path: "/admin/settings/seller-trial",
+    enabled: !!target && target.kind === "grant" && target.defaultDays == null,
+  });
+  const [daysTouched, setDaysTouched] = useState(false);
   const [reason, setReason] = useState("");
   const [tier, setTier] = useState<TrialTier>("STANDARD");
   const [formError, setFormError] = useState<string | null>(null);
@@ -70,7 +79,8 @@ export function TrialActionDialog({
   // Start every opening from a clean form.
   useEffect(() => {
     if (target) {
-      setDays(target.kind === "extend" ? "30" : String(DEFAULT_TRIAL_DAYS));
+      setDays(target.kind === "extend" ? "30" : String(target.defaultDays ?? DEFAULT_TRIAL_DAYS));
+      setDaysTouched(false);
       setReason("");
       setTier("STANDARD");
       setFormError(null);
@@ -78,6 +88,14 @@ export function TrialActionDialog({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target?.sellerId, target?.kind]);
+
+  // The live default arrives after the dialog opened: use it unless the admin already typed.
+  useEffect(() => {
+    if (target?.kind === "grant" && target.defaultDays == null && live.data && !daysTouched) {
+      setDays(String(live.data.days));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live.data?.days]);
 
   if (!target) return null;
   const needsDays = target.kind === "grant" || target.kind === "extend";
@@ -141,7 +159,10 @@ export function TrialActionDialog({
                 name="days"
                 inputMode="numeric"
                 value={days}
-                onChange={(e) => setDays(e.target.value)}
+                onChange={(e) => {
+                  setDays(e.target.value);
+                  setDaysTouched(true);
+                }}
                 className="w-32"
                 aria-invalid={formError?.includes("durée") || undefined}
               />

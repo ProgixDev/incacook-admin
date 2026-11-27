@@ -30,6 +30,8 @@ export interface TrialFacts {
   ready?: boolean;
   /** Suspended sellers cannot publish or take orders: a new trial would run unusable, so no grant is offered. */
   suspended?: boolean;
+  /** The length (days) the seller was offered when they asked; the default of a grant to them. */
+  offeredDays?: number | null;
 }
 
 export function factsFromActivationRow(row: ActivationRow): TrialFacts {
@@ -56,6 +58,7 @@ export function factsFromTrialItem(item: TrialListItem): TrialFacts {
     trialRevokedAt: item.trialRevokedAt,
     trialTier: item.trialTier,
     suspended: item.suspended === true,
+    offeredDays: item.offeredDays ?? null,
   };
 }
 

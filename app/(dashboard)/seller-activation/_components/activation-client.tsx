@@ -9,6 +9,7 @@ import { ApiError, patch } from "@/lib/api";
 import { ErrorCodes } from "@/lib/api/error-codes";
 import type { Pagination } from "@/lib/api";
 import { isFullAdminRole, useAuth } from "@/lib/auth";
+import { trialOfferLabel } from "@/lib/trial-offer";
 import { useAdminMutation, useAdminQuery } from "@/lib/query";
 import { formatDateParis } from "./dates";
 import {
@@ -153,7 +154,14 @@ function ActivationPanel({ initialView }: { initialView: View }) {
   function open(kind: TrialActionKind, sellerId: string, sellerName: string, facts: TrialFacts) {
     setNotice(null);
     setAlertMessage(null);
-    setTarget({ kind, sellerId, sellerName, trialEndsAt: facts.trialEndsAt, tier: facts.trialTier });
+    setTarget({
+      kind,
+      sellerId,
+      sellerName,
+      trialEndsAt: facts.trialEndsAt,
+      tier: facts.trialTier,
+      defaultDays: facts.offeredDays ?? null,
+    });
   }
 
   /**
@@ -311,7 +319,13 @@ function ActivationPanel({ initialView }: { initialView: View }) {
         <div className="flex flex-col gap-0.5">
           <RequestBadge state={r.requestState} />
           {r.requestedAt && (
-            <span className="text-[11px] text-on-surface-variant">le {formatDateParis(r.requestedAt)}</span>
+            <span className="text-[11px] text-on-surface-variant">
+              le {formatDateParis(r.requestedAt)}
+              {r.requestSource === "auto" ? " · demande automatique" : ""}
+            </span>
+          )}
+          {r.offeredDays != null && r.requestState === "pending" && (
+            <span className="text-[11px] text-on-surface-variant">annoncé : {trialOfferLabel(r.offeredDays)}</span>
           )}
         </div>
       ),

@@ -64,6 +64,10 @@ export interface TrialListItem {
   signedUpAt: string;
   requestState: RequestState;
   requestedAt: string | null;
+  /** How the latest request was made: the seller tapped it, or it was sent for them (absent on older servers). */
+  requestSource?: "manual" | "auto" | null;
+  /** The length (days) the seller was shown when they asked: a grant defaults to it (absent/null on older requests). */
+  offeredDays?: number | null;
   trialEndsAt: string | null;
   trialRevokedAt: string | null;
   /** What the grant gives (absent on servers that predate Premium grants: then STANDARD). */

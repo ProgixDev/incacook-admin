@@ -122,8 +122,17 @@ test("trial-list items carry their own trial dates", () => {
     requestState: "granted", requestedAt: null, trialEndsAt: FUTURE, trialRevokedAt: null, duplicates: [],
   };
   assert.deepEqual(factsFromTrialItem(item), {
-    requestState: "granted", accessActive: undefined, ready: undefined, trialEndsAt: FUTURE, trialRevokedAt: null, trialTier: undefined, suspended: false,
+    requestState: "granted", accessActive: undefined, ready: undefined, trialEndsAt: FUTURE, trialRevokedAt: null, trialTier: undefined, suspended: false, offeredDays: null,
   });
+});
+
+test("a pending seller carries the length the seller was offered (the default of a grant to them)", () => {
+  const item: TrialListItem = {
+    sellerId: "s1", displayName: null, email: "r@x.fr", category: null, signedUpAt: PAST,
+    requestState: "pending", requestedAt: PAST, requestSource: "auto", offeredDays: 45,
+    trialEndsAt: null, trialRevokedAt: null, duplicates: [],
+  };
+  assert.equal(factsFromTrialItem(item).offeredDays, 45);
 });
 
 test("a pending seller who subscribed meanwhile is not offered a grant (list access), only a refusal", () => {
