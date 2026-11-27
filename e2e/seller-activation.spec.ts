@@ -59,7 +59,7 @@ interface Calls { activation: number; trials: number; posts: Array<{ url: string
 async function mockApi(
   page: Page,
   role: "ADMIN" | "MODERATOR",
-  handlers: { post?: (url: string, route: Route) => Promise<boolean>; settings?: number | "error" } = {},
+  handlers: { post?: (url: string, route: Route) => Promise<boolean>; settings?: number | "error"; settingsRef?: { value: number | "error" } } = {},
 ) {
   const calls: Calls = { activation: 0, trials: 0, posts: [], patches: [] };
   await page.route(`${API}/**`, async (route) => {
@@ -77,8 +77,9 @@ async function mockApi(
       return ok(route, { id: "admin-1", email: "admin@incacook.test", phone: null, role, firstName: "Ad", lastName: "Min", avatarPath: null, emailVerified: true, phoneVerified: false, createdAt: "2026-01-01T00:00:00.000Z" });
     }
     if (path === "/admin/settings/seller-trial") {
-      if (handlers.settings === "error") return fail(route, 500, "INTERNAL", "boom");
-      return ok(route, { autoRequest: false, days: handlers.settings ?? 60, minDays: 7, maxDays: 365, updatedAt: null, updatedById: null });
+      const current = handlers.settingsRef ? handlers.settingsRef.value : handlers.settings;
+      if (current === "error") return fail(route, 500, "INTERNAL", "boom");
+      return ok(route, { autoRequest: false, days: current ?? 60, minDays: 7, maxDays: 365, updatedAt: null, updatedById: null });
     }
     if (path === "/admin/seller-activation") {
       calls.activation += 1;
@@ -217,6 +218,26 @@ test.describe("Activation vendeurs (mocked API)", () => {
     await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
     await page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
     await expect(page.getByLabel("Durée (jours)")).toHaveValue("30");
+  });
+
+  test("grant: the default is read afresh at every opening, never kept from the previous one", async ({ page }) => {
+    const settingsRef: { value: number | "error" } = { value: 30 };
+    await mockApi(page, "ADMIN", { settingsRef });
+    await page.goto("/seller-activation");
+    await expect(page.getByText("Chez Rosa")).toBeVisible({ timeout: 30_000 });
+    const open = () => page.getByRole("row", { name: /Chez Rosa/ }).getByRole("button", { name: "Accorder" }).click();
+    await open();
+    await expect(page.getByLabel("Durée (jours)")).toHaveValue("30");
+    await page.getByRole("button", { name: "Annuler" }).click();
+    settingsRef.value = 90; // an admin changed it meanwhile
+    await open();
+    await expect(page.getByLabel("Durée (jours)")).toHaveValue("90");
+    await page.getByRole("button", { name: "Annuler" }).click();
+    settingsRef.value = "error"; // and now it cannot be read: the old 90 must not come back
+    await open();
+    await expect(page.getByText("Durée par défaut illisible : saisis le nombre de jours.")).toBeVisible();
+    await expect(page.getByLabel("Durée (jours)")).toHaveValue("");
+    await expect(page.getByRole("button", { name: /Confirmer : accorder/ })).toBeDisabled();
   });
 
   test("grant: a pending request proposes the length the seller was shown, even after the dialog is closed and reopened", async ({ page }) => {

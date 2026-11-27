@@ -29,7 +29,10 @@ describe("trialSettingsChanges", () => {
 
   it("an invalid stored length (null) needs a valid one typed, whatever the switch says", () => {
     const broken = { autoRequest: false, days: null, minDays: 7, maxDays: 365 };
-    assert.equal(trialSettingsChanges(broken, { autoRequest: false, days: "" }), null);
+    assert.equal(trialSettingsChanges(broken, { autoRequest: false, days: "" }), null); // nothing changed
+    // ... but the switch alone can still be saved while the stored length is invalid and untouched
+    assert.deepEqual(trialSettingsChanges(broken, { autoRequest: true, days: "" }), { autoRequest: true });
+    assert.equal(trialSettingsChanges(broken, { autoRequest: true, days: "3" }), null); // a typed bad length blocks
     assert.deepEqual(trialSettingsChanges(broken, { autoRequest: false, days: "60" }), { days: 60 });
   });
 });

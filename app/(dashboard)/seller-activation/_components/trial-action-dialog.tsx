@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ApiError, post } from "@/lib/api";
-import { useAdminMutation, useAdminQuery } from "@/lib/query";
+import { ApiError, get, post } from "@/lib/api";
+import { useAdminMutation } from "@/lib/query";
 import { formatDateParis } from "./dates";
 import {
   ACTION_LABEL,
@@ -60,12 +60,14 @@ export function TrialActionDialog({
   onStale: (code: string) => void;
 }) {
   const [days, setDays] = useState("");
-  // The configured default, for a grant that has no request to take its length from. Set by the
-  // server's setting; the admin can always type another number.
-  const live = useAdminQuery<{ days: number | null }>({
-    path: "/admin/settings/seller-trial",
-    enabled: !!target && target.kind === "grant" && target.defaultDays == null,
-  });
+  // The configured default, for a grant that has no request to take its length from. Read afresh
+  // every time the dialog opens (never a value kept from a previous opening: the admin may have
+  // changed it since). undefined = not read yet; the admin can always type another number.
+  const [liveDays, setLiveDays] = useState<number | undefined>(undefined);
+  const [liveFailed, setLiveFailed] = useState(false);
+  const readDefault = useAdminMutation<{ days: number | null }, void>((_, opts) =>
+    get("/admin/settings/seller-trial", opts),
+  );
   const [daysTouched, setDaysTouched] = useState(false);
   const [reason, setReason] = useState("");
   const [tier, setTier] = useState<TrialTier>("STANDARD");
@@ -78,7 +80,7 @@ export function TrialActionDialog({
   // The length a grant proposes: what the seller was shown when they asked, else the configured
   // default; null until known (never a silent 60). An extension starts at 30 days.
   const proposed =
-    target?.kind === "extend" ? 30 : target ? (target.defaultDays ?? live.data?.days ?? null) : null;
+    target?.kind === "extend" ? 30 : target ? (target.defaultDays ?? liveDays ?? null) : null;
 
   // Start every opening from a clean form.
   useEffect(() => {
@@ -91,6 +93,28 @@ export function TrialActionDialog({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target?.sellerId, target?.kind]);
+
+  useEffect(() => {
+    setLiveDays(undefined);
+    setLiveFailed(false);
+    if (!target || target.kind !== "grant" || target.defaultDays != null) return;
+    let cancelled = false;
+    readDefault
+      .mutate()
+      .then((r) => {
+        if (cancelled) return;
+        // A stored length that is invalid (null) is as unreadable as a failed read.
+        if (typeof r.days === "number") setLiveDays(r.days);
+        else setLiveFailed(true);
+      })
+      .catch(() => {
+        if (!cancelled) setLiveFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target?.sellerId, target?.kind, target?.defaultDays]);
 
   // The proposed length fills the field when the dialog opens, and again when the configured
   // default arrives late (or a reopened dialog finds it already loaded): unless the admin typed.
@@ -174,10 +198,10 @@ export function TrialActionDialog({
               {target.kind === "grant" && target.defaultDays != null && (
                 <span className="text-[11px] font-normal">Durée annoncée au vendeur à sa demande.</span>
               )}
-              {waitingForDefault && !live.isError && (
+              {waitingForDefault && !liveFailed && (
                 <span role="status" className="text-[11px] font-normal">Chargement de la durée par défaut…</span>
               )}
-              {waitingForDefault && live.isError && (
+              {waitingForDefault && liveFailed && (
                 <span role="alert" className="text-[11px] font-normal text-error">
                   Durée par défaut illisible : saisis le nombre de jours.
                 </span>
