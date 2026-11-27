@@ -26,6 +26,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { DataTableError } from "@/components/dashboard/data-table-states";
 import { useAdminQuery } from "@/lib/query";
 import { cn, formatEur, formatNum } from "@/lib/utils";
+import { TodoSection } from "./todo-section";
 import {
   OverviewActivityChart,
   type BreakdownDatum,
@@ -168,6 +169,9 @@ export function OverviewClient() {
 
   return (
     <>
+      {/* What needs an admin now: independent of the period below */}
+      <TodoSection />
+
       {/* Period selector */}
       <div className="mb-4 flex flex-wrap items-center gap-1.5">
         {PERIODS.map((p) => {

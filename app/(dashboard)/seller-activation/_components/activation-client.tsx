@@ -64,7 +64,7 @@ const EMPTY_LABEL: Record<View, string> = {
   pending: "Aucune demande d’essai en attente.",
 };
 
-export function ActivationClient() {
+export function ActivationClient({ initialView = "all" }: { initialView?: View }) {
   const { user } = useAuth();
   if (!user || !isFullAdminRole(user.role)) {
     return (
@@ -77,12 +77,12 @@ export function ActivationClient() {
       </div>
     );
   }
-  return <ActivationPanel />;
+  return <ActivationPanel initialView={initialView} />;
 }
 
-function ActivationPanel() {
+function ActivationPanel({ initialView }: { initialView: View }) {
   const narrow = useIsNarrow();
-  const [view, setView] = useState<View>("all");
+  const [view, setView] = useState<View>(initialView);
   const [includeTest, setIncludeTest] = useState(false);
   const [page, setPage] = useState(1); // 1-based
   const [target, setTarget] = useState<TrialActionTarget | null>(null);
@@ -254,7 +254,7 @@ function ActivationPanel() {
       width: "110px",
     },
     { key: "onboarding", header: "Inscription", cell: (r) => <OnboardingCell row={r} />, width: "150px" },
-    { key: "access", header: "Accès", cell: (r) => <AccessBadge access={r.access} tier={r.trialTier} />, width: "190px" },
+    { key: "access", header: "Accès", cell: (r) => <AccessBadge access={r.access} tier={r.trialTier} />, width: "140px" },
     {
       key: "listings",
       header: "Annonces",
