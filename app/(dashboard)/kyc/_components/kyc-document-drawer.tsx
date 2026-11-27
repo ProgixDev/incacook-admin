@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatDateTimeFr } from "@/lib/utils";
+import { revisionToSend } from "./review-revision";
 import {
   DOC_TYPE_LABEL,
   REVIEW_STATE_LABEL,
@@ -40,6 +41,9 @@ export function KycDocumentDrawer({ documentId, onClose, onReviewed }: Props) {
     useAdminQuery<KycDocumentDetail>({
       path: documentId ? `/admin/kyc/documents/${documentId}` : "",
       enabled: open,
+      // A document is decided from this data: never keep the previous document's (and its
+      // revision) on screen while the next one loads.
+      keepPreviousData: false,
     });
 
   // Both decisions send the `revision` of the file on screen: if the person replaced it
@@ -70,9 +74,10 @@ export function KycDocumentDrawer({ documentId, onClose, onReviewed }: Props) {
   }, [documentId]);
 
   async function handleApprove() {
-    if (!documentId || !data) return;
+    const revision = revisionToSend(data, documentId);
+    if (!documentId || revision === null) return;
     try {
-      await approve.mutate({ id: documentId, revision: data.revision });
+      await approve.mutate({ id: documentId, revision });
       onReviewed();
     } catch (e) {
       // error surfaced via approve.error; a 409 means the file changed: show the new one
@@ -81,7 +86,8 @@ export function KycDocumentDrawer({ documentId, onClose, onReviewed }: Props) {
   }
 
   async function handleReject() {
-    if (!documentId || !data) return;
+    const revision = revisionToSend(data, documentId);
+    if (!documentId || revision === null) return;
     const trimmed = reason.trim();
     if (trimmed.length < 3) {
       setReasonError("La raison doit comporter au moins 3 caractères.");
@@ -89,7 +95,7 @@ export function KycDocumentDrawer({ documentId, onClose, onReviewed }: Props) {
     }
     setReasonError(null);
     try {
-      await reject.mutate({ id: documentId, rejectionReason: trimmed, revision: data.revision });
+      await reject.mutate({ id: documentId, rejectionReason: trimmed, revision });
       onReviewed();
     } catch (e) {
       // error surfaced via reject.error; a 409 means the file changed: show the new one
